@@ -4,3 +4,4 @@ Driver layer GPU libraries and tests for PSP2
 # Unittest states
 
 services_test: fully passed
+sgx_init_test: fully passed
