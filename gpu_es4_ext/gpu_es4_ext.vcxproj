@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|PSVita">
+      <Configuration>Debug</Configuration>
+      <Platform>PSVita</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|PSVita">
+      <Configuration>Release</Configuration>
+      <Platform>PSVita</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="eurasia\services4\srvclient\bridged\bridged_pvr_glue.c" />
+    <ClCompile Include="eurasia\services4\srvclient\common\resources.c" />
+    <ClCompile Include="eurasia\services4\srvclient\env\playstation\common\osfunc_um.c" />
+    <ClCompile Include="psp2\module.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\include\gpu_es4\eurasia\hwdefs\mnemedefs.h" />
+    <ClInclude Include="..\include\gpu_es4\eurasia\hwdefs\sgx543defs.h" />
+    <ClInclude Include="..\include\gpu_es4\eurasia\hwdefs\sgx543_debug_defs.h" />
+    <ClInclude Include="..\include\gpu_es4\eurasia\hwdefs\sgx543_v1.164defs.h" />
+    <ClInclude Include="..\include\gpu_es4\eurasia\hwdefs\sgxcoretypes.h" />
+    <ClInclude Include="..\include\gpu_es4\eurasia\hwdefs\sgxdefs.h" />
+    <ClInclude Include="..\include\gpu_es4\eurasia\hwdefs\sgxerrata.h" />
+    <ClInclude Include="..\include\gpu_es4\eurasia\hwdefs\sgxfeaturedefs.h" />
+    <ClInclude Include="..\include\gpu_es4\eurasia\hwdefs\sgxima32usedefs.h" />
+    <ClInclude Include="..\include\gpu_es4\eurasia\hwdefs\sgxmmu.h" />
+    <ClInclude Include="..\include\gpu_es4\eurasia\hwdefs\sgxmpdefs.h" />
+    <ClInclude Include="..\include\gpu_es4\eurasia\hwdefs\sgxpdsdefs.h" />
+    <ClInclude Include="..\include\gpu_es4\eurasia\hwdefs\sgxphasusedefs.h" />
+    <ClInclude Include="..\include\gpu_es4\eurasia\hwdefs\sgxptladefs.h" />
+    <ClInclude Include="..\include\gpu_es4\eurasia\hwdefs\sgxusespecialbankdefs.h" />
+    <ClInclude Include="..\include\gpu_es4\eurasia\hwdefs\sgxvec34usedefs.h" />
+    <ClInclude Include="..\include\gpu_es4\eurasia\hwdefs\usecodegen.h" />
+    <ClInclude Include="..\include\gpu_es4\eurasia\include4\img_defs.h" />
+    <ClInclude Include="..\include\gpu_es4\eurasia\include4\img_list.h" />
+    <ClInclude Include="..\include\gpu_es4\eurasia\include4\img_types.h" />
+    <ClInclude Include="..\include\gpu_es4\eurasia\include4\pdumpdefs.h" />
+    <ClInclude Include="..\include\gpu_es4\eurasia\include4\pvr_debug.h" />
+    <ClInclude Include="..\include\gpu_es4\eurasia\include4\services.h" />
+    <ClInclude Include="..\include\gpu_es4\eurasia\include4\servicesext.h" />
+    <ClInclude Include="..\include\gpu_es4\eurasia\include4\sgxapi.h" />
+    <ClInclude Include="..\include\gpu_es4\eurasia\include4\sgxapiperf.h" />
+    <ClInclude Include="..\include\gpu_es4\eurasia\include4\sgxapi_km.h" />
+    <ClInclude Include="..\include\gpu_es4\eurasia\include4\sgxscript.h" />
+    <ClInclude Include="..\include\gpu_es4\eurasia\include4\sgx_options.h" />
+    <ClInclude Include="..\include\gpu_es4\eurasia\services4\include\servicesint.h" />
+    <ClInclude Include="..\include\gpu_es4\eurasia\services4\include\sgxinfo.h" />
+    <ClInclude Include="..\include\gpu_es4\eurasia\services4\include\sgx_mkif_client.h" />
+    <ClInclude Include="..\include\gpu_es4\eurasia\services4\include\sgx_mkif_km.h" />
+    <ClInclude Include="..\include\gpu_es4\eurasia\services4\srvclient\devices\sgx\sgxinfo_client.h" />
+    <ClInclude Include="..\include\gpu_es4\eurasia\services4\system\psp2\sysinfo.h" />
+    <ClInclude Include="..\include\gpu_es4\psp2_pvr_defs.h" />
+    <ClInclude Include="..\include\gpu_es4\psp2_pvr_desc.h" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{CDEA7506-F160-44E3-936F-EFCF86D92E91}</ProjectGuid>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|PSVita'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|PSVita'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <PropertyGroup Condition="'$(DebuggerFlavor)'=='PSVitaDebugger'" Label="OverrideDebuggerDefaults">
+    <!--LocalDebuggerCommand>$(TargetPath)</LocalDebuggerCommand-->
+    <!--LocalDebuggerReboot>false</LocalDebuggerReboot-->
+    <!--LocalDebuggerCommandArguments></LocalDebuggerCommandArguments-->
+    <!--LocalDebuggerTarget></LocalDebuggerTarget-->
+    <!--LocalDebuggerWorkingDirectory>$(ProjectDir)</LocalDebuggerWorkingDirectory-->
+    <!--LocalMappingFile></LocalMappingFile-->
+    <!--LocalRunCommandLine></LocalRunCommandLine-->
+  </PropertyGroup>
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|PSVita'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|PSVita'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|PSVita'">
+    <ClCompile>
+      <PreprocessorDefinitions>_DEBUG;PSP2_PRX_EXPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <AdditionalIncludeDirectories>$(SCE_PSP2_SDK_DIR)\target\include\vdsuite\user;$(SCE_PSP2_SDK_DIR)\target\include\vdsuite\common;$(SolutionDir)include\gpu_es4;$(SolutionDir)include\gpu_es4\eurasia\include4;$(SolutionDir)include\gpu_es4\eurasia\hwdefs;$(SolutionDir)include\gpu_es4\eurasia\services4\include;$(SolutionDir)include\gpu_es4\eurasia\services4\system\psp2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>-lSceDisplayUser_stub;-lSceGpuEs4User_stub;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SCE_PSP2_SDK_DIR)\target\lib\vdsuite;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>--no-required-files</AdditionalOptions>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|PSVita'">
+    <ClCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions);</PreprocessorDefinitions>
+      <OptimizationLevel>Level2</OptimizationLevel>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <Import Condition="'$(ConfigurationType)' == 'Makefile' and Exists('$(VCTargetsPath)\Platforms\$(Platform)\SCE.Makefile.$(Platform).targets')" Project="$(VCTargetsPath)\Platforms\$(Platform)\SCE.Makefile.$(Platform).targets" />
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

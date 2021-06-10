@@ -1,0 +1,197 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;cc;s;asm</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp</Extensions>
+    </Filter>
+    <Filter Include="Source Files\eurasia">
+      <UniqueIdentifier>{2a04faf6-92d6-4edf-8574-3194f391c3cf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\eurasia\services4">
+      <UniqueIdentifier>{7f16f8c2-a429-44c5-aa31-14d968fc8c23}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\eurasia\services4\srvclient">
+      <UniqueIdentifier>{cbe92a24-45ef-439d-b8af-abaeb05d5f5b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\eurasia\services4\srvclient\bridged">
+      <UniqueIdentifier>{39b34c85-7463-4568-a248-d239e61deeec}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\eurasia">
+      <UniqueIdentifier>{40fb9741-1e23-4977-ad64-6c4a5b6fcf9b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\eurasia\hwdefs">
+      <UniqueIdentifier>{958693d7-255e-41fa-aa83-81c1eba10dfe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\eurasia\include4">
+      <UniqueIdentifier>{61225c9b-408e-4888-a3fd-80f728c2b08b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\eurasia\services4">
+      <UniqueIdentifier>{45762835-df2c-42c0-8c44-68582982639a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\eurasia\services4\include">
+      <UniqueIdentifier>{f36eb839-506d-445a-b9bf-a0c7a7542b55}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\eurasia\services4\srvclient">
+      <UniqueIdentifier>{3fd353ee-cba1-4455-b021-8741e28838da}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\eurasia\services4\system">
+      <UniqueIdentifier>{dea19c83-67bb-4e47-8879-3634a8a3d03f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\eurasia\services4\system\psp2">
+      <UniqueIdentifier>{40a85ee6-6f3b-41ad-87fd-4723a246aa17}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\eurasia\services4\srvclient\devices">
+      <UniqueIdentifier>{b9118e7f-aeeb-4372-a90f-87f2707fe364}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\eurasia\services4\srvclient\devices\sgx">
+      <UniqueIdentifier>{4ea679e4-6eda-4e05-acf6-dbe81d5b40fc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\eurasia\services4\srvclient\env">
+      <UniqueIdentifier>{2b3d8eb3-b6af-44e0-902d-5df5ac527c72}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\eurasia\services4\srvclient\env\playstation">
+      <UniqueIdentifier>{45c9e198-3959-4060-9b58-ce215b0bf64c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\eurasia\services4\srvclient\env\playstation\common">
+      <UniqueIdentifier>{7c03c019-6491-4cd0-bbea-d7238930ed88}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\psp2">
+      <UniqueIdentifier>{fa871a58-69af-4880-93b7-7b390f0d768a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\eurasia\services4\srvclient\common">
+      <UniqueIdentifier>{5bd73ffa-712e-4910-b61d-24a3b1b88904}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="eurasia\services4\srvclient\bridged\bridged_pvr_glue.c">
+      <Filter>Source Files\eurasia\services4\srvclient\bridged</Filter>
+    </ClCompile>
+    <ClCompile Include="eurasia\services4\srvclient\env\playstation\common\osfunc_um.c">
+      <Filter>Source Files\eurasia\services4\srvclient\env\playstation\common</Filter>
+    </ClCompile>
+    <ClCompile Include="psp2\module.c">
+      <Filter>Source Files\psp2</Filter>
+    </ClCompile>
+    <ClCompile Include="eurasia\services4\srvclient\common\resources.c">
+      <Filter>Source Files\eurasia\services4\srvclient\common</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\include\gpu_es4\psp2_pvr_defs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gpu_es4\psp2_pvr_desc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gpu_es4\eurasia\hwdefs\mnemedefs.h">
+      <Filter>Header Files\eurasia\hwdefs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gpu_es4\eurasia\hwdefs\sgx543_debug_defs.h">
+      <Filter>Header Files\eurasia\hwdefs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gpu_es4\eurasia\hwdefs\sgx543_v1.164defs.h">
+      <Filter>Header Files\eurasia\hwdefs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gpu_es4\eurasia\hwdefs\sgx543defs.h">
+      <Filter>Header Files\eurasia\hwdefs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gpu_es4\eurasia\hwdefs\sgxcoretypes.h">
+      <Filter>Header Files\eurasia\hwdefs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gpu_es4\eurasia\hwdefs\sgxdefs.h">
+      <Filter>Header Files\eurasia\hwdefs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gpu_es4\eurasia\hwdefs\sgxerrata.h">
+      <Filter>Header Files\eurasia\hwdefs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gpu_es4\eurasia\hwdefs\sgxfeaturedefs.h">
+      <Filter>Header Files\eurasia\hwdefs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gpu_es4\eurasia\hwdefs\sgxima32usedefs.h">
+      <Filter>Header Files\eurasia\hwdefs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gpu_es4\eurasia\hwdefs\sgxmmu.h">
+      <Filter>Header Files\eurasia\hwdefs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gpu_es4\eurasia\hwdefs\sgxmpdefs.h">
+      <Filter>Header Files\eurasia\hwdefs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gpu_es4\eurasia\hwdefs\sgxpdsdefs.h">
+      <Filter>Header Files\eurasia\hwdefs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gpu_es4\eurasia\hwdefs\sgxphasusedefs.h">
+      <Filter>Header Files\eurasia\hwdefs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gpu_es4\eurasia\hwdefs\sgxptladefs.h">
+      <Filter>Header Files\eurasia\hwdefs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gpu_es4\eurasia\hwdefs\sgxusespecialbankdefs.h">
+      <Filter>Header Files\eurasia\hwdefs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gpu_es4\eurasia\hwdefs\sgxvec34usedefs.h">
+      <Filter>Header Files\eurasia\hwdefs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gpu_es4\eurasia\hwdefs\usecodegen.h">
+      <Filter>Header Files\eurasia\hwdefs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gpu_es4\eurasia\include4\img_defs.h">
+      <Filter>Header Files\eurasia\include4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gpu_es4\eurasia\include4\img_list.h">
+      <Filter>Header Files\eurasia\include4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gpu_es4\eurasia\include4\img_types.h">
+      <Filter>Header Files\eurasia\include4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gpu_es4\eurasia\include4\pdumpdefs.h">
+      <Filter>Header Files\eurasia\include4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gpu_es4\eurasia\include4\services.h">
+      <Filter>Header Files\eurasia\include4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gpu_es4\eurasia\include4\servicesext.h">
+      <Filter>Header Files\eurasia\include4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gpu_es4\eurasia\include4\sgx_options.h">
+      <Filter>Header Files\eurasia\include4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gpu_es4\eurasia\include4\sgxapi.h">
+      <Filter>Header Files\eurasia\include4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gpu_es4\eurasia\include4\sgxapi_km.h">
+      <Filter>Header Files\eurasia\include4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gpu_es4\eurasia\include4\sgxapiperf.h">
+      <Filter>Header Files\eurasia\include4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gpu_es4\eurasia\include4\sgxscript.h">
+      <Filter>Header Files\eurasia\include4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gpu_es4\eurasia\services4\include\servicesint.h">
+      <Filter>Header Files\eurasia\services4\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gpu_es4\eurasia\services4\include\sgx_mkif_client.h">
+      <Filter>Header Files\eurasia\services4\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gpu_es4\eurasia\services4\include\sgx_mkif_km.h">
+      <Filter>Header Files\eurasia\services4\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gpu_es4\eurasia\services4\include\sgxinfo.h">
+      <Filter>Header Files\eurasia\services4\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gpu_es4\eurasia\services4\srvclient\devices\sgx\sgxinfo_client.h">
+      <Filter>Header Files\eurasia\services4\srvclient\devices\sgx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gpu_es4\eurasia\services4\system\psp2\sysinfo.h">
+      <Filter>Header Files\eurasia\services4\system\psp2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gpu_es4\eurasia\include4\pvr_debug.h">
+      <Filter>Header Files\eurasia\include4</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

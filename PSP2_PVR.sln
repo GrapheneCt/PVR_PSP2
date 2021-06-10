@@ -5,6 +5,13 @@ VisualStudioVersion = 15.0.28307.1500
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gpu_es4_ext", "gpu_es4_ext\gpu_es4_ext.vcxproj", "{CDEA7506-F160-44E3-936F-EFCF86D92E91}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "unittests", "unittests", "{AC35C601-4C98-4813-9277-7DA380AAF79F}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "services_test", "unittests\services_test\services_test.vcxproj", "{7883D725-90E1-4756-85EF-2368570A8A6E}"
+	ProjectSection(ProjectDependencies) = postProject
+		{CDEA7506-F160-44E3-936F-EFCF86D92E91} = {CDEA7506-F160-44E3-936F-EFCF86D92E91}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|PSVita = Debug|PSVita
@@ -15,11 +22,18 @@ Global
 		{CDEA7506-F160-44E3-936F-EFCF86D92E91}.Debug|PSVita.Build.0 = Debug|PSVita
 		{CDEA7506-F160-44E3-936F-EFCF86D92E91}.Release|PSVita.ActiveCfg = Release|PSVita
 		{CDEA7506-F160-44E3-936F-EFCF86D92E91}.Release|PSVita.Build.0 = Release|PSVita
+		{7883D725-90E1-4756-85EF-2368570A8A6E}.Debug|PSVita.ActiveCfg = Debug|PSVita
+		{7883D725-90E1-4756-85EF-2368570A8A6E}.Debug|PSVita.Build.0 = Debug|PSVita
+		{7883D725-90E1-4756-85EF-2368570A8A6E}.Release|PSVita.ActiveCfg = Release|PSVita
+		{7883D725-90E1-4756-85EF-2368570A8A6E}.Release|PSVita.Build.0 = Release|PSVita
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{7883D725-90E1-4756-85EF-2368570A8A6E} = {AC35C601-4C98-4813-9277-7DA380AAF79F}
+	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {1AA34F9A-9B5B-4A82-84BD-DDC37A0B2BE1}
+		SolutionGuid = {EBDCCD51-78C5-4385-ABB0-9EB38B12DB4F}
 	EndGlobalSection
 EndGlobal

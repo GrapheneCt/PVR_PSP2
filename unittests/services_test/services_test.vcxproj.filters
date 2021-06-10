@@ -11,7 +11,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="prx.c">
+    <ClCompile Include="services_test.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
