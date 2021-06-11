@@ -2,289 +2,190 @@
 #include <display.h>
 
 #include "psp2_pvr_desc.h"
+#include "psp2_pvr_defs.h"
 
 #include "eurasia/include4/services.h"
 #include "eurasia/include4/pvr_debug.h"
 #include "eurasia/services4/include/servicesint.h"
+#include "eurasia/services4/include/pvr_bridge.h"
 
-#define PSP2_DISPLAY_ID 0x09dfef50
-#define PSP2_DISPLAY_HANDLE 0x921af851
+#define DEVICE_MEMORY_HEAP_PERCONTEXT		0
+#define DEVICE_MEMORY_HEAP_KERNEL			1
+#define DEVICE_MEMORY_HEAP_SHARED			2
+#define DEVICE_MEMORY_HEAP_SHARED_EXPORTED	3
+
+IMG_RESULT PVRSRVBridgeCall(IMG_HANDLE hServices,
+	IMG_UINT32 ui32FunctionID,
+	IMG_VOID *pvParamIn,
+	IMG_UINT32 ui32InBufferSize,
+	IMG_VOID *pvParamOut,
+	IMG_UINT32	ui32OutBufferSize)
+{
+	PVRSRV_ERROR eError = PVRSRV_OK;
+	PVRSRV_BRIDGE_PACKAGE dispatchPacket;
+
+	IMG_UINT32 ptr = hServices;
+	void **ptr2 = (void **)(ptr + 4);
+
+	dispatchPacket.hKernelServices = *ptr2;
+	dispatchPacket.pvParamOut = pvParamOut;
+	dispatchPacket.ui32OutBufferSize = ui32OutBufferSize;
+	dispatchPacket.ui32Size = sizeof(PVRSRV_BRIDGE_PACKAGE);
+	dispatchPacket.ui32BridgeID = ui32FunctionID;
+	dispatchPacket.pvParamIn = pvParamIn;
+	dispatchPacket.ui32InBufferSize = ui32InBufferSize;
+	while (eError = PVRSRV_BridgeDispatchKM(ui32FunctionID, &dispatchPacket), eError == PVRSRV_ERROR_RETRY) {
+		sceKernelDelayThread(201);
+	}
+
+	return eError;
+}
 
 /*!
  ******************************************************************************
- @Function	PVRSRVEnumerateDeviceClass
+ @Function	PVRSRVGetDeviceMemHeapInfo
+ @Descriptiongets heap info
+ @Input		psDevData : device and  ioctl connection info
+ @Input		hDevMemContext
+ @Output	pui32ClientHeapCount
+ @Output	psHeapInfo
+ @Return	PVRSRV_ERROR
+ ******************************************************************************/
+IMG_INTERNAL
+PVRSRV_ERROR IMG_CALLCONV PVRSRVGetDeviceMemHeapInfo(const PVRSRV_DEV_DATA *psDevData,
+#if defined (SUPPORT_SID_INTERFACE)
+	IMG_SID     hDevMemContext,
+#else
+	IMG_HANDLE hDevMemContext,
+#endif
+	IMG_UINT32 *pui32ClientHeapCount,
+	PVRSRV_HEAP_INFO *psHeapInfo)
+{
+	PVRSRV_BRIDGE_IN_GET_DEVMEM_HEAPINFO sIn;
+	PVRSRV_BRIDGE_OUT_GET_DEVMEM_HEAPINFO sOut;
+	PVRSRV_ERROR eError = PVRSRV_OK;
+	IMG_UINT32 i;
+
+	PVRSRVMemSet(&sIn, 0x00, sizeof(sIn));
+	PVRSRVMemSet(&sOut, 0x00, sizeof(sOut));
+
+
+	if (!psDevData
+		|| !hDevMemContext
+		|| !pui32ClientHeapCount
+		|| !psHeapInfo)
+	{
+		PVR_DPF((PVR_DBG_ERROR, "PVRSRVGetDeviceMemHeapInfo: Invalid params"));
+		return PVRSRV_ERROR_INVALID_PARAMS;
+	}
+
+	sIn.hDevCookie = psDevData->hDevCookie;
+	sIn.hDevMemContext = hDevMemContext;
+
+	if (PVRSRVBridgeCall(psDevData->psConnection->hServices,
+		PVRSRV_BRIDGE_GET_DEVMEM_HEAPINFO,
+		&sIn,
+		sizeof(PVRSRV_BRIDGE_IN_GET_DEVMEM_HEAPINFO),
+		&sOut,
+		sizeof(PVRSRV_BRIDGE_OUT_GET_DEVMEM_HEAPINFO)))
+	{
+		PVR_DPF((PVR_DBG_ERROR, "PVRSRVGetDeviceMemHeapInfo: BridgeCall failed"));
+		return PVRSRV_ERROR_BRIDGE_CALL_FAILED;
+	}
+
+	if (sOut.eError != PVRSRV_OK)
+	{
+		PVR_DPF((PVR_DBG_ERROR, "PVRSRVGetDeviceMemHeapInfo: Error %d returned", sOut.eError));
+		return sOut.eError;
+	}
+
+	/* the shared heap information */
+	*pui32ClientHeapCount = sOut.ui32ClientHeapCount;
+	for (i = 0; i < sOut.ui32ClientHeapCount; i++)
+	{
+		psHeapInfo[i] = sOut.sHeapInfo[i];
+	}
+
+	return eError;
+}
+
+/*!
+ ******************************************************************************
+ @Function	PVRSRVMapDeviceClassMemory
  @Description
- Enumerates devices available in a given class.
- On first call, pass valid ptr for pui32DevCount and NULL for pui32DevID,
- On second call, pass same ptr for pui32DevCount and client allocated ptr
- for pui32DevID device id list
- @Input		psConnection : handle for services connection
- @Input		eDeviceClass : device class identifier
- @Output	pui32DevCount : number of devices available in class
- @Output	pui32DevID : list of device ids in the device class
- @Return	PVRSRV_ERROR
- *****************************************************************************/
-IMG_EXPORT
-PVRSRV_ERROR IMG_CALLCONV PVRSRVEnumerateDeviceClass(const PVRSRV_CONNECTION *psConnection,
-	PVRSRV_DEVICE_CLASS DeviceClass,
-	IMG_UINT32 *pui32DevCount,
-	IMG_UINT32 *pui32DevID)
-{
-
-	if (!psConnection || (!psConnection->hServices))
-	{
-		PVR_DPF((PVR_DBG_ERROR, "PVRSRVEnumerateDeviceClass: Invalid connection"));
-		return PVRSRV_ERROR_INVALID_PARAMS;
-	}
-
-	if (pui32DevCount == IMG_NULL)
-	{
-		PVR_DPF((PVR_DBG_ERROR, "PVRSRVEnumerateDeviceClass: Invalid DevCount"));
-		return PVRSRV_ERROR_INVALID_PARAMS;
-	}
-
-	if (DeviceClass == PVRSRV_DEVICE_CLASS_DISPLAY) {
-
-		if (!pui32DevID)
-		{
-			/* First mode, ask for Device Count */
-			*pui32DevCount = 1;
-		}
-		else
-		{
-			/* Fill in device id array */
-			PVR_ASSERT(*pui32DevCount == devCount);
-			pui32DevID[0] = PSP2_DISPLAY_ID;
-		}
-	}
-	else {
-		if (!pui32DevID)
-		{
-			/* First mode, ask for Device Count */
-			*pui32DevCount = 0;
-		}
-	}
-
-	return PVRSRV_OK;
-}
-
-/*!
- ******************************************************************************
- @Function	PVRSRVOpenDCDevice
- @Description
- Opens a connection to a display device specified by the device id/index argument.
- Calls into kernel services to retrieve device information structure associated
- with the device id.
- If matching device structure is found it's used to load the appropriate
- external client-side driver library and sets up data structures and a function
- jump table into the external driver
- @Input		psDevData	- handle for services connection
- @Inpu		ui32DeviceID	- device identifier
- @Return	IMG_HANDLE for matching display class device (IMG_NULL on failure)
- ******************************************************************************/
-IMG_EXPORT
-IMG_HANDLE IMG_CALLCONV PVRSRVOpenDCDevice(const PVRSRV_DEV_DATA *psDevData,
-	IMG_UINT32 ui32DeviceID)
-{
-	PVRSRV_CLIENT_DEVICECLASS_INFO *psDevClassInfo = IMG_NULL;
-
-	if (!psDevData)
-	{
-		PVR_DPF((PVR_DBG_ERROR, "PVRSRVOpenDCDevice: Invalid params"));
-		return IMG_NULL;
-	}
-
-	/* Alloc client info structure first */
-	psDevClassInfo = (PVRSRV_CLIENT_DEVICECLASS_INFO *)PVRSRVAllocUserModeMem(sizeof(PVRSRV_CLIENT_DEVICECLASS_INFO));
-	if (psDevClassInfo == IMG_NULL)
-	{
-		PVR_DPF((PVR_DBG_ERROR, "PVRSRVOpenDCDevice: Alloc failed"));
-		return IMG_NULL;
-	}
-
-	if (ui32DeviceID != PSP2_DISPLAY_ID)
-		goto ErrorExit;
-
-	/* setup private client services structure */
-	psDevClassInfo->hServices = psDevData->psConnection->hServices;
-	psDevClassInfo->hDeviceKM = PSP2_DISPLAY_HANDLE;
-
-	/* return private client services structure as handle */
-	return (IMG_HANDLE)psDevClassInfo;
-
-ErrorExit:
-	PVRSRVFreeUserModeMem(psDevClassInfo);
-	return IMG_NULL;
-}
-
-/*!
- ******************************************************************************
- @Function	PVRSRVGetDCInfo
- @Description
- returns information about the display device
- @Input		hDevice 		- handle for device
- @Input		psDisplayInfo	- display device information
- @Return PVRSRV_ERROR
- ******************************************************************************/
-IMG_EXPORT
-PVRSRV_ERROR IMG_CALLCONV PVRSRVGetDCInfo(IMG_HANDLE hDevice,
-	DISPLAY_INFO *psDisplayInfo)
-{
-	if (!hDevice || !psDisplayInfo)
-	{
-		PVR_DPF((PVR_DBG_ERROR, "PVRSRVGetDCInfo: Invalid params"));
-		return PVRSRV_ERROR_INVALID_PARAMS;
-	}
-
-	sceClibStrncpy(psDisplayInfo->szDisplayName, "psp2_display", MAX_DISPLAY_NAME_SIZE);
-
-	psDisplayInfo->ui32MaxSwapChainBuffers = 3;
-	psDisplayInfo->ui32MaxSwapChains = 1;
-	psDisplayInfo->ui32MinSwapInterval = 0;
-	psDisplayInfo->ui32MaxSwapInterval = 1;
-	psDisplayInfo->ui32PhysicalWidthmm = 110;
-	psDisplayInfo->ui32PhysicalHeightmm = 63;
-
-	return PVRSRV_OK;
-}
-
-/*!
- ******************************************************************************
- @Function	PVRSRVEnumDCFormats
- @Description	Enumerates displays pixel formats
- @Input hDevice		- device handle
- @Output pui32Count	- number of formats
- @Output psFormat - buffer to return formats in
+ @Input		psDevData
+ @Input		hDevMemContext
+ @Input		hDeviceClassBuffer
+ @Input		psMemInfo
  @Return	PVRSRV_ERROR
  ******************************************************************************/
 IMG_EXPORT
-PVRSRV_ERROR IMG_CALLCONV PVRSRVEnumDCFormats(IMG_HANDLE	hDevice,
-	IMG_UINT32	*pui32Count,
-	DISPLAY_FORMAT *psFormat)
+PVRSRV_ERROR IMG_CALLCONV PVRSRVMapDeviceClassMemory(const PVRSRV_DEV_DATA *psDevData,
+#if defined (SUPPORT_SID_INTERFACE)
+	IMG_SID    hDevMemContext,
+	IMG_SID    hDeviceClassBuffer,
+#else
+	IMG_HANDLE hDevMemContext,
+	IMG_HANDLE hDeviceClassBuffer,
+#endif
+	PVRSRV_CLIENT_MEM_INFO **ppsMemInfo)
 {
-	if (!pui32Count || !hDevice)
+	SceKernelMemBlockInfo sMemInfo;
+	IMG_INT32 ui32Ret;
+	IMG_UINT32 ui32SharedHeapCount;
+	PVRSRV_HEAP_INFO asHeapInfo[PVRSRV_MAX_CLIENT_HEAPS];
+	PVRSRV_CLIENT_MEM_INFO *psMemInfo = IMG_NULL;
+	IMG_PVOID pBufMem;
+	PVRSRV_ERROR eError = PVRSRV_OK;
+
+	if (!psDevData || !ppsMemInfo || !hDeviceClassBuffer)
 	{
-		PVR_DPF((PVR_DBG_ERROR, "PVRSRVEnumDCFormats: Invalid params"));
+		PVR_DPF((PVR_DBG_ERROR, "PVRSRVMapDeviceClassMemory: Invalid params"));
 		return PVRSRV_ERROR_INVALID_PARAMS;
 	}
 
-	/*
-	   call may not preallocate the max psFormats and
-	   instead query the count and then enum
-	   */
-	if (psFormat)
+	pBufMem = (IMG_PVOID)hDeviceClassBuffer;
+	sMemInfo.size = sizeof(SceKernelMemBlockInfo);
+	ui32Ret = sceKernelGetMemBlockInfoByAddr(pBufMem, &sMemInfo);
+	if (ui32Ret < 0)
 	{
-		psFormat[0].pixelformat = PVRSRV_PIXEL_FORMAT_ABGR8888;
-		*pui32Count = 1;
-	}
-	else
-	{
-		*pui32Count = 1;
-	}
-
-	return PVRSRV_OK;
-}
-
-/*!
- ******************************************************************************
- @Function	PVRSRVEnumDCDims
- @Description	Enumerates dimensions for a given format
- @Input hDevice		- device handle
- @Input psFormat - buffer to return formats in
- @Output pui32Count	- number of dimensions
- @Output pDims	- number of dimensions
- @Return	PVRSRV_ERROR
- ******************************************************************************/
-IMG_EXPORT
-PVRSRV_ERROR IMG_CALLCONV PVRSRVEnumDCDims(IMG_HANDLE hDevice,
-	IMG_UINT32 *pui32Count,
-	DISPLAY_FORMAT *psFormat,
-	DISPLAY_DIMS *psDims)
-{
-	IMG_INT32 dispWith, dispHeight;
-	IMG_UINT32 dimNum = 4;
-	DISPLAY_DIMS asDim[6];
-
-	if (!pui32Count || !hDevice || psFormat->pixelformat != PVRSRV_PIXEL_FORMAT_ABGR8888)
-	{
-		PVR_DPF((PVR_DBG_ERROR, "PVRSRVEnumDCDims: Invalid params"));
+		PVR_DPF((PVR_DBG_ERROR, "PVRSRVMapDeviceClassMemory: failed to find memblock"));
 		return PVRSRV_ERROR_INVALID_PARAMS;
 	}
 
-	asDim[0].ui32Width = 480;
-	asDim[0].ui32Height = 272;
-	asDim[0].ui32ByteStride = 4 * 480;
+	eError = PVRSRVMapMemoryToGpu(
+		psDevData,
+		DEVICE_MEMORY_HEAP_SHARED,
+		0,
+		sMemInfo.mappedSize,
+		0,
+		pBufMem,
+		PVRSRV_MEM_READ | PVRSRV_MEM_WRITE | PVRSRV_MEM_USER_SUPPLIED_DEVVADDR,
+		IMG_NULL);
 
-	asDim[1].ui32Width = 640;
-	asDim[1].ui32Height = 368;
-	asDim[1].ui32ByteStride = 4 * 640;
-
-	asDim[2].ui32Width = 720;
-	asDim[2].ui32Height = 408;
-	asDim[2].ui32ByteStride = 4 * 720;
-
-	asDim[3].ui32Width = 960;
-	asDim[3].ui32Height = 544;
-	asDim[3].ui32ByteStride = 4 * 960;
-
-	asDim[4].ui32Width = 1280;
-	asDim[4].ui32Height = 725;
-	asDim[4].ui32ByteStride = 4 * 1280;
-
-	asDim[5].ui32Width = 1920;
-	asDim[5].ui32Height = 1088;
-	asDim[5].ui32ByteStride = 4 * 1920;
-
-	sceDisplayGetMaximumFrameBufResolution(&dispWith, &dispHeight);
-
-	if (dispWith > 960)
-		dimNum = 6;
-
-	/*
-	   call may not preallocate the max psFormats and
-	   instead query the count and then enum
-	   */
-	if (psDims)
+	if (eError != PVRSRV_OK)
 	{
-		IMG_UINT32 i;
-
-		for (i = 0; i < dimNum; i++)
-		{
-			sceClibMemcpy(&psDims[i], &asDim[i], sizeof(DISPLAY_DIMS));
-		}
-		*pui32Count = dimNum;
-	}
-	else
-	{
-		*pui32Count = dimNum;
+		PVR_DPF((PVR_DBG_ERROR, "PVRSRVMapDeviceClassMemory: Failed to map memory to GPU"));
+		return PVRSRV_ERROR_OUT_OF_MEMORY;
 	}
 
-	return PVRSRV_OK;
-}
+	psMemInfo = (PVRSRV_CLIENT_MEM_INFO *)PVRSRVAllocUserModeMem(sizeof(PVRSRV_CLIENT_MEM_INFO));
 
-/*!
- ******************************************************************************
- @Function	PVRSRVCloseDCDevice
- @Description	Closes connection to a display device specified by the handle
- @Input hDevice - device handle
- @Return	PVRSRV_ERROR
- ******************************************************************************/
-IMG_EXPORT
-PVRSRV_ERROR IMG_CALLCONV PVRSRVCloseDCDevice(const PVRSRV_CONNECTION *psConnection,
-	IMG_HANDLE hDevice)
-{
-	PVRSRV_CLIENT_DEVICECLASS_INFO *psDevClassInfo = IMG_NULL;
-
-	if (!psConnection || !hDevice)
+	if (psMemInfo == IMG_NULL)
 	{
-		PVR_DPF((PVR_DBG_ERROR, "PVRSRVCloseDCDevice: Invalid params"));
-		return PVRSRV_ERROR_INVALID_PARAMS;
+		PVR_DPF((PVR_DBG_ERROR, "PVRSRVMapDeviceClassMemory: Alloc failed"));
+		return PVRSRV_ERROR_OUT_OF_MEMORY;
 	}
 
-	psDevClassInfo = (PVRSRV_CLIENT_DEVICECLASS_INFO*)hDevice;
+	PVRSRVMemSet(psMemInfo, 0x00, sizeof(psMemInfo));
 
-	/* free private client structure */
-	PVRSRVFreeUserModeMem(psDevClassInfo);
+	psMemInfo->pvLinAddr = pBufMem;
+	psMemInfo->pvLinAddrKM = pBufMem;
+	psMemInfo->sDevVAddr.uiAddr = pBufMem;
+	psMemInfo->uAllocSize = sMemInfo.mappedSize;
+	psMemInfo->ui32Flags = PVRSRV_MEM_READ | PVRSRV_MEM_WRITE | PVRSRV_MEM_USER_SUPPLIED_DEVVADDR;
+
+	*ppsMemInfo = psMemInfo;
 
 	return PVRSRV_OK;
 }

@@ -16,7 +16,6 @@
 #define SUPPORT_SID_INTERFACE
 #define SUPPORT_MEMORY_TILING
 #define TRANSFER_QUEUE
-#define PVRSRV_IOC_GID 0x1000
 #define SGX_CORE_REV 113 //Actual revision on Vita is 117, but there is no support for it in this driver version
 
 #endif

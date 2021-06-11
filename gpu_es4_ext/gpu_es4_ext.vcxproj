@@ -11,6 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="eurasia\services4\srvclient\bridged\bridged_pvr_dc_glue.c" />
     <ClCompile Include="eurasia\services4\srvclient\bridged\bridged_pvr_glue.c" />
     <ClCompile Include="eurasia\services4\srvclient\common\resources.c" />
     <ClCompile Include="eurasia\services4\srvclient\env\playstation\common\osfunc_um.c" />
@@ -46,6 +47,7 @@
     <ClInclude Include="..\include\gpu_es4\eurasia\include4\sgxapi_km.h" />
     <ClInclude Include="..\include\gpu_es4\eurasia\include4\sgxscript.h" />
     <ClInclude Include="..\include\gpu_es4\eurasia\include4\sgx_options.h" />
+    <ClInclude Include="..\include\gpu_es4\eurasia\services4\include\pvr_bridge.h" />
     <ClInclude Include="..\include\gpu_es4\eurasia\services4\include\servicesint.h" />
     <ClInclude Include="..\include\gpu_es4\eurasia\services4\include\sgxinfo.h" />
     <ClInclude Include="..\include\gpu_es4\eurasia\services4\include\sgx_mkif_client.h" />
@@ -93,7 +95,7 @@
       <AdditionalIncludeDirectories>$(SCE_PSP2_SDK_DIR)\target\include\vdsuite\user;$(SCE_PSP2_SDK_DIR)\target\include\vdsuite\common;$(SolutionDir)include\gpu_es4;$(SolutionDir)include\gpu_es4\eurasia\include4;$(SolutionDir)include\gpu_es4\eurasia\hwdefs;$(SolutionDir)include\gpu_es4\eurasia\services4\include;$(SolutionDir)include\gpu_es4\eurasia\services4\system\psp2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>-lSceDisplayUser_stub;-lSceGpuEs4User_stub;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>-lSceDisplayUser_stub;-lSceGpuEs4User_stub;-lSceGpuEs4ForUser_stub;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SCE_PSP2_SDK_DIR)\target\lib\vdsuite;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>--no-required-files</AdditionalOptions>
     </Link>

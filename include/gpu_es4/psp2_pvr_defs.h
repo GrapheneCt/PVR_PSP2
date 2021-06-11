@@ -39,8 +39,26 @@ typedef struct PVRSRVHeapInfoPsp2 {
 	SceInt32 vpbTiledHeapId;
 } PVRSRVHeapInfoPsp2;
 
-int PVRSRVMapHwMemory(PVRSRV_DEV_DATA *psDevData, SceUID memblockUid, IMG_SID *phMemHandle, IMG_BOOL flag); // SceGpuEs4User_0EA7458D
-int PVRSRVUnmapHwMemory(PVRSRV_DEV_DATA *psDevData, SceUID memblockUid); // SceGpuEs4User_156A6B70
+IMG_INT PVRSRV_BridgeDispatchKM(IMG_UINT32 cmd, IMG_PVOID psBridgePackageKM);
+
+PVRSRV_ERROR PVRSRVMapHwMemory(PVRSRV_DEV_DATA *psDevData, SceUID memblockUid, IMG_SID *phMemHandle, IMG_BOOL flag); // SceGpuEs4User_0EA7458D
+PVRSRV_ERROR PVRSRVUnmapHwMemory(PVRSRV_DEV_DATA *psDevData, SceUID memblockUid); // SceGpuEs4User_156A6B70
+
+PVRSRV_ERROR PVRSRVMapMemoryToGpu(
+	PVRSRV_DEV_DATA *psDevData,
+	IMG_UINT32 ui32HeapType,
+	IMG_UINT32 ui32HeapIndex,
+	IMG_UINT32 ui32Size,
+	IMG_UINT32 ui32SizeLimit,
+	IMG_PVOID pMemBase,
+	IMG_UINT32 ui32Flags,
+	IMG_UINT32 *pui32InternalOffset);
+
+PVRSRV_ERROR PVRSRVUnmapMemoryFromGpu(
+	PVRSRV_DEV_DATA *psDevData,
+	IMG_PVOID pMemBase,
+	IMG_INT32 ui32HeapIndex,
+	IMG_INT32 i32Unk4);
 
 typedef struct _SGXTQ_PSP2_DOWNSCALEOP_
 {

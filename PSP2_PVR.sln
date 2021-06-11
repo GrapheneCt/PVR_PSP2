@@ -17,6 +17,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sgx_init_test", "unittests\
 		{CDEA7506-F160-44E3-936F-EFCF86D92E91} = {CDEA7506-F160-44E3-936F-EFCF86D92E91}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sgx_flip_test", "unittests\sgx_flip_test\sgx_flip_test.vcxproj", "{1172F829-8CE4-4F72-9525-64666A1DAD5A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|PSVita = Debug|PSVita
@@ -35,6 +37,10 @@ Global
 		{F32CEF03-D964-46E6-BAC6-E99EA779716F}.Debug|PSVita.Build.0 = Debug|PSVita
 		{F32CEF03-D964-46E6-BAC6-E99EA779716F}.Release|PSVita.ActiveCfg = Release|PSVita
 		{F32CEF03-D964-46E6-BAC6-E99EA779716F}.Release|PSVita.Build.0 = Release|PSVita
+		{1172F829-8CE4-4F72-9525-64666A1DAD5A}.Debug|PSVita.ActiveCfg = Debug|PSVita
+		{1172F829-8CE4-4F72-9525-64666A1DAD5A}.Debug|PSVita.Build.0 = Debug|PSVita
+		{1172F829-8CE4-4F72-9525-64666A1DAD5A}.Release|PSVita.ActiveCfg = Release|PSVita
+		{1172F829-8CE4-4F72-9525-64666A1DAD5A}.Release|PSVita.Build.0 = Release|PSVita
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -42,6 +48,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{7883D725-90E1-4756-85EF-2368570A8A6E} = {AC35C601-4C98-4813-9277-7DA380AAF79F}
 		{F32CEF03-D964-46E6-BAC6-E99EA779716F} = {AC35C601-4C98-4813-9277-7DA380AAF79F}
+		{1172F829-8CE4-4F72-9525-64666A1DAD5A} = {AC35C601-4C98-4813-9277-7DA380AAF79F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {EBDCCD51-78C5-4385-ABB0-9EB38B12DB4F}

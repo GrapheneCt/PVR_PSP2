@@ -68,9 +68,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="eurasia\services4\srvclient\bridged\bridged_pvr_glue.c">
-      <Filter>Source Files\eurasia\services4\srvclient\bridged</Filter>
-    </ClCompile>
     <ClCompile Include="eurasia\services4\srvclient\env\playstation\common\osfunc_um.c">
       <Filter>Source Files\eurasia\services4\srvclient\env\playstation\common</Filter>
     </ClCompile>
@@ -79,6 +76,12 @@
     </ClCompile>
     <ClCompile Include="eurasia\services4\srvclient\common\resources.c">
       <Filter>Source Files\eurasia\services4\srvclient\common</Filter>
+    </ClCompile>
+    <ClCompile Include="eurasia\services4\srvclient\bridged\bridged_pvr_dc_glue.c">
+      <Filter>Source Files\eurasia\services4\srvclient\bridged</Filter>
+    </ClCompile>
+    <ClCompile Include="eurasia\services4\srvclient\bridged\bridged_pvr_glue.c">
+      <Filter>Source Files\eurasia\services4\srvclient\bridged</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -192,6 +195,9 @@
     </ClInclude>
     <ClInclude Include="..\include\gpu_es4\eurasia\include4\pvr_debug.h">
       <Filter>Header Files\eurasia\include4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gpu_es4\eurasia\services4\include\pvr_bridge.h">
+      <Filter>Header Files\eurasia\services4\include</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
