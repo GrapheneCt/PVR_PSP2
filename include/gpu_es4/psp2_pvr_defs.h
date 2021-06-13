@@ -39,10 +39,12 @@ typedef struct PVRSRVHeapInfoPsp2 {
 	SceInt32 vpbTiledHeapId;
 } PVRSRVHeapInfoPsp2;
 
+IMG_INT PVRSRVWaitSyncOp(IMG_SID hKernelSyncInfoModObj, IMG_UINT32 *pui32Timeout);
+
 IMG_INT PVRSRV_BridgeDispatchKM(IMG_UINT32 cmd, IMG_PVOID psBridgePackageKM);
 
-PVRSRV_ERROR PVRSRVMapHwMemory(PVRSRV_DEV_DATA *psDevData, SceUID memblockUid, IMG_SID *phMemHandle, IMG_BOOL flag); // SceGpuEs4User_0EA7458D
-PVRSRV_ERROR PVRSRVUnmapHwMemory(PVRSRV_DEV_DATA *psDevData, SceUID memblockUid); // SceGpuEs4User_156A6B70
+PVRSRV_ERROR PVRSRVMapMemoryToGpuByUID(PVRSRV_DEV_DATA *psDevData, SceUID memblockUid, IMG_SID *phMemHandle, IMG_BOOL flag); // SceGpuEs4User_0EA7458D
+PVRSRV_ERROR PVRSRVUnmapMemoryFromGpuByUID(PVRSRV_DEV_DATA *psDevData, SceUID memblockUid); // SceGpuEs4User_156A6B70
 
 PVRSRV_ERROR PVRSRVMapMemoryToGpu(
 	PVRSRV_DEV_DATA *psDevData,
@@ -59,6 +61,12 @@ PVRSRV_ERROR PVRSRVUnmapMemoryFromGpu(
 	IMG_PVOID pMemBase,
 	IMG_INT32 ui32HeapIndex,
 	IMG_INT32 i32Unk4);
+
+typedef struct _PVRSRV_PSP2_OP_CLIENT_SYNC_INFO_
+{
+	PVRSRV_CLIENT_SYNC_INFO *psInfoOld;
+	PVRSRV_CLIENT_SYNC_INFO *psInfoNew;
+} PVRSRV_PSP2_OP_CLIENT_SYNC_INFO;
 
 typedef struct _SGXTQ_PSP2_DOWNSCALEOP_
 {

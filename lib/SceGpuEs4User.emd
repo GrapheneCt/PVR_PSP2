@@ -1,0 +1,46 @@
+emd: 1
+
+Library: SceGpuEs4User attr: auto_export
+Library: SceGpuEs4User version: 1
+Library: SceGpuEs4User stubfile: "libSceGpuEs4User_stub"
+Library: SceGpuEs4User nidsuffix: ""
+Library: SceGpuEs4User libnamenid: 0xFAFCA413
+Library: SceGpuEs4User function: PVRSRVAcquireDeviceData nidvalue: 0x70800B46
+Library: SceGpuEs4User function: PVRSRVAllocDeviceMem nidvalue: 0x071E62F0
+Library: SceGpuEs4User function: PVRSRVAllocSyncInfo nidvalue: 0x94286660
+Library: SceGpuEs4User function: PVRSRVAllocUserModeMem nidvalue: 0x7AF40138
+Library: SceGpuEs4User function: PVRSRVConnect nidvalue: 0x228252A2
+Library: SceGpuEs4User function: PVRSRVCreateDeviceMemContext nidvalue: 0x1E0A9C4A
+Library: SceGpuEs4User function: PVRSRVCreateSyncInfoModObj nidvalue: 0x416C8813
+Library: SceGpuEs4User function: PVRSRVDestroyDeviceMemContext nidvalue: 0xB9178277
+Library: SceGpuEs4User function: PVRSRVDisconnect nidvalue: 0xA5B14369
+Library: SceGpuEs4User function: PVRSRVEnumerateDevices nidvalue: 0x4447D217
+Library: SceGpuEs4User function: PVRSRVFreeDeviceMem nidvalue: 0xB6CFD213
+Library: SceGpuEs4User function: PVRSRVFreeSyncInfo nidvalue: 0xB26DF3D2
+Library: SceGpuEs4User function: PVRSRVFreeUserModeMem nidvalue: 0x1BE5985A
+Library: SceGpuEs4User function: PVRSRVGetMiscInfo nidvalue: 0x73E945A1
+Library: SceGpuEs4User function: PVRSRVMapMemoryToGpu nidvalue: 0x56893E98
+Library: SceGpuEs4User function: PVRSRVModifyPendingSyncOps nidvalue: 0x0D27286F
+Library: SceGpuEs4User function: PVRSRVReleaseMiscInfo nidvalue: 0xF4735A47
+Library: SceGpuEs4User function: PVRSRVUnmapMemoryFromGpu nidvalue: 0xAD20D1A0
+Library: SceGpuEs4User function: SGXAddRenderTarget nidvalue: 0x0162A405
+Library: SceGpuEs4User function: SGXCreateRenderContext nidvalue: 0x8A997DBB
+Library: SceGpuEs4User function: SGXCreateTransferContext nidvalue: 0xBDE2B9E1
+Library: SceGpuEs4User function: SGXDestroyRenderContext nidvalue: 0x0BFE1685
+Library: SceGpuEs4User function: SGXDestroyTransferContext nidvalue: 0x8ED7D698
+Library: SceGpuEs4User function: SGXGetClientInfo nidvalue: 0xB000CA65
+Library: SceGpuEs4User function: SGXGetMiscInfo nidvalue: 0x09BB98B2
+Library: SceGpuEs4User function: SGXGetRenderTargetDriverMemBlock nidvalue: 0x804BA13D
+Library: SceGpuEs4User function: SGXGetRenderTargetHostMem nidvalue: 0x9E8E2957
+Library: SceGpuEs4User function: SGXKickTA nidvalue: 0xF0CCE9DB
+Library: SceGpuEs4User function: SGXReleaseClientInfo nidvalue: 0x5273D097
+Library: SceGpuEs4User function: SGXRemoveRenderTarget nidvalue: 0xD90B0707
+Library: SceGpuEs4User function: SGXTransferControlStream nidvalue: 0x5564C1BE
+
+Library: SceGpuEs4User function: PVRSRVWaitSyncOp nidvalue: 0x5C3A6DFE
+Library: SceGpuEs4User function: PVRSRVSyncOpsFlushToModObj nidvalue: 0xAAD85460
+Library: SceGpuEs4User function: PVRSRVModifyCompleteSyncOps nidvalue: 0x116449D2
+Library: SceGpuEs4User function: PVRSRVDestroySyncInfoModObj nidvalue: 0x7DCCBCAF
+Library: SceGpuEs4User function: PVRSRVMapMemoryToGpuByUID nidvalue: 0x0EA7458D
+Library: SceGpuEs4User function: PVRSRVUnmapMemoryFromGpuByUID nidvalue: 0x156A6B70
+Library: SceGpuEs4User function: SGXWaitTransfer nidvalue: 0x7E965369

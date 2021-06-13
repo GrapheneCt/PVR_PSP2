@@ -1,23 +1,75 @@
 #include <kernel.h>
 #include <display.h>
-
+#define PVRSRV_NEED_PVR_DPF
 #include "psp2_pvr_desc.h"
+#include "psp2_pvr_defs.h"
+
+#define ALIGN(x, a)	(((x) + ((a) - 1)) & ~((a) - 1))
 
 #include "eurasia/include4/services.h"
 #include "eurasia/include4/pvr_debug.h"
 #include "eurasia/services4/include/servicesint.h"
+#include "eurasia/services4/include/pvr_bridge.h"
+
+#define PSP2_DISPLAY_ID 0x09dfef50
+
+#define PSP2_SWAPCHAIN_MAX_PENDING_COUNT 1
+#define PSP2_SWAPCHAIN_MAX_BUFFER_NUM 4
+#define PSP2_SWAPCHAIN_MIN_INTERVAL 0
+#define PSP2_SWAPCHAIN_MAX_INTERVAL 6
 
 typedef struct PSP2_SWAPCHAIN {
-	SceUID hDispMemUID[3];
-	IMG_PVOID pDispBufVaddr[3];
+	PVRSRV_CONNECTION *psConnection;
+	SceUID hSwapChainReadyEvf;
+	SceUID hSwapChainPendingEvf;
+	SceUID hSwapChainThread;
+	SceUID hDispMemUID[PSP2_SWAPCHAIN_MAX_BUFFER_NUM];
+	IMG_PVOID pDispBufVaddr[PSP2_SWAPCHAIN_MAX_BUFFER_NUM];
+	PVRSRV_CLIENT_MEM_INFO sDispMemInfo[PSP2_SWAPCHAIN_MAX_BUFFER_NUM];
 	IMG_UINT32 ui32BufferCount;
 	DISPLAY_DIMS sDims;
 } PSP2_SWAPCHAIN;
 
-#define PSP2_DISPLAY_ID 0x09dfef50
-#define PSP2_DISPLAY_HANDLE 0x921af851
-
 static IMG_BOOL s_flipChainExists = IMG_FALSE;
+static IMG_UINT32 s_ui32CurrentSwapChainIdx = 0;
+static IMG_PVOID s_pvCurrentNewBuf[PSP2_SWAPCHAIN_MAX_PENDING_COUNT];
+static IMG_SID s_hKernelSwapChainSync[PSP2_SWAPCHAIN_MAX_PENDING_COUNT];
+static IMG_UINT32 s_ui32CurrentSwapInterval = 0;
+static SceUID s_hSwapChainReadyEvf = SCE_UID_INVALID_UID;
+static SceUID s_hSwapChainPendingEvf = SCE_UID_INVALID_UID;
+
+static IMG_INT32 _dcSwapChainThread(SceSize argSize, void *pArgBlock)
+{
+	SceDisplayFrameBuf fbInfo;
+	PVRSRV_CONNECTION *psConnection;
+	PSP2_SWAPCHAIN *psSwapChain = *(PSP2_SWAPCHAIN **)pArgBlock;
+
+	psConnection = psSwapChain->psConnection;
+	fbInfo.size = sizeof(SceDisplayFrameBuf);
+	fbInfo.pitch = psSwapChain->sDims.ui32ByteStride / 4;
+	fbInfo.pixelformat = SCE_DISPLAY_PIXELFORMAT_A8B8G8R8;
+	fbInfo.width = psSwapChain->sDims.ui32Width;
+	fbInfo.height = psSwapChain->sDims.ui32Height;
+	
+	sceKernelSetEventFlag(s_hSwapChainReadyEvf, 1);
+
+	while (s_flipChainExists) {
+
+		sceKernelWaitEventFlag(s_hSwapChainPendingEvf, 1, SCE_KERNEL_EVF_WAITMODE_OR | SCE_KERNEL_EVF_WAITMODE_CLEAR_PAT, NULL, NULL);
+
+		PVRSRVWaitSyncOp(s_hKernelSwapChainSync[s_ui32CurrentSwapChainIdx], IMG_NULL);
+
+		fbInfo.base = s_pvCurrentNewBuf[s_ui32CurrentSwapChainIdx];
+		sceDisplaySetFrameBuf(&fbInfo, SCE_DISPLAY_UPDATETIMING_NEXTVSYNC);
+		sceDisplayWaitVblankStartMulti(s_ui32CurrentSwapInterval);
+
+		PVRSRVModifyCompleteSyncOps(psConnection, s_hKernelSwapChainSync[s_ui32CurrentSwapChainIdx]);
+
+		sceKernelSetEventFlag(s_hSwapChainReadyEvf, 1);
+	}
+
+	return sceKernelExitDeleteThread(0);
+}
 
 /*!
  ******************************************************************************
@@ -95,35 +147,33 @@ IMG_EXPORT
 IMG_HANDLE IMG_CALLCONV PVRSRVOpenDCDevice(const PVRSRV_DEV_DATA *psDevData,
 	IMG_UINT32 ui32DeviceID)
 {
-	PVRSRV_CLIENT_DEVICECLASS_INFO *psDevClassInfo = IMG_NULL;
-
-	if (!psDevData)
+	if (!psDevData || ui32DeviceID != PSP2_DISPLAY_ID)
 	{
 		PVR_DPF((PVR_DBG_ERROR, "PVRSRVOpenDCDevice: Invalid params"));
 		return IMG_NULL;
 	}
 
-	/* Alloc client info structure first */
-	psDevClassInfo = (PVRSRV_CLIENT_DEVICECLASS_INFO *)PVRSRVAllocUserModeMem(sizeof(PVRSRV_CLIENT_DEVICECLASS_INFO));
-	if (psDevClassInfo == IMG_NULL)
+	return (IMG_HANDLE)psDevData->psConnection;
+}
+
+/*!
+ ******************************************************************************
+ @Function	PVRSRVCloseDCDevice
+ @Description	Closes connection to a display device specified by the handle
+ @Input hDevice - device handle
+ @Return	PVRSRV_ERROR
+ ******************************************************************************/
+IMG_EXPORT
+PVRSRV_ERROR IMG_CALLCONV PVRSRVCloseDCDevice(const PVRSRV_CONNECTION *psConnection,
+	IMG_HANDLE hDevice)
+{
+	if (!psConnection || !hDevice)
 	{
-		PVR_DPF((PVR_DBG_ERROR, "PVRSRVOpenDCDevice: Alloc failed"));
-		return IMG_NULL;
+		PVR_DPF((PVR_DBG_ERROR, "PVRSRVCloseDCDevice: Invalid params"));
+		return PVRSRV_ERROR_INVALID_PARAMS;
 	}
 
-	if (ui32DeviceID != PSP2_DISPLAY_ID)
-		goto ErrorExit;
-
-	/* setup private client services structure */
-	psDevClassInfo->hServices = psDevData->psConnection->hServices;
-	psDevClassInfo->hDeviceKM = PSP2_DISPLAY_HANDLE;
-
-	/* return private client services structure as handle */
-	return (IMG_HANDLE)psDevClassInfo;
-
-ErrorExit:
-	PVRSRVFreeUserModeMem(psDevClassInfo);
-	return IMG_NULL;
+	return PVRSRV_OK;
 }
 
 /*!
@@ -147,10 +197,10 @@ PVRSRV_ERROR IMG_CALLCONV PVRSRVGetDCInfo(IMG_HANDLE hDevice,
 
 	sceClibStrncpy(psDisplayInfo->szDisplayName, "psp2_display", MAX_DISPLAY_NAME_SIZE);
 
-	psDisplayInfo->ui32MaxSwapChainBuffers = 3;
+	psDisplayInfo->ui32MaxSwapChainBuffers = PSP2_SWAPCHAIN_MAX_BUFFER_NUM;
 	psDisplayInfo->ui32MaxSwapChains = 1;
-	psDisplayInfo->ui32MinSwapInterval = 0;
-	psDisplayInfo->ui32MaxSwapInterval = 1;
+	psDisplayInfo->ui32MinSwapInterval = PSP2_SWAPCHAIN_MIN_INTERVAL;
+	psDisplayInfo->ui32MaxSwapInterval = PSP2_SWAPCHAIN_MAX_INTERVAL;
 	psDisplayInfo->ui32PhysicalWidthmm = 110;
 	psDisplayInfo->ui32PhysicalHeightmm = 63;
 
@@ -220,21 +270,21 @@ PVRSRV_ERROR IMG_CALLCONV PVRSRVEnumDCDims(IMG_HANDLE hDevice,
 		return PVRSRV_ERROR_INVALID_PARAMS;
 	}
 
-	asDim[0].ui32Width = 480;
-	asDim[0].ui32Height = 272;
-	asDim[0].ui32ByteStride = 4 * 512;
+	asDim[0].ui32Width = 960;
+	asDim[0].ui32Height = 544;
+	asDim[0].ui32ByteStride = 4 * 960;
 
-	asDim[1].ui32Width = 640;
-	asDim[1].ui32Height = 368;
-	asDim[1].ui32ByteStride = 4 * 640;
+	asDim[1].ui32Width = 480;
+	asDim[1].ui32Height = 272;
+	asDim[1].ui32ByteStride = 4 * 512;
 
-	asDim[2].ui32Width = 720;
-	asDim[2].ui32Height = 408;
-	asDim[2].ui32ByteStride = 4 * 768;
+	asDim[2].ui32Width = 640;
+	asDim[2].ui32Height = 368;
+	asDim[2].ui32ByteStride = 4 * 640;
 
-	asDim[3].ui32Width = 960;
-	asDim[3].ui32Height = 544;
-	asDim[3].ui32ByteStride = 4 * 960;
+	asDim[3].ui32Width = 720;
+	asDim[3].ui32Height = 408;
+	asDim[3].ui32ByteStride = 4 * 768;
 
 	asDim[4].ui32Width = 1280;
 	asDim[4].ui32Height = 725;
@@ -273,33 +323,6 @@ PVRSRV_ERROR IMG_CALLCONV PVRSRVEnumDCDims(IMG_HANDLE hDevice,
 
 /*!
  ******************************************************************************
- @Function	PVRSRVCloseDCDevice
- @Description	Closes connection to a display device specified by the handle
- @Input hDevice - device handle
- @Return	PVRSRV_ERROR
- ******************************************************************************/
-IMG_EXPORT
-PVRSRV_ERROR IMG_CALLCONV PVRSRVCloseDCDevice(const PVRSRV_CONNECTION *psConnection,
-	IMG_HANDLE hDevice)
-{
-	PVRSRV_CLIENT_DEVICECLASS_INFO *psDevClassInfo = IMG_NULL;
-
-	if (!psConnection || !hDevice)
-	{
-		PVR_DPF((PVR_DBG_ERROR, "PVRSRVCloseDCDevice: Invalid params"));
-		return PVRSRV_ERROR_INVALID_PARAMS;
-	}
-
-	psDevClassInfo = (PVRSRV_CLIENT_DEVICECLASS_INFO*)hDevice;
-
-	/* free private client structure */
-	PVRSRVFreeUserModeMem(psDevClassInfo);
-
-	return PVRSRV_OK;
-}
-
-/*!
- ******************************************************************************
  @Function	PVRSRVCreateDCSwapChain
  @Description
  Creates a swap chain on the specified display class device
@@ -330,22 +353,24 @@ PVRSRV_ERROR IMG_CALLCONV PVRSRVCreateDCSwapChain(IMG_HANDLE	hDevice,
 #endif
 
 {
+	IMG_UINT32 alignedSize;
+	IMG_UINT32 swapChainAff = 0;
 	IMG_INT32 i, x, y;
 	PSP2_SWAPCHAIN *psSwapChain;
+	PVRSRV_CONNECTION *psConnection;
 
 	if (!hDevice
 		|| !psDstSurfAttrib
 		|| !psSrcSurfAttrib
 		|| !pui32SwapChainID
 		|| !phSwapChain
-		|| ui32Flags
-		|| ui32OEMFlags)
+		|| ui32Flags)
 	{
 		PVR_DPF((PVR_DBG_ERROR, "PVRSRVCreateDCSwapChain: Invalid params"));
 		return PVRSRV_ERROR_INVALID_PARAMS;
 	}
 
-	if (ui32BufferCount > 3)
+	if (ui32BufferCount > PSP2_SWAPCHAIN_MAX_BUFFER_NUM)
 	{
 		PVR_DPF((PVR_DBG_ERROR, "PVRSRVCreateDCSwapChain: Too many buffers"));
 		return PVRSRV_ERROR_TOOMANYBUFFERS;
@@ -363,6 +388,38 @@ PVRSRV_ERROR IMG_CALLCONV PVRSRVCreateDCSwapChain(IMG_HANDLE	hDevice,
 		return PVRSRV_ERROR_FLIP_CHAIN_EXISTS;
 	}
 
+	if (ui32OEMFlags)
+		swapChainAff = ui32OEMFlags;
+	else
+		swapChainAff = SCE_KERNEL_CPU_MASK_USER_0;
+
+	SceUID readyEvfId = sceKernelCreateEventFlag("DCSwapChainReadyEvf", 0, 0, NULL);
+	if (readyEvfId < 0)
+	{
+		PVR_DPF((PVR_DBG_ERROR, "PVRSRVCreateDCSwapChain: Failed to create swap chain ready event"));
+		return PVRSRV_ERROR_UNABLE_TO_CREATE_EVENT;
+	}
+
+	s_hSwapChainReadyEvf = readyEvfId;
+
+	SceUID pendingEvfId = sceKernelCreateEventFlag("DCSwapChainPendingEvf", 0, 0, NULL);
+	if (pendingEvfId < 0)
+	{
+		PVR_DPF((PVR_DBG_ERROR, "PVRSRVCreateDCSwapChain: Failed to create swap chain pending event"));
+		return PVRSRV_ERROR_UNABLE_TO_CREATE_EVENT;
+	}
+
+	s_hSwapChainPendingEvf = pendingEvfId;
+
+	SceUID thrdId = sceKernelCreateThread("DCSwapChainThread", _dcSwapChainThread, 64, SCE_KERNEL_THREAD_STACK_SIZE_MIN, 0, swapChainAff, NULL);
+	if (thrdId < 0)
+	{
+		PVR_DPF((PVR_DBG_ERROR, "PVRSRVCreateDCSwapChain: Failed to create swap chain thread"));
+		return PVRSRV_ERROR_UNABLE_TO_CREATE_THREAD;
+	}
+
+	psConnection = (PVRSRV_CONNECTION *)hDevice;
+
 	psSwapChain = (PSP2_SWAPCHAIN *)PVRSRVAllocUserModeMem(sizeof(PSP2_SWAPCHAIN));
 	if (!psSwapChain)
 	{
@@ -370,36 +427,106 @@ PVRSRV_ERROR IMG_CALLCONV PVRSRVCreateDCSwapChain(IMG_HANDLE	hDevice,
 		return PVRSRV_ERROR_OUT_OF_MEMORY;
 	}
 
+	psSwapChain->psConnection = psConnection;
+	psSwapChain->hSwapChainReadyEvf = readyEvfId;
+	psSwapChain->hSwapChainThread = thrdId;
 	psSwapChain->sDims.ui32Width = psSrcSurfAttrib->sDims.ui32Width;
 	psSwapChain->sDims.ui32Height = psSrcSurfAttrib->sDims.ui32Height;
 	psSwapChain->sDims.ui32ByteStride = psSrcSurfAttrib->sDims.ui32ByteStride;
 	psSwapChain->ui32BufferCount = ui32BufferCount;
+
+	alignedSize = ALIGN(psSwapChain->sDims.ui32ByteStride * psSwapChain->sDims.ui32Height, 256 * 1024);
+
+	for (i = 0; i < PSP2_SWAPCHAIN_MAX_PENDING_COUNT; i++) {
+		PVRSRVCreateSyncInfoModObj((PVRSRV_CONNECTION *)hDevice, &s_hKernelSwapChainSync[i]);
+	}
 
 	for (i = 0; i < ui32BufferCount; i++) {
 
 		psSwapChain->hDispMemUID[i] = sceKernelAllocMemBlock(
 			"DCSwapChainBuffer",
 			SCE_KERNEL_MEMBLOCK_TYPE_USER_CDRAM_RW,
-			psSwapChain->sDims.ui32ByteStride * psSwapChain->sDims.ui32Width,
+			alignedSize,
 			NULL);
 
 		sceKernelGetMemBlockBase(psSwapChain->hDispMemUID[i], &psSwapChain->pDispBufVaddr[i]);
 
-			// memset the buffer to black
-			for (y = 0; y < psSwapChain->sDims.ui32Height; y++) {
-				unsigned int *row = (unsigned int *)psSwapChain->pDispBufVaddr[i] + y * (psSwapChain->sDims.ui32ByteStride / 4);
-				for (x = 0; x < psSwapChain->sDims.ui32Width; x++) {
-					row[x] = 0xff000000;
-				}
+		psSwapChain->sDispMemInfo[i].pvLinAddr = psSwapChain->pDispBufVaddr[i];
+		psSwapChain->sDispMemInfo[i].pvLinAddrKM = psSwapChain->pDispBufVaddr[i];
+		psSwapChain->sDispMemInfo[i].sDevVAddr.uiAddr = psSwapChain->pDispBufVaddr[i];
+		psSwapChain->sDispMemInfo[i].uAllocSize = alignedSize;
+		psSwapChain->sDispMemInfo[i].ui32Flags = PVRSRV_MEM_READ | PVRSRV_MEM_WRITE | PVRSRV_MEM_USER_SUPPLIED_DEVVADDR;
+		psSwapChain->sDispMemInfo[i].ui32ClientFlags = PVRSRV_MEM_READ | PVRSRV_MEM_WRITE | PVRSRV_MEM_USER_SUPPLIED_DEVVADDR;
+
+		// memset the buffer to black
+		for (y = 0; y < psSwapChain->sDims.ui32Height; y++) {
+			unsigned int *row = (unsigned int *)psSwapChain->pDispBufVaddr[i] + y * (psSwapChain->sDims.ui32ByteStride / 4);
+			for (x = 0; x < psSwapChain->sDims.ui32Width; x++) {
+				row[x] = 0xff000000;
 			}
+		}
+
 	}
 
 	s_flipChainExists = IMG_TRUE;
+
+	sceKernelStartThread(thrdId, 4, &psSwapChain);
 
 	/* Assign output */
 	*phSwapChain = (IMG_SID)psSwapChain;
 	/* optional ID (in/out) */
 	*pui32SwapChainID = 0;
+
+	return PVRSRV_OK;
+}
+
+/*!
+ ******************************************************************************
+ @Function	PVRSRVDestroyDCSwapChain
+ @Description
+ Destroy a swap chain on the specified display class device
+ @Input hDevice			- device handle
+ @Input hSwapChain		- handle to swapchain
+ @Return
+	success: PVRSRV_OK
+	failure: PVRSRV_ERROR_*
+ ******************************************************************************/
+IMG_EXPORT
+PVRSRV_ERROR IMG_CALLCONV PVRSRVDestroyDCSwapChain(IMG_HANDLE hDevice,
+#if defined (SUPPORT_SID_INTERFACE)
+	IMG_SID    hSwapChain)
+#else
+IMG_HANDLE hSwapChain)
+#endif
+{
+	IMG_INT32 i;
+	PSP2_SWAPCHAIN *psSwapChain;
+
+	if (!hDevice || !hSwapChain)
+	{
+		PVR_DPF((PVR_DBG_ERROR, "PVRSRVDestroyDCSwapChain: Invalid params"));
+		return PVRSRV_ERROR_INVALID_PARAMS;
+	}
+
+	psSwapChain = (PSP2_SWAPCHAIN *)hSwapChain;
+
+	for (i = 0; i < psSwapChain->ui32BufferCount; i++) {
+		sceKernelFreeMemBlock(psSwapChain->hDispMemUID[i]);
+	}
+
+	s_flipChainExists = IMG_FALSE;
+
+	sceKernelSetEventFlag(s_hSwapChainPendingEvf, 1);
+	sceKernelWaitThreadEnd(psSwapChain->hSwapChainThread, NULL, NULL);
+
+	sceKernelDeleteEventFlag(psSwapChain->hSwapChainReadyEvf);
+	sceKernelDeleteEventFlag(psSwapChain->hSwapChainPendingEvf);
+
+	for (i = 0; i < PSP2_SWAPCHAIN_MAX_PENDING_COUNT; i++) {
+		PVRSRVDestroySyncInfoModObj((PVRSRV_CONNECTION *)hDevice, s_hKernelSwapChainSync[i]);
+	}
+
+	PVRSRVFreeUserModeMem(psSwapChain);
 
 	return PVRSRV_OK;
 }
@@ -442,9 +569,122 @@ IMG_HANDLE *phBuffer)
 	/* Assign output */
 	for (i = 0; i < psSwapChain->ui32BufferCount; i++)
 	{
-		phBuffer[i] = (IMG_SID)psSwapChain->pDispBufVaddr[i];
+		phBuffer[i] = (IMG_SID)&psSwapChain->sDispMemInfo[i];
 	}
 
 	return PVRSRV_OK;
 }
 
+/*!
+ ******************************************************************************
+ @Function	PVRSRVSwapToDCBuffer
+ @Description		Swap display to a display class buffer
+ @Input hDevice		- device handle
+ @Input hBuffer		- buffer handle
+ @Input ui32ClipRectCount - clip rectangle count
+ @Input psClipRect - array of clip rects
+ @Input ui32SwapInterval - number of Vsync intervals between swaps
+ @Input hPrivateTag - Private Tag to passed through display
+ handling pipeline (audio sync etc.)
+ @Return
+	success: PVRSRV_OK
+	failure: PVRSRV_ERROR_*
+ ******************************************************************************/
+IMG_EXPORT
+PVRSRV_ERROR IMG_CALLCONV PVRSRVSwapToDCBuffer(IMG_HANDLE	hDevice,
+	IMG_SID		hBufferOld,
+	IMG_SID		hBufferNew,
+	IMG_UINT32	ui32ClipRectCount,
+	IMG_RECT	*psClipRect,
+	IMG_UINT32	ui32SwapInterval,
+#if defined (SUPPORT_SID_INTERFACE)
+	IMG_SID		hPrivateTag)
+#else
+	IMG_HANDLE	hPrivateTag)
+#endif
+{
+	PVRSRV_ERROR eError = PVRSRV_OK;
+	PVRSRV_PSP2_OP_CLIENT_SYNC_INFO syncInfoArg;
+	PVRSRV_CLIENT_MEM_INFO *psBufMemInfoOld = IMG_NULL;
+	PVRSRV_CLIENT_MEM_INFO *psBufMemInfoNew = IMG_NULL;
+
+	if (!hDevice || !hBufferOld || !hBufferNew)
+	{
+		PVR_DPF((PVR_DBG_ERROR, "PVRSRVSwapToDCBuffer: Invalid params"));
+		return PVRSRV_ERROR_INVALID_PARAMS;
+	}
+
+	if (ui32ClipRectCount)
+	{
+		if (!psClipRect
+			|| (ui32ClipRectCount > PVRSRV_MAX_DC_CLIP_RECTS))
+		{
+			PVR_DPF((PVR_DBG_ERROR, "PVRSRVSwapToDCBuffer: Invalid rect count (%d)", ui32ClipRectCount));
+			return PVRSRV_ERROR_INVALID_PARAMS;
+		}
+	}
+
+	if (ui32SwapInterval > PSP2_SWAPCHAIN_MAX_INTERVAL || ui32SwapInterval < PSP2_SWAPCHAIN_MIN_INTERVAL)
+	{
+		PVR_DPF((PVR_DBG_ERROR, "PVRSRVSwapToDCBuffer2KM: Invalid swap interval. Requested %u, Allowed range %u-%u",
+			ui32SwapInterval, PSP2_SWAPCHAIN_MIN_INTERVAL, PSP2_SWAPCHAIN_MAX_INTERVAL));
+		return PVRSRV_ERROR_INVALID_SWAPINTERVAL;
+	}
+
+	psBufMemInfoOld = (PVRSRV_CLIENT_MEM_INFO *)hBufferOld;
+	psBufMemInfoNew = (PVRSRV_CLIENT_MEM_INFO *)hBufferNew;
+
+	syncInfoArg.psInfoOld = psBufMemInfoOld->psClientSyncInfo;
+	syncInfoArg.psInfoNew = psBufMemInfoNew->psClientSyncInfo;
+
+	sceKernelWaitEventFlag(s_hSwapChainReadyEvf, 1, SCE_KERNEL_EVF_WAITMODE_OR | SCE_KERNEL_EVF_WAITMODE_CLEAR_PAT, NULL, NULL);
+
+	s_ui32CurrentSwapChainIdx++;
+
+	if (s_ui32CurrentSwapChainIdx == PSP2_SWAPCHAIN_MAX_PENDING_COUNT)
+		s_ui32CurrentSwapChainIdx = 0;
+
+	s_pvCurrentNewBuf[s_ui32CurrentSwapChainIdx] = psBufMemInfoNew->pvLinAddr;
+	s_ui32CurrentSwapInterval = ui32SwapInterval;
+
+	eError = PVRSRVModifyPendingSyncOps(
+		(PVRSRV_CONNECTION *)hDevice,
+		s_hKernelSwapChainSync[s_ui32CurrentSwapChainIdx],
+		&syncInfoArg,
+		2,
+		PVRSRV_MODIFYSYNCOPS_FLAGS_RO_INC,
+		IMG_NULL,
+		IMG_NULL);
+
+	sceKernelSetEventFlag(s_hSwapChainPendingEvf, 1);
+
+	return eError;
+}
+
+/*!
+ ******************************************************************************
+ @Function	PVRSRVSwapToDCSystem
+ @Description
+ Swap display to the display's system buffer
+ @Input hDevice		- device handle
+ @Input hSwapChain	- swapchain handle
+ @Return
+	success: PVRSRV_OK
+	failure: PVRSRV_ERROR_*
+ ******************************************************************************/
+IMG_EXPORT
+PVRSRV_ERROR IMG_CALLCONV PVRSRVSwapToDCSystem(IMG_HANDLE hDevice,
+#if defined (SUPPORT_SID_INTERFACE)
+	IMG_SID    hSwapChain)
+#else
+IMG_HANDLE hSwapChain)
+#endif
+{
+	if (!hDevice || !hSwapChain)
+	{
+		PVR_DPF((PVR_DBG_ERROR, "PVRSRVSwapToDCSystem: Invalid params"));
+		return PVRSRV_ERROR_INVALID_PARAMS;
+	}
+
+	return PVRSRV_OK;
+}

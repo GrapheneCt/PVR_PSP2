@@ -130,12 +130,8 @@ PVRSRV_ERROR IMG_CALLCONV PVRSRVMapDeviceClassMemory(const PVRSRV_DEV_DATA *psDe
 #endif
 	PVRSRV_CLIENT_MEM_INFO **ppsMemInfo)
 {
-	SceKernelMemBlockInfo sMemInfo;
-	IMG_INT32 ui32Ret;
-	IMG_UINT32 ui32SharedHeapCount;
-	PVRSRV_HEAP_INFO asHeapInfo[PVRSRV_MAX_CLIENT_HEAPS];
-	PVRSRV_CLIENT_MEM_INFO *psMemInfo = IMG_NULL;
-	IMG_PVOID pBufMem;
+	PVRSRV_CLIENT_MEM_INFO *psMemInfoIn = IMG_NULL;
+	PVRSRV_CLIENT_SYNC_INFO *psSyncInfo = IMG_NULL;
 	PVRSRV_ERROR eError = PVRSRV_OK;
 
 	if (!psDevData || !ppsMemInfo || !hDeviceClassBuffer)
@@ -144,48 +140,74 @@ PVRSRV_ERROR IMG_CALLCONV PVRSRVMapDeviceClassMemory(const PVRSRV_DEV_DATA *psDe
 		return PVRSRV_ERROR_INVALID_PARAMS;
 	}
 
-	pBufMem = (IMG_PVOID)hDeviceClassBuffer;
-	sMemInfo.size = sizeof(SceKernelMemBlockInfo);
-	ui32Ret = sceKernelGetMemBlockInfoByAddr(pBufMem, &sMemInfo);
-	if (ui32Ret < 0)
-	{
-		PVR_DPF((PVR_DBG_ERROR, "PVRSRVMapDeviceClassMemory: failed to find memblock"));
-		return PVRSRV_ERROR_INVALID_PARAMS;
-	}
+	psMemInfoIn = (PVRSRV_CLIENT_MEM_INFO *)hDeviceClassBuffer;
 
 	eError = PVRSRVMapMemoryToGpu(
 		psDevData,
 		DEVICE_MEMORY_HEAP_SHARED,
 		0,
-		sMemInfo.mappedSize,
+		psMemInfoIn->uAllocSize,
 		0,
-		pBufMem,
+		psMemInfoIn->pvLinAddr,
 		PVRSRV_MEM_READ | PVRSRV_MEM_WRITE | PVRSRV_MEM_USER_SUPPLIED_DEVVADDR,
 		IMG_NULL);
 
 	if (eError != PVRSRV_OK)
 	{
 		PVR_DPF((PVR_DBG_ERROR, "PVRSRVMapDeviceClassMemory: Failed to map memory to GPU"));
-		return PVRSRV_ERROR_OUT_OF_MEMORY;
+		return PVRSRV_ERROR_FAILED_TO_MAP_PAGE_TABLE;
 	}
 
-	psMemInfo = (PVRSRV_CLIENT_MEM_INFO *)PVRSRVAllocUserModeMem(sizeof(PVRSRV_CLIENT_MEM_INFO));
-
-	if (psMemInfo == IMG_NULL)
+	eError = PVRSRVAllocSyncInfo(psDevData, &psSyncInfo);
+	if (eError != PVRSRV_OK)
 	{
-		PVR_DPF((PVR_DBG_ERROR, "PVRSRVMapDeviceClassMemory: Alloc failed"));
+		PVR_DPF((PVR_DBG_ERROR, "PVRSRVMapDeviceClassMemory: Failed to alloc sync info"));
 		return PVRSRV_ERROR_OUT_OF_MEMORY;
 	}
 
-	PVRSRVMemSet(psMemInfo, 0x00, sizeof(psMemInfo));
+	psMemInfoIn->psClientSyncInfo = psSyncInfo;
+	*ppsMemInfo = psMemInfoIn;
 
-	psMemInfo->pvLinAddr = pBufMem;
-	psMemInfo->pvLinAddrKM = pBufMem;
-	psMemInfo->sDevVAddr.uiAddr = pBufMem;
-	psMemInfo->uAllocSize = sMemInfo.mappedSize;
-	psMemInfo->ui32Flags = PVRSRV_MEM_READ | PVRSRV_MEM_WRITE | PVRSRV_MEM_USER_SUPPLIED_DEVVADDR;
+	return PVRSRV_OK;
+}
 
-	*ppsMemInfo = psMemInfo;
+/*!
+ ******************************************************************************
+ @Function	PVRSRVUnmapDeviceClassMemory
+ @Description
+ @Input		psDevData
+ @Input		psMemInfo
+ @Return	PVRSRV_ERROR
+ ******************************************************************************/
+IMG_EXPORT
+PVRSRV_ERROR PVRSRVUnmapDeviceClassMemory(const PVRSRV_DEV_DATA *psDevData,
+	PVRSRV_CLIENT_MEM_INFO *psMemInfo)
+{
+	PVRSRV_ERROR eError = PVRSRV_OK;
+
+	if (!psDevData || !psMemInfo)
+	{
+		PVR_DPF((PVR_DBG_ERROR, "PVRSRVUnmapDeviceClassMemory: Invalid params"));
+		return PVRSRV_ERROR_INVALID_PARAMS;
+	}
+
+	eError = PVRSRVUnmapMemoryFromGpu(
+		psDevData,
+		psMemInfo->pvLinAddr,
+		0,
+		IMG_NULL);
+	if (eError != PVRSRV_OK)
+	{
+		PVR_DPF((PVR_DBG_ERROR, "PVRSRVUnmapDeviceClassMemory: Failed to unmap memory from GPU"));
+		return PVRSRV_ERROR_FAILED_TO_MAP_PAGE_TABLE;
+	}
+
+	eError = PVRSRVFreeSyncInfo(psDevData, psMemInfo->psClientSyncInfo);
+	if (eError != PVRSRV_OK)
+	{
+		PVR_DPF((PVR_DBG_ERROR, "PVRSRVMapDeviceClassMemory: Failed to free sync info"));
+		return PVRSRV_ERROR_OUT_OF_MEMORY;
+	}
 
 	return PVRSRV_OK;
 }

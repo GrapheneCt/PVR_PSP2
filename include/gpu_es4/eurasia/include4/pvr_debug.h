@@ -137,17 +137,7 @@ IMG_IMPORT IMG_VOID IMG_CALLCONV PVRSRVDebugAssertFail(const IMG_CHAR *pszFile,
 	#define PVR_DBG_ALLOC		DBGPRIV_ALLOC,__FILE__, __LINE__
 	#define PVR_DBGDRIV_MESSAGE	DBGPRIV_DBGDRV_MESSAGE, "", 0
 
-#if defined(__psp2__)
-
-	#include <kernel.h>
-
-	#define PVR_DPF(X)			sceClibPrintf X
-
-#else
-
 	#define PVR_DPF(X)			PVRSRVDebugPrintf X
-
-#endif
 
 #endif /* defined(PVRSRV_NEW_PVR_DPF) */
 

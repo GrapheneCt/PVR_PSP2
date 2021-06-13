@@ -83,6 +83,9 @@
     <ClCompile Include="eurasia\services4\srvclient\bridged\bridged_pvr_glue.c">
       <Filter>Source Files\eurasia\services4\srvclient\bridged</Filter>
     </ClCompile>
+    <ClCompile Include="eurasia\services4\srvclient\env\playstation\common\pvr_debug.c">
+      <Filter>Source Files\eurasia\services4\srvclient\env\playstation\common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\gpu_es4\psp2_pvr_defs.h">

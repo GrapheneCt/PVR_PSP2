@@ -15,6 +15,7 @@
     <ClCompile Include="eurasia\services4\srvclient\bridged\bridged_pvr_glue.c" />
     <ClCompile Include="eurasia\services4\srvclient\common\resources.c" />
     <ClCompile Include="eurasia\services4\srvclient\env\playstation\common\osfunc_um.c" />
+    <ClCompile Include="eurasia\services4\srvclient\env\playstation\common\pvr_debug.c" />
     <ClCompile Include="psp2\module.c" />
   </ItemGroup>
   <ItemGroup>
@@ -95,10 +96,13 @@
       <AdditionalIncludeDirectories>$(SCE_PSP2_SDK_DIR)\target\include\vdsuite\user;$(SCE_PSP2_SDK_DIR)\target\include\vdsuite\common;$(SolutionDir)include\gpu_es4;$(SolutionDir)include\gpu_es4\eurasia\include4;$(SolutionDir)include\gpu_es4\eurasia\hwdefs;$(SolutionDir)include\gpu_es4\eurasia\services4\include;$(SolutionDir)include\gpu_es4\eurasia\services4\system\psp2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>-lSceDisplayUser_stub;-lSceGpuEs4User_stub;-lSceGpuEs4ForUser_stub;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>-lSceDisplayUser_stub;-lSceDisplay_stub;-lSceGpuEs4ForUser_stub;$(ProjectDir)libSceGpuEs4User_stub.a;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SCE_PSP2_SDK_DIR)\target\lib\vdsuite;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>--no-required-files</AdditionalOptions>
     </Link>
+    <PreBuildEvent>
+      <Command>"$(SCE_PSP2_SDK_DIR)\host_tools\build\bin\armlibgen.exe" --dump "$(SolutionDir)lib\SceGpuEs4User.emd" --stub-archive</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|PSVita'">
     <ClCompile>

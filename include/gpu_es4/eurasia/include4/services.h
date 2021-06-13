@@ -1372,7 +1372,12 @@ PVRSRV_ERROR IMG_CALLCONV PVRSRVGetDCBuffers2(IMG_HANDLE hDevice,
 IMG_IMPORT
 PVRSRV_ERROR IMG_CALLCONV PVRSRVSwapToDCBuffer (IMG_HANDLE hDevice,
 #if defined (SUPPORT_SID_INTERFACE)
+#if defined (__psp2__)
+										IMG_SID    hBufferOld,
+										IMG_SID    hBufferNew,
+#else
 										IMG_SID    hBuffer,
+#endif
 #else
 										IMG_HANDLE hBuffer,
 #endif
@@ -1753,7 +1758,9 @@ IMG_IMPORT PVRSRV_ERROR PVRSRVEventObjectWait(const PVRSRV_CONNECTION *psConnect
  @Description	Creates an empty Modification object to be later used by PVRSRVModifyPendingSyncOps
 
  ******************************************************************************/
+#if !defined (__psp2__)
 IMG_IMPORT
+#endif
 PVRSRV_ERROR IMG_CALLCONV PVRSRVCreateSyncInfoModObj(const PVRSRV_CONNECTION *psConnection,
 #if defined (SUPPORT_SID_INTERFACE)
 													 IMG_SID *phKernelSyncInfoModObj
@@ -1770,7 +1777,9 @@ PVRSRV_ERROR IMG_CALLCONV PVRSRVCreateSyncInfoModObj(const PVRSRV_CONNECTION *ps
  @Description	Destroys a Modification object.  Must be empty.
 
  ******************************************************************************/
+#if !defined (__psp2__)
 IMG_IMPORT
+#endif
 PVRSRV_ERROR IMG_CALLCONV PVRSRVDestroySyncInfoModObj(const PVRSRV_CONNECTION *psConnection,
 #if defined (SUPPORT_SID_INTERFACE)
 													  IMG_SID hKernelSyncInfoModObj
@@ -1809,6 +1818,15 @@ PVRSRV_ERROR IMG_CALLCONV PVRSRVDestroySyncInfoModObj(const PVRSRV_CONNECTION *p
 				
 
  ******************************************************************************/
+#if defined (__psp2__)
+PVRSRV_ERROR IMG_CALLCONV PVRSRVModifyPendingSyncOps(const PVRSRV_CONNECTION *psConnection,
+	IMG_SID    hKernelSyncInfoModObj,
+	IMG_PVOID psPsp2SyncInfo,
+	IMG_UINT32 ui32SyncInfoNum,
+	IMG_UINT32 ui32ModifyFlags,
+	IMG_UINT32 *pui32ReadOpsPending,
+	IMG_UINT32 *pui32WriteOpsPending);
+#else
 IMG_IMPORT
 PVRSRV_ERROR IMG_CALLCONV PVRSRVModifyPendingSyncOps(const PVRSRV_CONNECTION *psConnection,
 #if defined (SUPPORT_SID_INTERFACE)
@@ -1820,6 +1838,7 @@ PVRSRV_ERROR IMG_CALLCONV PVRSRVModifyPendingSyncOps(const PVRSRV_CONNECTION *ps
 													  IMG_UINT32 ui32ModifyFlags,
 													  IMG_UINT32 *pui32ReadOpsPending,
 													  IMG_UINT32 *pui32WriteOpsPending);
+#endif
 
 /*!
  ******************************************************************************
@@ -1834,7 +1853,9 @@ PVRSRV_ERROR IMG_CALLCONV PVRSRVModifyPendingSyncOps(const PVRSRV_CONNECTION *ps
 				described above in PVRSRVModifyPendingSyncOps
 
  ******************************************************************************/
+#if !defined (__psp2__)
 IMG_IMPORT
+#endif
 PVRSRV_ERROR IMG_CALLCONV PVRSRVModifyCompleteSyncOps(const PVRSRV_CONNECTION *psConnection,
 #if defined (SUPPORT_SID_INTERFACE)
 													  IMG_SID hKernelSyncInfoModObj
@@ -1956,7 +1977,9 @@ PVRSRV_ERROR IMG_CALLCONV PVRSRVSyncOpsFlushToDelta(const PVRSRV_CONNECTION *psC
 
  ******************************************************************************/
 
+#if !defined (__psp2__)
 IMG_IMPORT
+#endif
 PVRSRV_ERROR IMG_CALLCONV PVRSRVAllocSyncInfo(IMG_CONST PVRSRV_DEV_DATA	*psDevData,
 											  PVRSRV_CLIENT_SYNC_INFO **ppsSyncInfo);
 
@@ -1970,7 +1993,9 @@ PVRSRV_ERROR IMG_CALLCONV PVRSRVAllocSyncInfo(IMG_CONST PVRSRV_DEV_DATA	*psDevDa
 
  ******************************************************************************/
 
+#if !defined (__psp2__)
 IMG_IMPORT
+#endif
 PVRSRV_ERROR IMG_CALLCONV PVRSRVFreeSyncInfo(IMG_CONST PVRSRV_DEV_DATA *psDevData,
 											 PVRSRV_CLIENT_SYNC_INFO *psSyncInfo);
 

@@ -85,11 +85,19 @@ SCE_USER_MODULE_LIST("app0:gpu_es4_ext.suprx");
 #define MAX_NUM_DEVICE_IDS 32
 
 /* This the total maximum number of buffers, i.e. backbuffers + primary surface. */
+#ifdef __psp2__
+#define MAX_SWAP_CHAIN_BUFFERS 4
+#else
 #define MAX_SWAP_CHAIN_BUFFERS 3
+#endif
 
 /* This value should remain constant - or at least it should be greater than
 or equal to MAX_SWAP_CHAIN_BUFFERS. */
+#ifdef __psp2__
+#define NUM_COLOURS 4
+#else
 #define NUM_COLOURS 3
+#endif
 
 #if (MAX_SWAP_CHAIN_BUFFERS > NUM_COLOURS)
 #error NUM_COLOURS should be greater than or equal to MAX_SWAP_CHAIN_BUFFERS
@@ -234,6 +242,9 @@ int main(int argc, char ** argv)
 #else
 	IMG_HANDLE				hSystemBuffer = IMG_NULL;
 #endif
+#endif
+#ifdef __psp2__
+	IMG_UINT32				ui32OldSelectBuffer = MAX_SWAP_CHAIN_BUFFERS - 1;
 #endif
 	IMG_UINT32				ui32SelectBuffer = 0;
 	IMG_UINT32				ui32NumSwaps = 100;
@@ -548,18 +559,18 @@ int main(int argc, char ** argv)
 								ahBuffer);
 	FAIL_IF_ERROR(eResult);
 
-	for(i = 0; i < ui32NumSwapChainBuffers; i++)
+	for (i = 0; i < ui32NumSwapChainBuffers; i++)
 	{
 		IMG_UINT32 *pui32Tmp, j;
 		eResult = PVRSRVMapDeviceClassMemory(ps3DDevData,
-											 hDevMemContext,
-											 ahBuffer[i],
-											 &apsBackBufferMemInfo[i]);
+			hDevMemContext,
+			ahBuffer[i],
+			&apsBackBufferMemInfo[i]);
 		FAIL_IF_ERROR(eResult);
-		
-		/* colour the source */	
+
+		/* colour the source */
 		pui32Tmp = (IMG_UINT32*)apsBackBufferMemInfo[i]->pvLinAddr;
-		for(j=0; j < apsBackBufferMemInfo[i]->uAllocSize; j+=4)
+		for (j = 0; j < apsBackBufferMemInfo[i]->uAllocSize; j += 4)
 		{
 			*pui32Tmp++ = aui32Colour[i];
 		}
@@ -567,6 +578,25 @@ int main(int argc, char ** argv)
 
 	for(i=0; i < ui32NumSwaps; i++)
 	{
+
+#ifdef __psp2__
+
+		eResult = PVRSRVSwapToDCBuffer(hDisplayDevice,
+			ahBuffer[ui32OldSelectBuffer],
+			ahBuffer[ui32SelectBuffer],
+			0,
+			IMG_NULL,
+			ui32SwapInterval,
+			0);
+
+		ui32OldSelectBuffer++;
+		if (ui32OldSelectBuffer == ui32NumSwapChainBuffers)
+		{
+			ui32OldSelectBuffer = 0;
+		}
+
+#else
+
 		eResult = PVRSRVSwapToDCBuffer (hDisplayDevice,
 									ahBuffer[ui32SelectBuffer],
 									0,
@@ -577,6 +607,9 @@ int main(int argc, char ** argv)
 #else
 									IMG_NULL);
 #endif
+
+#endif
+
 		FAIL_IF_ERROR2(eResult);
 
 		ui32SelectBuffer++;
@@ -591,6 +624,12 @@ int main(int argc, char ** argv)
 	FAIL_IF_ERROR(eResult);
 
 	DPF("waiting for flips to complete...\n");
+
+#ifdef __psp2__
+
+	sceKernelDelayThread(1000000);
+
+#else
 
 	{
 		IMG_UINT32 i = 0;
@@ -627,6 +666,8 @@ int main(int argc, char ** argv)
 					SYNCINFO_READOPS_PENDING(psRenderSurfMemInfo->psClientSyncInfo));
 		}
 	}
+
+#endif
 
 	free(psPrimFormat);
 	free(psPrimDims);
