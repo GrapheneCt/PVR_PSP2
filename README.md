@@ -7,4 +7,6 @@ services_test: fully passed
 
 sgx_init_test: fully passed
 
-sgx_flip_test: WIP
+sgx_flip_test: fully passed
+
+sgx_render_flip_test: WIP
