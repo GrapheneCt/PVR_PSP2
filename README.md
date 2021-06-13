@@ -1,12 +1,11 @@
 # PVR_PSP2
 Driver layer GPU libraries and tests for PSP2
 
-# Unittest states
+# Unittest status
 
-services_test: fully passed
-
-sgx_init_test: fully passed
-
-sgx_flip_test: fully passed
-
-sgx_render_flip_test: WIP
+| Test  | Status |
+| ------------- | ------------- |
+| services_test | Passed  |
+| sgx_init_test | Passed  |
+| sgx_flip_test | Passed  |
+| sgx_render_flip_test | WIP |
