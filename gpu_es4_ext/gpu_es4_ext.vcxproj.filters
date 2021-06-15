@@ -66,6 +66,36 @@
     <Filter Include="Source Files\eurasia\services4\srvclient\common">
       <UniqueIdentifier>{5bd73ffa-712e-4910-b61d-24a3b1b88904}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\eurasia\codegen">
+      <UniqueIdentifier>{c0f003f0-3ffc-4e97-a103-ebd0f2bc30e0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\eurasia\codegen\pds">
+      <UniqueIdentifier>{ed1d1732-75a6-469c-a607-9df4e7f23bc1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\eurasia\codegen\pixevent">
+      <UniqueIdentifier>{2d1dc6e1-0d45-4d7e-b507-2add2935e07e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\eurasia\codegen\usegen">
+      <UniqueIdentifier>{4681acb0-6b1c-4cf5-b403-7229b4c9c3dd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\eurasia\codegen">
+      <UniqueIdentifier>{9b4c5680-41b6-4d34-ae5f-1e962ba755af}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\eurasia\codegen\pds">
+      <UniqueIdentifier>{d42a9b06-ff4c-4ae2-9b5a-2e6adc9bc1df}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\eurasia\codegen\usegen">
+      <UniqueIdentifier>{a0bdb7d1-e39f-4f8e-a896-a6f46138e42e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\eurasia\codegen\pixevent">
+      <UniqueIdentifier>{b17a070b-cd52-4217-a811-d2ba4ee9e95e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\eurasia\codegen\pixfmts">
+      <UniqueIdentifier>{7227445b-d41c-455d-9862-f04cc14f0abb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\eurasia\codegen\pixfmts">
+      <UniqueIdentifier>{9d1f3c08-efb7-4299-922d-8767c2e7d9a2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="eurasia\services4\srvclient\env\playstation\common\osfunc_um.c">
@@ -85,6 +115,21 @@
     </ClCompile>
     <ClCompile Include="eurasia\services4\srvclient\env\playstation\common\pvr_debug.c">
       <Filter>Source Files\eurasia\services4\srvclient\env\playstation\common</Filter>
+    </ClCompile>
+    <ClCompile Include="eurasia\codegen\pds\pds.c">
+      <Filter>Source Files\eurasia\codegen\pds</Filter>
+    </ClCompile>
+    <ClCompile Include="eurasia\codegen\usegen\usegen.c">
+      <Filter>Source Files\eurasia\codegen\usegen</Filter>
+    </ClCompile>
+    <ClCompile Include="eurasia\codegen\pixevent\pixevent.c">
+      <Filter>Source Files\eurasia\codegen\pixevent</Filter>
+    </ClCompile>
+    <ClCompile Include="eurasia\codegen\pixevent\pixeventpbesetup.c">
+      <Filter>Source Files\eurasia\codegen\pixevent</Filter>
+    </ClCompile>
+    <ClCompile Include="eurasia\codegen\pixfmts\sgxpixfmts.c">
+      <Filter>Source Files\eurasia\codegen\pixfmts</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -201,6 +246,30 @@
     </ClInclude>
     <ClInclude Include="..\include\gpu_es4\eurasia\services4\include\pvr_bridge.h">
       <Filter>Header Files\eurasia\services4\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gpu_es4\eurasia\codegen\usegen\usegen.h">
+      <Filter>Header Files\eurasia\codegen\usegen</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gpu_es4\eurasia\codegen\pixevent\pixevent.h">
+      <Filter>Header Files\eurasia\codegen\pixevent</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gpu_es4\eurasia\codegen\pixevent\pixeventpbesetup.h">
+      <Filter>Header Files\eurasia\codegen\pixevent</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gpu_es4\eurasia\codegen\pds\pds.h">
+      <Filter>Header Files\eurasia\codegen\pds</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gpu_es4\eurasia\include4\img_3dtypes.h">
+      <Filter>Header Files\eurasia\include4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gpu_es4\eurasia\codegen\pixfmts\sgx543pixfmts.h">
+      <Filter>Header Files\eurasia\codegen\pixfmts</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gpu_es4\eurasia\codegen\pixfmts\sgxpixfmts.h">
+      <Filter>Header Files\eurasia\codegen\pixfmts</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gpu_es4\eurasia\codegen\pixfmts\sgxpixfmts_types.h">
+      <Filter>Header Files\eurasia\codegen\pixfmts</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -11,6 +11,11 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="eurasia\codegen\pds\pds.c" />
+    <ClCompile Include="eurasia\codegen\pixevent\pixevent.c" />
+    <ClCompile Include="eurasia\codegen\pixevent\pixeventpbesetup.c" />
+    <ClCompile Include="eurasia\codegen\pixfmts\sgxpixfmts.c" />
+    <ClCompile Include="eurasia\codegen\usegen\usegen.c" />
     <ClCompile Include="eurasia\services4\srvclient\bridged\bridged_pvr_dc_glue.c" />
     <ClCompile Include="eurasia\services4\srvclient\bridged\bridged_pvr_glue.c" />
     <ClCompile Include="eurasia\services4\srvclient\common\resources.c" />
@@ -19,6 +24,13 @@
     <ClCompile Include="psp2\module.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\include\gpu_es4\eurasia\codegen\pds\pds.h" />
+    <ClInclude Include="..\include\gpu_es4\eurasia\codegen\pixevent\pixevent.h" />
+    <ClInclude Include="..\include\gpu_es4\eurasia\codegen\pixevent\pixeventpbesetup.h" />
+    <ClInclude Include="..\include\gpu_es4\eurasia\codegen\pixfmts\sgx543pixfmts.h" />
+    <ClInclude Include="..\include\gpu_es4\eurasia\codegen\pixfmts\sgxpixfmts.h" />
+    <ClInclude Include="..\include\gpu_es4\eurasia\codegen\pixfmts\sgxpixfmts_types.h" />
+    <ClInclude Include="..\include\gpu_es4\eurasia\codegen\usegen\usegen.h" />
     <ClInclude Include="..\include\gpu_es4\eurasia\hwdefs\mnemedefs.h" />
     <ClInclude Include="..\include\gpu_es4\eurasia\hwdefs\sgx543defs.h" />
     <ClInclude Include="..\include\gpu_es4\eurasia\hwdefs\sgx543_debug_defs.h" />
@@ -36,6 +48,7 @@
     <ClInclude Include="..\include\gpu_es4\eurasia\hwdefs\sgxusespecialbankdefs.h" />
     <ClInclude Include="..\include\gpu_es4\eurasia\hwdefs\sgxvec34usedefs.h" />
     <ClInclude Include="..\include\gpu_es4\eurasia\hwdefs\usecodegen.h" />
+    <ClInclude Include="..\include\gpu_es4\eurasia\include4\img_3dtypes.h" />
     <ClInclude Include="..\include\gpu_es4\eurasia\include4\img_defs.h" />
     <ClInclude Include="..\include\gpu_es4\eurasia\include4\img_list.h" />
     <ClInclude Include="..\include\gpu_es4\eurasia\include4\img_types.h" />
@@ -93,7 +106,7 @@
       <PreprocessorDefinitions>_DEBUG;PSP2_PRX_EXPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <AdditionalIncludeDirectories>$(SCE_PSP2_SDK_DIR)\target\include\vdsuite\user;$(SCE_PSP2_SDK_DIR)\target\include\vdsuite\common;$(SolutionDir)include\gpu_es4;$(SolutionDir)include\gpu_es4\eurasia\include4;$(SolutionDir)include\gpu_es4\eurasia\hwdefs;$(SolutionDir)include\gpu_es4\eurasia\services4\include;$(SolutionDir)include\gpu_es4\eurasia\services4\system\psp2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SCE_PSP2_SDK_DIR)\target\include\vdsuite\user;$(SCE_PSP2_SDK_DIR)\target\include\vdsuite\common;$(SolutionDir)include\gpu_es4;$(SolutionDir)include\gpu_es4\eurasia\include4;$(SolutionDir)include\gpu_es4\eurasia\hwdefs;$(SolutionDir)include\gpu_es4\eurasia\services4\include;$(SolutionDir)include\gpu_es4\eurasia\services4\system\psp2;$(SolutionDir)include\gpu_es4\eurasia\codegen\pds;$(SolutionDir)include\gpu_es4\eurasia\codegen\pixevent;$(SolutionDir)include\gpu_es4\eurasia\codegen\usegen;$(SolutionDir)include\gpu_es4\eurasia\codegen\pixfmts;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalDependencies>-lSceDisplayUser_stub;-lSceDisplay_stub;-lSceGpuEs4ForUser_stub;$(ProjectDir)libSceGpuEs4User_stub.a;%(AdditionalDependencies)</AdditionalDependencies>

@@ -6,6 +6,7 @@
 
 #include "eurasia/include4/services.h"
 #include "eurasia/include4/pvr_debug.h"
+#include "eurasia/include4/sgxapi_km.h"
 #include "eurasia/services4/include/servicesint.h"
 #include "eurasia/services4/include/pvr_bridge.h"
 
@@ -144,8 +145,8 @@ PVRSRV_ERROR IMG_CALLCONV PVRSRVMapDeviceClassMemory(const PVRSRV_DEV_DATA *psDe
 
 	eError = PVRSRVMapMemoryToGpu(
 		psDevData,
-		DEVICE_MEMORY_HEAP_SHARED,
-		0,
+		hDevMemContext,
+		SGX_GENERAL_HEAP_ID,
 		psMemInfoIn->uAllocSize,
 		0,
 		psMemInfoIn->pvLinAddr,
@@ -194,7 +195,7 @@ PVRSRV_ERROR PVRSRVUnmapDeviceClassMemory(const PVRSRV_DEV_DATA *psDevData,
 	eError = PVRSRVUnmapMemoryFromGpu(
 		psDevData,
 		psMemInfo->pvLinAddr,
-		0,
+		SGX_GENERAL_HEAP_ID,
 		IMG_NULL);
 	if (eError != PVRSRV_OK)
 	{

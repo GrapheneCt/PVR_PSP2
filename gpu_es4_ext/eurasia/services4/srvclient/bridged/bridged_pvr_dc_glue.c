@@ -1,6 +1,6 @@
 #include <kernel.h>
 #include <display.h>
-#define PVRSRV_NEED_PVR_DPF
+
 #include "psp2_pvr_desc.h"
 #include "psp2_pvr_defs.h"
 

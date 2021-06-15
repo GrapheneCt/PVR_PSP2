@@ -327,7 +327,8 @@ typedef struct _SGX_KICKTA_COMMON_
 	IMG_UINT32			ui32ISPBGObjDepth;
 	IMG_UINT32			ui32ISPBGObj;
 	IMG_UINT32			ui32ISPIPFMisc;
-#if defined(SGX545)
+
+#if defined(SGX545) || defined(__psp2__)
 	IMG_UINT32			ui32GSGBase;
 	IMG_UINT32			ui32GSGStride;
 	IMG_UINT32			ui32GSGWrapAddr;

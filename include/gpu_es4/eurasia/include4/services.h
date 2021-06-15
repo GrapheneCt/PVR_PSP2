@@ -40,7 +40,7 @@ extern "C" {
 #include "img_defs.h"
 #include "servicesext.h"
 #include "pdumpdefs.h"
-#include <img_list.h>
+#include "img_list.h"
 
 
 /* The comment below is the front page for code-generated doxygen documentation */
@@ -431,11 +431,11 @@ typedef struct _PVRSRV_KERNEL_MEM_INFO_ *PPVRSRV_KERNEL_MEM_INFO;
 #if defined (__psp2__)
 typedef struct _PVRSRV_CLIENT_MEM_INFO_
 {
-	/* CPU Virtual Address */
-	IMG_PVOID				pvLinAddr;
-
 	/* TODO - remove when sgxkick is moved into userspace */
 	IMG_PVOID				pvLinAddrKM;
+
+	/* CPU Virtual Address */
+	IMG_PVOID				pvLinAddr;
 
 	/* Device Virtual Address */
 	IMG_DEV_VIRTADDR		sDevVAddr;

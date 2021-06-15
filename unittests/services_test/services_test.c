@@ -538,11 +538,11 @@ start_again:
 
 	driverMemUID = sceKernelAllocMemBlock("SGXDriver", SCE_KERNEL_MEMBLOCK_TYPE_USER_NC_RW, 0x100000, NULL);
 
-	PVRSRVMapMemoryToGpuByUID(ps3DDevData, driverMemUID, &hPbMem, 0);
+	PVRSRVMapMemoryToGpuByUID(ps3DDevData, driverMemUID, &hPbMem, IMG_FALSE);
 
 	pbMemUID = sceKernelAllocMemBlock("SGXParamBuffer", SCE_KERNEL_MEMBLOCK_TYPE_USER_CDRAM_RW, 4 * 1024 * 1024, NULL);
 
-	PVRSRVMapMemoryToGpuByUID(ps3DDevData, pbMemUID, &hPbMem, 1);
+	PVRSRVMapMemoryToGpuByUID(ps3DDevData, pbMemUID, &hPbMem, IMG_TRUE);
 
 	sCreateRenderContext.ui32Flags = 2 | 4;
 	sCreateRenderContext.ui32PBSize = 4 * 1024 * 1024 - 0x80000;
@@ -593,7 +593,7 @@ start_again:
 
 	rtMemUID = sceKernelAllocMemBlock("SGXRenderTarget", SCE_KERNEL_MEMBLOCK_TYPE_USER_NC_RW, 0x100000, NULL);
 
-	PVRSRVMapMemoryToGpuByUID(ps3DDevData, rtMemUID, &hRtMem, 1);
+	PVRSRVMapMemoryToGpuByUID(ps3DDevData, rtMemUID, &hRtMem, IMG_TRUE);
 
 	sAddRTInfo.eRotation = PVRSRV_ROTATE_0;
 	sAddRTInfo.ui32RendersPerFrame = 1;

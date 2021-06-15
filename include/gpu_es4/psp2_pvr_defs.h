@@ -48,10 +48,10 @@ PVRSRV_ERROR PVRSRVUnmapMemoryFromGpuByUID(PVRSRV_DEV_DATA *psDevData, SceUID me
 
 PVRSRV_ERROR PVRSRVMapMemoryToGpu(
 	PVRSRV_DEV_DATA *psDevData,
-	IMG_UINT32 ui32HeapType,
+	IMG_SID hDevMemContext,
 	IMG_UINT32 ui32HeapIndex,
 	IMG_UINT32 ui32Size,
-	IMG_UINT32 ui32SizeLimit,
+	IMG_UINT32 ui32GpuDevVaddr,
 	IMG_PVOID pMemBase,
 	IMG_UINT32 ui32Flags,
 	IMG_UINT32 *pui32InternalOffset);

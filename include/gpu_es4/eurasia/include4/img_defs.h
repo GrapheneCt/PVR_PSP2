@@ -100,7 +100,7 @@ typedef char				TCHAR, *PTCHAR, *PTSTR;
 			#elif defined(__psp2__) && defined(PSP2_PRX_EXPORT)
 
 				#define IMG_CALLCONV
-				#define IMG_INTERNAL	__attribute__((visibility("hidden")))
+				#define IMG_INTERNAL	__declspec(dllexport)
 				#define IMG_EXPORT		__declspec(dllexport)
 				#define IMG_IMPORT		__declspec(dllexport)
 				#define IMG_RESTRICT	__restrict__
