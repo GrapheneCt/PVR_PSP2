@@ -146,7 +146,7 @@ PVRSRV_ERROR IMG_CALLCONV PVRSRVMapDeviceClassMemory(const PVRSRV_DEV_DATA *psDe
 	eError = PVRSRVMapMemoryToGpu(
 		psDevData,
 		hDevMemContext,
-		SGX_GENERAL_HEAP_ID,
+		0,
 		psMemInfoIn->uAllocSize,
 		0,
 		psMemInfoIn->pvLinAddr,
@@ -195,7 +195,7 @@ PVRSRV_ERROR PVRSRVUnmapDeviceClassMemory(const PVRSRV_DEV_DATA *psDevData,
 	eError = PVRSRVUnmapMemoryFromGpu(
 		psDevData,
 		psMemInfo->pvLinAddr,
-		SGX_GENERAL_HEAP_ID,
+		0,
 		IMG_NULL);
 	if (eError != PVRSRV_OK)
 	{

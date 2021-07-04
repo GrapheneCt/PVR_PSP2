@@ -827,9 +827,10 @@ start_again:
 
 	for (i = 0; i < ui32SharedHeapCount; i++)
 	{
-		DPF(".... Shared heap %u - HeapID:0x%x DevVAddr:0x%x "
+		DPF(".... Shared heap %u - HeapHandle:0x%X HeapID:0x%x DevVAddr:0x%x "
 			"Size:0x%x Attr:0x%x\n",
 			i,
+			asHeapInfo[i].hDevMemHeap,
 			asHeapInfo[i].ui32HeapID,
 			asHeapInfo[i].sDevVAddrBase.uiAddr,
 			asHeapInfo[i].ui32HeapByteSize,
