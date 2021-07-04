@@ -3212,6 +3212,10 @@ static IMG_VOID srft_SetupTAKick(SGX_KICKTA				*psKickTA,
 								 IMG_UINT32				ui32FrameNum,
 								 PVRSRV_CLIENT_MEM_INFO	*psRenderSurfMemInfo,
 								 IMG_HANDLE				hRTDataSet,
+#if defined(__psp2__)
+								 IMG_UINT32					ui32MainRenderWidth,
+								 IMG_UINT32					ui32MainRenderHeight,
+#endif
 								 IMG_DEV_VIRTADDR		sTABufferCtlStreamBase,
 								 IMG_BOOL				bTestHWRVDM,
 								 IMG_PVOID 				pvKickTAPDump)
@@ -3257,7 +3261,7 @@ static IMG_VOID srft_SetupTAKick(SGX_KICKTA				*psKickTA,
 	psKickTA->sKickTACommon.sISPStencilLoadBase.uiAddr	= psHWRegs->ui32ISPStencilLoadBase;
 	psKickTA->sKickTACommon.sISPStencilStoreBase.uiAddr	= psHWRegs->ui32ISPStencilStoreBase;
 	
-	#if !defined(SGX545) && !defined(__psp2__)
+	#if !defined(SGX545)
 	psKickTA->sKickTACommon.ui32ISPPerpendicular	= psHWRegs->ui32ISPPerpendicular;
 	psKickTA->sKickTACommon.ui32ISPCullValue		= psHWRegs->ui32ISPCullValue;
 	#endif
@@ -3319,6 +3323,12 @@ static IMG_VOID srft_SetupTAKick(SGX_KICKTA				*psKickTA,
 	}
 
 	psKickTA->sKickTACommon.ui32Frame = ui32FrameNum;
+
+	psKickTA->sKickTACommon.ui32SceneWidth = ui32MainRenderWidth;
+	psKickTA->sKickTACommon.ui32SceneHeight = ui32MainRenderHeight;
+	psKickTA->sKickTACommon.ui32ValidRegionXMax = ui32MainRenderWidth - 1;
+	psKickTA->sKickTACommon.ui32ValidRegionYMax = ui32MainRenderHeight - 1;
+	psKickTA->sKickTACommon.ui16PrimitiveSplitThreshold = 1000;
 	
 	/* KickTA pdump */
 #if defined(PDUMP)
@@ -3766,7 +3776,10 @@ static IMG_VOID srft_DrawTriangles(SRFT_SHARED				*psShared,
 						 psConfig->b2XMSAADontResolve,
 						 ui32FrameNum,
 						 bNoMainRenderSyncObject ? IMG_NULL : psRenderSurfMemInfo, hRTDataSet,
-						 sVDMControlStreamDevVAddr,
+#if defined(__psp2__)
+						 psShared->ui32RectangleSizeX, psShared->ui32RectangleSizeY,
+#endif
+						sVDMControlStreamDevVAddr,
 						 CHECK_FRAME_NUM_LAST(ui32RenderCount, psConfig->ui32TestHWRRateVDM),
 						 pvKickTAPDump);
 
@@ -5413,7 +5426,7 @@ static IMG_VOID srft_ParseOptions(IMG_INT		argc,
 	psConfig->ui32PixelUSSECodeMemFlags = PVRSRV_MEM_READ | PVRSRV_MEM_NO_SYNCOBJ | PVRSRV_HAP_NO_GPU_VIRTUAL_ON_ALLOC;
 	psConfig->ui32SlowdownFactorTA = 0;
 	psConfig->ui32SlowdownFactor3D = 0;
-	psConfig->ui32RendersPerFrame = 0;
+	psConfig->ui32RendersPerFrame = 1;
 	psConfig->ui323DParamsHeapReserveFactor = 0;
 	psConfig->ui32PixelShaderHeapReserve = 0;
 	psConfig->eRCPriority = SGX_CONTEXT_PRIORITY_LOW;

@@ -315,6 +315,17 @@ typedef struct _SGX_KICKTA_COMMON_
 	IMG_DEV_VIRTADDR	sVisTestResultMem;
 	IMG_UINT32			ui32VisTestCount;
 
+#if defined(__psp2__)
+	IMG_UINT32			ui32Scene;
+	IMG_UINT32			ui32UnknownFlags14;
+
+	IMG_UINT32			ui32ValidRegionXMax;
+	IMG_UINT32			ui32ValidRegionYMax;
+
+	IMG_UINT16			ui16MaxDrawCallsPerCore;
+	IMG_UINT16			ui16PrimitiveSplitThreshold;
+#endif
+
 #if defined(SGX_FEATURE_VDM_CONTEXT_SWITCH)
 	#if !defined(SGX_FEATURE_USE_SA_COUNT_REGISTER)
 	IMG_DEV_VIRTADDR	sVDMSARestoreDataDevAddr[SGX_MAX_VDM_STATE_RESTORE_PROGS];
@@ -328,7 +339,7 @@ typedef struct _SGX_KICKTA_COMMON_
 	IMG_UINT32			ui32ISPBGObj;
 	IMG_UINT32			ui32ISPIPFMisc;
 
-#if defined(SGX545) || defined(__psp2__)
+#if defined(SGX545)
 	IMG_UINT32			ui32GSGBase;
 	IMG_UINT32			ui32GSGStride;
 	IMG_UINT32			ui32GSGWrapAddr;
@@ -350,6 +361,9 @@ typedef struct _SGX_KICKTA_COMMON_
 #endif
 #if defined(EUR_CR_PDS_PP_INDEPENDANT_STATE)
 	IMG_UINT32			ui32TriangleSplitPixelThreshold;
+#if defined(__psp2__)
+	IMG_BOOL			ui32PerQuadrantPixelSplit;
+#endif
 #endif
 	IMG_DEV_VIRTADDR	sISPZLoadBase;
 	IMG_DEV_VIRTADDR	sISPStencilLoadBase;
@@ -360,7 +374,13 @@ typedef struct _SGX_KICKTA_COMMON_
 	IMG_UINT32			ui32RTAStideS;
 #endif
 
+#if defined(__psp2__)
+	IMG_BOOL			bSeperateStencilLoad;
+	IMG_BOOL			bSeperateStencilStore;
+#else
 	IMG_BOOL			bSeperateStencilLoadStore;
+#endif
+
 	IMG_UINT32			ui32ZLSCtl;
 	IMG_UINT32			ui32ISPValidId;
 	IMG_UINT32			ui32ISPDBias;		
@@ -437,6 +457,11 @@ typedef struct _SGX_KICKTA_COMMON_
 	IMG_UINT32			ui32MTECtrl;
 
 	IMG_UINT32			aui32SpecObject[3];			/*!< 3 words for PDS hardware background object */
+
+#if defined(__psp2__)
+	IMG_UINT32			ui32SceneWidth;
+	IMG_UINT32			ui32SceneHeight;
+#endif
 
 	IMG_UINT32			ui32NumTAStatusVals;
 	IMG_UINT32			ui32Num3DStatusVals;
