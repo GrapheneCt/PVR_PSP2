@@ -321,7 +321,7 @@ FORCE_INLINE IMG_VOID SetUSEExecutionAddress(IMG_UINT32 *pui32DOutU,
 	PVR_ASSERT(ui32CodeBaseReg <= EURASIA_PDS_DOUTU0_CBASE_MAX);
 	PVR_ASSERT(ui32ExeAddr < (1UL << SGX_USE_CODE_SEGMENT_RANGE_BITS));
 	PVR_ASSERT((ui32ExeAddr & ((1UL << EURASIA_PDS_DOUTU0_EXE_ALIGNSHIFT) - 1)) == 0);
-	
+
 	/*
 		Set the bits of the code base register.
 	*/
@@ -330,7 +330,7 @@ FORCE_INLINE IMG_VOID SetUSEExecutionAddress(IMG_UINT32 *pui32DOutU,
 #if defined(SGX_FEATURE_USE_UNLIMITED_PHASES)
 	
 	PVR_UNREFERENCED_PARAMETER(ui32Phase);
-	
+
 	/*
 		Set the bits of the address.
 	*/

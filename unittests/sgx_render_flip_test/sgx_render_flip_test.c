@@ -4267,10 +4267,10 @@ static IMG_VOID *srft_PerThread(IMG_VOID	*pvArg)
                                        psShared->hDevMemContext,
                                        psShared->hUSEFragmentHeap,
                                        pixelShaderAllocSize,
-                                       0,
+                                       1UL << SGX_USE_CODE_SEGMENT_RANGE_BITS,
                                        psPixelShaderHeapReservedMemInfo->pvLinAddr,
-                                       PVRSRV_MEM_READ | PVRSRV_MEM_USER_SUPPLIED_DEVVADDR,
-                                       IMG_NULL);
+                                       PVRSRV_MEM_READ,
+                                       &psPixelShaderHeapReservedMemInfo->sDevVAddr.uiAddr);
 #else
         fnInfo("Allocate %ukB pixel shader reserve memory\n",
             psConfig->ui32PixelShaderHeapReserve);
@@ -4467,10 +4467,10 @@ static IMG_VOID *srft_PerThread(IMG_VOID	*pvArg)
                                        psShared->hDevMemContext,
                                        psShared->hUSEVertexHeap,
                                        ui32Size,
-                                       0,
+                                       1UL << SGX_USE_CODE_SEGMENT_RANGE_BITS,
                                        apsVertexUSSEMemInfo[ui32RenderIndex]->pvLinAddr,
-                                       PVRSRV_MEM_READ | PVRSRV_MEM_USER_SUPPLIED_DEVVADDR,
-                                       IMG_NULL);
+                                       PVRSRV_MEM_READ,
+                                       &apsVertexUSSEMemInfo[ui32RenderIndex]->sDevVAddr.uiAddr);
 #else
         eResult = PVRSRVAllocDeviceMem(psShared->psSGXDevData,
                                        psShared->hUSEVertexHeap,

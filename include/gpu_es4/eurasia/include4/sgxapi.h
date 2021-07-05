@@ -55,8 +55,13 @@ extern "C" {
 /*
 	SGX USSE code execution register base indices
 */
+#if defined(__psp2__)
+#define SGX_PIXSHADER_USE_CODE_BASE_INDEX	4
+#define SGX_VTXSHADER_USE_CODE_BASE_INDEX	0
+#else	
 #define SGX_PIXSHADER_USE_CODE_BASE_INDEX	0
 #define SGX_VTXSHADER_USE_CODE_BASE_INDEX	10
+#endif
 
 /******************************************************************************
  Local ISR handler structures
