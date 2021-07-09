@@ -43,8 +43,8 @@ IMG_INT PVRSRVWaitSyncOp(IMG_SID hKernelSyncInfoModObj, IMG_UINT32 *pui32Timeout
 
 IMG_INT PVRSRV_BridgeDispatchKM(IMG_UINT32 cmd, IMG_PVOID psBridgePackageKM);
 
-PVRSRV_ERROR PVRSRVMapMemoryToGpuByUID(PVRSRV_DEV_DATA *psDevData, SceUID memblockUid, IMG_SID *phMemHandle, IMG_BOOL flag); // SceGpuEs4User_0EA7458D
-PVRSRV_ERROR PVRSRVUnmapMemoryFromGpuByUID(PVRSRV_DEV_DATA *psDevData, SceUID memblockUid); // SceGpuEs4User_156A6B70
+PVRSRV_ERROR PVRSRVRegisterMemBlock(PVRSRV_DEV_DATA *psDevData, SceUID memblockUid, IMG_SID *phMemHandle, IMG_BOOL flag); // SceGpuEs4User_0EA7458D
+PVRSRV_ERROR PVRSRVUnregisterMemBlock(PVRSRV_DEV_DATA *psDevData, SceUID memblockUid); // SceGpuEs4User_156A6B70
 
 PVRSRV_ERROR PVRSRVMapMemoryToGpu(
 	PVRSRV_DEV_DATA *psDevData,

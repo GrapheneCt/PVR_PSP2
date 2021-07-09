@@ -4002,7 +4002,7 @@ static IMG_VOID srft_AddRenderTarget(SRFT_CONFIG		*psConfig,
 
     rtMemUID = sceKernelAllocMemBlock("SGXRenderTarget", SCE_KERNEL_MEMBLOCK_TYPE_USER_NC_RW, 0x100000, NULL);
 
-    PVRSRVMapMemoryToGpuByUID(psSGXDevData, rtMemUID, &hRtMem, IMG_TRUE);
+    PVRSRVRegisterMemBlock(psSGXDevData, rtMemUID, &hRtMem, IMG_TRUE);
 
     sAddRTInfo.eRotation = PVRSRV_ROTATE_0;
     sAddRTInfo.ui32RendersPerQueueSwap = 3;
@@ -6629,11 +6629,11 @@ main(IMG_INT argc, IMG_CHAR **argv)
 
     driverMemUID = sceKernelAllocMemBlock("SGXDriver", SCE_KERNEL_MEMBLOCK_TYPE_USER_NC_RW, 0x100000, NULL);
 
-    PVRSRVMapMemoryToGpuByUID(&sSGXDevData, driverMemUID, &hPbMem, IMG_FALSE);
+    PVRSRVRegisterMemBlock(&sSGXDevData, driverMemUID, &hPbMem, IMG_FALSE);
 
     pbMemUID = sceKernelAllocMemBlock("SGXParamBuffer", SCE_KERNEL_MEMBLOCK_TYPE_USER_CDRAM_RW, sConfig.ui32PBSize, NULL);
 
-    PVRSRVMapMemoryToGpuByUID(&sSGXDevData, pbMemUID, &hPbMem, IMG_TRUE);
+    PVRSRVRegisterMemBlock(&sSGXDevData, pbMemUID, &hPbMem, IMG_TRUE);
 
 #endif
 
