@@ -19,7 +19,7 @@
 #define TRANSFER_QUEUE
 #define SGX_CORE_REV 113 //Actual revision on Vita is 117, but there is no support for it in this driver version
 
-// Defined here due to driver bug in revision 117 not having a bug present in revision 113
+// Defined here due to a bug in core revision 113 which is seemingly not present in revision 117.
 #define EUR_CR_PDS_PP_INDEPENDANT_STATE     0x0AE8
 #define EUR_CR_PDS_PP_INDEPENDANT_STATE_DISABLE_MASK 0x00000001U
 #define EUR_CR_PDS_PP_INDEPENDANT_STATE_DISABLE_SHIFT 0
