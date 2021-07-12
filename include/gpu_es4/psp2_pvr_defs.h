@@ -6,6 +6,7 @@
 #include <kernel.h>
 
 #include "eurasia/include4/services.h"
+#include "eurasia/include4/sgxapi.h"
 
 #define PVRSRV_PSP2_GENERIC_MEMORY_ATTRIB (PVRSRV_MEM_READ \
                                           | PVRSRV_MEM_WRITE \
@@ -116,9 +117,9 @@ PVRSRV_ERROR IMG_CALLCONV SGXTransferControlStream(
 	IMG_UINT32 ui32ControlStreamWords, 
 	PVRSRV_DEV_DATA *psDevData, 
 	IMG_HANDLE hTransferContext, 
-	IMG_HANDLE hSyncObj, 
-	IMG_UINT32 ui32SyncFlags, 
-	IMG_UINT32 ui32SyncFlags2, 
-	IMG_HANDLE hNotification);
+	IMG_SID hKernelSyncInfo, 
+	IMG_BOOL bTASync, 
+	IMG_BOOL b3DSync, 
+	SGX_STATUS_UPDATE *psStatusUpdate);
 
 #endif
