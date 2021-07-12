@@ -6,6 +6,7 @@
 #include <kernel.h>
 
 #include "eurasia/include4/services.h"
+#include "eurasia/include4/sgxapi.h"
 
 #define PVRSRV_PSP2_GENERIC_MEMORY_ATTRIB (PVRSRV_MEM_READ \
                                           | PVRSRV_MEM_WRITE \
@@ -24,6 +25,15 @@
 
 #define SGX_PIXELSHADER_SHARED_HEAP_ID	0x12
 #define SGX_VERTEXSHADER_SHARED_HEAP_ID	0x13
+
+#define SGX_PIXSHADER_SHARED_USE_CODE_BASE_INDEX	9
+#define SGX_VTXSHADER_SHARED_USE_CODE_BASE_INDEX	8
+
+#define SGX_KICKTA_SCENEFLAGS_VDM_BUFFER_HIGHMARK				0x00000001
+#define SGX_KICKTA_SCENEFLAGS_VERTEX_BUFFER_HIGHMARK			0x00000002
+#define SGX_KICKTA_SCENEFLAGS_FRAGMENT_BUFFER_HIGHMARK			0x00000004
+#define SGX_KICKTA_SCENEFLAGS_FRAGMENT_USSE_BUFFER_HIGHMARK		0x00000008
+#define SGX_KICKTA_SCENEFLAGS_MIDSCENERENDER					0x00000010
 
 typedef struct PVRSRVHeapInfoPsp2 {
 	SceInt32 generalHeapId;
@@ -107,9 +117,9 @@ PVRSRV_ERROR IMG_CALLCONV SGXTransferControlStream(
 	IMG_UINT32 ui32ControlStreamWords, 
 	PVRSRV_DEV_DATA *psDevData, 
 	IMG_HANDLE hTransferContext, 
-	IMG_HANDLE hSyncObj, 
-	IMG_UINT32 ui32SyncFlags, 
-	IMG_UINT32 ui32SyncFlags2, 
-	IMG_HANDLE hNotification);
+	IMG_SID hKernelSyncInfo, 
+	IMG_BOOL bTASync, 
+	IMG_BOOL b3DSync, 
+	SGX_STATUS_UPDATE *psStatusUpdate);
 
 #endif

@@ -322,7 +322,7 @@ typedef struct _SGX_KICKTA_COMMON_
 
 #if defined(__psp2__)
 	IMG_UINT32			ui32Scene;
-	IMG_UINT32			ui32UnknownFlags14;
+	IMG_UINT32			ui32SceneFlags;
 
 	IMG_UINT32			ui32ValidRegionXMax;
 	IMG_UINT32			ui32ValidRegionYMax;
