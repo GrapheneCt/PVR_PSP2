@@ -9,19 +9,19 @@
 #include "eurasia/include4/sgxapi.h"
 
 #define PVRSRV_PSP2_GENERIC_MEMORY_ATTRIB (PVRSRV_MEM_READ \
-                                          | PVRSRV_MEM_WRITE \
-                                          | PVRSRV_HAP_NO_GPU_VIRTUAL_ON_ALLOC \
-                                          | PVRSRV_MEM_CACHE_CONSISTENT \
-                                          | PVRSRV_MEM_NO_SYNCOBJ)
+										  | PVRSRV_MEM_WRITE \
+										  | PVRSRV_HAP_NO_GPU_VIRTUAL_ON_ALLOC \
+										  | PVRSRV_MEM_CACHE_CONSISTENT \
+										  | PVRSRV_MEM_NO_SYNCOBJ)
 
 #define PVRSRV_PSP2_GENERIC_MEMORY_ATTRIB_NC (PVRSRV_MEM_READ \
-                                          | PVRSRV_MEM_WRITE \
-                                          | PVRSRV_HAP_NO_GPU_VIRTUAL_ON_ALLOC \
-                                          | PVRSRV_MEM_NO_SYNCOBJ)
+										  | PVRSRV_MEM_WRITE \
+										  | PVRSRV_HAP_NO_GPU_VIRTUAL_ON_ALLOC \
+										  | PVRSRV_MEM_NO_SYNCOBJ)
 
 #define PVRSRV_PSP2_GENERIC_MEMORY_ATTRIB_RDONLY_NC (PVRSRV_MEM_READ \
-                                          | PVRSRV_HAP_NO_GPU_VIRTUAL_ON_ALLOC \
-                                          | PVRSRV_MEM_NO_SYNCOBJ)
+										  | PVRSRV_HAP_NO_GPU_VIRTUAL_ON_ALLOC \
+										  | PVRSRV_MEM_NO_SYNCOBJ)
 
 #define SGX_PIXELSHADER_SHARED_HEAP_ID	0x12
 #define SGX_VERTEXSHADER_SHARED_HEAP_ID	0x13
@@ -35,42 +35,9 @@
 #define SGX_KICKTA_SCENEFLAGS_FRAGMENT_USSE_BUFFER_HIGHMARK		0x00000008
 #define SGX_KICKTA_SCENEFLAGS_MIDSCENERENDER					0x00000010
 
-typedef struct PVRSRVHeapInfoPsp2 {
-	SceInt32 generalHeapId;
-	SceInt32 vertexshaderHeapId;
-	SceInt32 pixelshaderHeapId;
-	SceUInt32 vertexshaderHeapSize;
-	SceUInt32 pixelshaderHeapSize;
-	SceInt32 vertexshaderSharedHeapId;
-	SceInt32 pixelshaderSharedHeapId;
-	SceUInt32 vertexshaderSharedHeapSize;
-	SceUInt32 pixelshaderSharedHeapSize;
-	SceInt32 syncinfoHeapId;
-	SceInt32 vpbTiledHeapId;
-} PVRSRVHeapInfoPsp2;
-
-IMG_INT PVRSRVWaitSyncOp(IMG_SID hKernelSyncInfoModObj, IMG_UINT32 *pui32Timeout);
-
-IMG_INT PVRSRV_BridgeDispatchKM(IMG_UINT32 cmd, IMG_PVOID psBridgePackageKM);
-
-PVRSRV_ERROR PVRSRVRegisterMemBlock(PVRSRV_DEV_DATA *psDevData, SceUID memblockUid, IMG_SID *phMemHandle, IMG_BOOL flag); // SceGpuEs4User_0EA7458D
-PVRSRV_ERROR PVRSRVUnregisterMemBlock(PVRSRV_DEV_DATA *psDevData, SceUID memblockUid); // SceGpuEs4User_156A6B70
-
-PVRSRV_ERROR PVRSRVMapMemoryToGpu(
-	PVRSRV_DEV_DATA *psDevData,
-	IMG_SID hDevMemContext,
-	IMG_UINT32 ui32HeapIndex,
-	IMG_UINT32 ui32Size,
-	IMG_UINT32 ui32GpuDevVaddr,
-	IMG_PVOID pMemBase,
-	IMG_UINT32 ui32Flags,
-	IMG_UINT32 *pui32InternalOffset);
-
-PVRSRV_ERROR PVRSRVUnmapMemoryFromGpu(
-	PVRSRV_DEV_DATA *psDevData,
-	IMG_PVOID pMemBase,
-	IMG_INT32 ui32HeapIndex,
-	IMG_INT32 i32Unk4);
+#define SGX_ADDRTFLAGS_CUSTOM_MULTISAMPLELOCATIONS				0x00010000
+#define SGX_ADDRTFLAGS_MACROTILE_SYNC							0x00020000
+#define SGX_ADDRTFLAGS_CUSTOM_MACROTILE_COUNTS					0x00040000
 
 typedef struct _PVRSRV_PSP2_OP_CLIENT_SYNC_INFO_
 {
@@ -111,6 +78,75 @@ typedef struct _SGX_PSP2_CONTROL_STREAM_
 	} uData;
 } SGX_PSP2_CONTROL_STREAM;
 
+typedef struct
+{
+	IMG_UINT32 ui32NumPixelsX;
+	IMG_UINT32 ui32NumPixelsY;
+	IMG_UINT32 ui16MSAASamplesInX;
+	IMG_UINT32 ui16MSAASamplesInY;
+
+	IMG_BOOL   bMacrotileSync;
+} SGX_RTINFO;
+
+typedef struct
+{
+	IMG_UINT32       ui32NumPixelsInX;
+	IMG_UINT32       ui32NumPixelsInY;
+	IMG_UINT16       ui16MSAASamplesInX;
+	IMG_UINT16       ui16MSAASamplesInY;
+
+	IMG_UINT32       ui32BGObjUCoord;
+
+	IMG_DEV_VIRTADDR sSpecialObjDevVAddr;
+	IMG_UINT32       ui32Unknown;
+
+	IMG_UINT32       ui32BGObjTag;
+	IMG_UINT32       ui32NumRTData;
+	IMG_UINT32       ui32MTEMultiSampleCtl;
+	IMG_PVOID        pvRTDataSet;
+
+	IMG_UINT32       ui32MTileNumber;
+	IMG_UINT32       ui32MTileX1;
+	IMG_UINT32       ui32MTileX2;
+	IMG_UINT32       ui32MTileX3;
+	IMG_UINT32       ui32MTileY1;
+	IMG_UINT32       ui32MTileY2;
+	IMG_UINT32       ui32MTileY3;
+	IMG_UINT32       ui32MTileStride;
+
+	IMG_UINT32       ui32Flags;
+} SGX_RTINFO_EXT;
+
+IMG_IMPORT
+IMG_INT PVRSRVWaitSyncOp(IMG_SID hKernelSyncInfoModObj, IMG_UINT32 *pui32Timeout);
+
+IMG_IMPORT
+IMG_INT PVRSRV_BridgeDispatchKM(IMG_UINT32 cmd, IMG_PVOID psBridgePackageKM);
+
+IMG_IMPORT
+PVRSRV_ERROR PVRSRVRegisterMemBlock(PVRSRV_DEV_DATA *psDevData, SceUID memblockUid, IMG_SID *phMemHandle, IMG_BOOL flag);
+
+IMG_IMPORT
+PVRSRV_ERROR PVRSRVUnregisterMemBlock(PVRSRV_DEV_DATA *psDevData, SceUID memblockUid);
+
+IMG_IMPORT
+PVRSRV_ERROR PVRSRVMapMemoryToGpu(
+	PVRSRV_DEV_DATA *psDevData,
+	IMG_SID hDevMemContext,
+	IMG_UINT32 ui32HeapIndex,
+	IMG_UINT32 ui32Size,
+	IMG_UINT32 ui32GpuDevVaddr,
+	IMG_PVOID pMemBase,
+	IMG_UINT32 ui32Flags,
+	IMG_UINT32 *pui32InternalOffset);
+
+IMG_IMPORT
+PVRSRV_ERROR PVRSRVUnmapMemoryFromGpu(
+	PVRSRV_DEV_DATA *psDevData,
+	IMG_PVOID pMemBase,
+	IMG_INT32 ui32HeapIndex,
+	IMG_INT32 i32Unk4);
+
 IMG_IMPORT
 PVRSRV_ERROR IMG_CALLCONV SGXTransferControlStream(
 	SGX_PSP2_CONTROL_STREAM *psControlStream, 
@@ -121,5 +157,15 @@ PVRSRV_ERROR IMG_CALLCONV SGXTransferControlStream(
 	IMG_BOOL bTASync, 
 	IMG_BOOL b3DSync, 
 	SGX_STATUS_UPDATE *psStatusUpdate);
+
+IMG_IMPORT
+PVRSRV_ERROR IMG_CALLCONV SGXGetRenderTargetInfo(IMG_HANDLE hRTDataSet, SGX_RTINFO *psRTInfo);
+
+IMG_IMPORT
+PVRSRV_ERROR IMG_CALLCONV SGXGetRenderTargetInfoExt(IMG_HANDLE hRTDataSet, SGX_RTINFO_EXT *psRTInfoExt);
+
+IMG_IMPORT
+PVRSRV_ERROR IMG_CALLCONV SGXGetRenderTargetDriverMemBlock(IMG_HANDLE hRTDataSet, IMG_INT32 *pi32DriverMemBlockUID, IMG_BOOL *pbInternalUID);
+
 
 #endif
