@@ -715,6 +715,12 @@ typedef struct _PVRSRV_SYNC_DATA_
 /*
 	Client Sync Info structure
 */
+#if defined(__psp2__)
+typedef struct _PVRSRV_CLIENT_SYNC_INFO_
+{
+	IMG_SID					hKernelSyncInfo;
+} PVRSRV_CLIENT_SYNC_INFO, *PPVRSRV_CLIENT_SYNC_INFO;
+#else
 typedef struct _PVRSRV_CLIENT_SYNC_INFO_
 {
 	/* mapping of the kernel sync data */
@@ -747,6 +753,7 @@ typedef struct _PVRSRV_CLIENT_SYNC_INFO_
 #endif
 
 } PVRSRV_CLIENT_SYNC_INFO, *PPVRSRV_CLIENT_SYNC_INFO;
+#endif
 
 /*!
  *****************************************************************************

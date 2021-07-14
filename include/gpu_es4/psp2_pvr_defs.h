@@ -117,7 +117,7 @@ PVRSRV_ERROR IMG_CALLCONV SGXTransferControlStream(
 	IMG_UINT32 ui32ControlStreamWords, 
 	PVRSRV_DEV_DATA *psDevData, 
 	IMG_HANDLE hTransferContext, 
-	IMG_SID hKernelSyncInfo, 
+	PVRSRV_CLIENT_SYNC_INFO *psSyncInfo,
 	IMG_BOOL bTASync, 
 	IMG_BOOL b3DSync, 
 	SGX_STATUS_UPDATE *psStatusUpdate);
