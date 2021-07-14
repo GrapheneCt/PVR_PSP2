@@ -96,6 +96,9 @@
     <Filter Include="Source Files\eurasia\codegen\pixfmts">
       <UniqueIdentifier>{9d1f3c08-efb7-4299-922d-8767c2e7d9a2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\eurasia\services4\srvclient\bridged\sgx">
+      <UniqueIdentifier>{db87c7de-0b2d-4c61-aac7-436e30b751b2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="eurasia\services4\srvclient\env\playstation\common\osfunc_um.c">
@@ -130,6 +133,9 @@
     </ClCompile>
     <ClCompile Include="eurasia\codegen\pixfmts\sgxpixfmts.c">
       <Filter>Source Files\eurasia\codegen\pixfmts</Filter>
+    </ClCompile>
+    <ClCompile Include="eurasia\services4\srvclient\bridged\sgx\bridged_sgx_glue.c">
+      <Filter>Source Files\eurasia\services4\srvclient\bridged\sgx</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -270,6 +276,9 @@
     </ClInclude>
     <ClInclude Include="..\include\gpu_es4\eurasia\codegen\pixfmts\sgxpixfmts_types.h">
       <Filter>Header Files\eurasia\codegen\pixfmts</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gpu_es4\eurasia\services4\include\sgx_bridge.h">
+      <Filter>Header Files\eurasia\services4\include</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

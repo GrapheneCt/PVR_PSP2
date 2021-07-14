@@ -272,6 +272,15 @@ extern "C" {
 /* For sgx_bridge.h (msvdx_bridge.h should probably use these defines too) */
 #define PVRSRV_BRIDGE_LAST_NON_DEVICE_CMD		(PVRSRV_BRIDGE_SYNC_OPS_CMD_LAST+1)
 
+#if defined(__psp2__)
+IMG_RESULT PVRSRVBridgeCall(IMG_HANDLE hServices,
+	IMG_UINT32 ui32FunctionID,
+	IMG_VOID *pvParamIn,
+	IMG_UINT32 ui32InBufferSize,
+	IMG_VOID *pvParamOut,
+	IMG_UINT32	ui32OutBufferSize);
+#endif
+
 
 /******************************************************************************
  * Bridge flags

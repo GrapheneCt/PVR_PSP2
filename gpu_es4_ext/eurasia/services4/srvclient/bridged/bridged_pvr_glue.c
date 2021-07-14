@@ -10,11 +10,6 @@
 #include "eurasia/services4/include/servicesint.h"
 #include "eurasia/services4/include/pvr_bridge.h"
 
-#define DEVICE_MEMORY_HEAP_PERCONTEXT		0
-#define DEVICE_MEMORY_HEAP_KERNEL			1
-#define DEVICE_MEMORY_HEAP_SHARED			2
-#define DEVICE_MEMORY_HEAP_SHARED_EXPORTED	3
-
 IMG_RESULT PVRSRVBridgeCall(IMG_HANDLE hServices,
 	IMG_UINT32 ui32FunctionID,
 	IMG_VOID *pvParamIn,
