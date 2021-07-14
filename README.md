@@ -8,4 +8,4 @@ Driver layer GPU libraries and tests for PSP2
 | services_test | Passed  |
 | sgx_init_test | Passed  |
 | sgx_flip_test | Passed  |
-| sgx_render_flip_test | GPU crash (unknown reason) on SGXKickTA().<br />Lockup during fragment processing stage |
+| sgx_render_flip_test | Passed |
