@@ -13,6 +13,6 @@ Driver layer GPU libraries and tests for PSP2
 
 # Library status
 
-| Test  | Status |
+| Library  | Status |
 | ------------- | ------------- |
 | PVR2D | WIP  |
