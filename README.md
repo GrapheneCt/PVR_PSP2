@@ -9,3 +9,10 @@ Driver layer GPU libraries and tests for PSP2
 | sgx_init_test | Passed  |
 | sgx_flip_test | Passed  |
 | sgx_render_flip_test | Passed |
+
+
+# Library status
+
+| Test  | Status |
+| ------------- | ------------- |
+| PVR2D | WIP  |
