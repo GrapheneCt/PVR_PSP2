@@ -27,6 +27,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sgx_render_flip_test", "uni
 		{CDEA7506-F160-44E3-936F-EFCF86D92E91} = {CDEA7506-F160-44E3-936F-EFCF86D92E91}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pvr2d", "pvr2d\pvr2d.vcxproj", "{C6BD621A-EB52-437C-8873-778A583BAC9B}"
+	ProjectSection(ProjectDependencies) = postProject
+		{CDEA7506-F160-44E3-936F-EFCF86D92E91} = {CDEA7506-F160-44E3-936F-EFCF86D92E91}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|PSVita = Debug|PSVita
@@ -53,6 +58,10 @@ Global
 		{E46D35C4-0372-4A74-8E98-C6026E11913A}.Debug|PSVita.Build.0 = Debug|PSVita
 		{E46D35C4-0372-4A74-8E98-C6026E11913A}.Release|PSVita.ActiveCfg = Release|PSVita
 		{E46D35C4-0372-4A74-8E98-C6026E11913A}.Release|PSVita.Build.0 = Release|PSVita
+		{C6BD621A-EB52-437C-8873-778A583BAC9B}.Debug|PSVita.ActiveCfg = Debug|PSVita
+		{C6BD621A-EB52-437C-8873-778A583BAC9B}.Debug|PSVita.Build.0 = Debug|PSVita
+		{C6BD621A-EB52-437C-8873-778A583BAC9B}.Release|PSVita.ActiveCfg = Release|PSVita
+		{C6BD621A-EB52-437C-8873-778A583BAC9B}.Release|PSVita.Build.0 = Release|PSVita
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

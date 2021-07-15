@@ -117,19 +117,14 @@ typedef struct
 	IMG_UINT32       ui32Flags;
 } SGX_RTINFO_EXT;
 
-IMG_IMPORT
 IMG_INT PVRSRVWaitSyncOp(IMG_SID hKernelSyncInfoModObj, IMG_UINT32 *pui32Timeout);
 
-IMG_IMPORT
 IMG_INT PVRSRV_BridgeDispatchKM(IMG_UINT32 cmd, IMG_PVOID psBridgePackageKM);
 
-IMG_IMPORT
 PVRSRV_ERROR PVRSRVRegisterMemBlock(PVRSRV_DEV_DATA *psDevData, SceUID memblockUid, IMG_SID *phMemHandle, IMG_BOOL flag);
 
-IMG_IMPORT
 PVRSRV_ERROR PVRSRVUnregisterMemBlock(PVRSRV_DEV_DATA *psDevData, SceUID memblockUid);
 
-IMG_IMPORT
 PVRSRV_ERROR PVRSRVMapMemoryToGpu(
 	PVRSRV_DEV_DATA *psDevData,
 	IMG_SID hDevMemContext,
@@ -140,14 +135,12 @@ PVRSRV_ERROR PVRSRVMapMemoryToGpu(
 	IMG_UINT32 ui32Flags,
 	IMG_UINT32 *pui32InternalOffset);
 
-IMG_IMPORT
 PVRSRV_ERROR PVRSRVUnmapMemoryFromGpu(
 	PVRSRV_DEV_DATA *psDevData,
 	IMG_PVOID pMemBase,
 	IMG_INT32 ui32HeapIndex,
 	IMG_INT32 i32Unk4);
 
-IMG_IMPORT
 PVRSRV_ERROR IMG_CALLCONV SGXTransferControlStream(
 	SGX_PSP2_CONTROL_STREAM *psControlStream, 
 	IMG_UINT32 ui32ControlStreamWords, 
@@ -158,13 +151,10 @@ PVRSRV_ERROR IMG_CALLCONV SGXTransferControlStream(
 	IMG_BOOL b3DSync, 
 	SGX_STATUS_UPDATE *psStatusUpdate);
 
-IMG_IMPORT
 PVRSRV_ERROR IMG_CALLCONV SGXGetRenderTargetInfo(IMG_HANDLE hRTDataSet, SGX_RTINFO *psRTInfo);
 
-IMG_IMPORT
 PVRSRV_ERROR IMG_CALLCONV SGXGetRenderTargetInfoExt(IMG_HANDLE hRTDataSet, SGX_RTINFO_EXT *psRTInfoExt);
 
-IMG_IMPORT
 PVRSRV_ERROR IMG_CALLCONV SGXGetRenderTargetDriverMemBlock(IMG_HANDLE hRTDataSet, IMG_INT32 *pi32DriverMemBlockUID, IMG_BOOL *pbInternalUID);
 
 
