@@ -408,6 +408,23 @@ typedef struct PVRSRV_BRIDGE_OUT_SGXDEVINITPART2_TAG
  *****************************************************************************
  *	`bridge in' 2D query blits complete
  *****************************************************************************/ 
+#if defined(__psp2__)
+
+typedef struct PVRSRV_BRIDGE_IN_2DQUERYBLTSCOMPLETE_TAG
+{
+	IMG_UINT32				ui32BridgeFlags; /* Must be first member of structure */
+#if defined (SUPPORT_SID_INTERFACE)
+	IMG_SID					hDevCookie;
+	PVRSRV_CLIENT_SYNC_INFO	*psSyncInfo;
+#else
+	IMG_HANDLE				hDevCookie;
+	IMG_HANDLE				hKernSyncInfo;
+#endif
+	IMG_BOOL				bWaitForComplete;
+}PVRSRV_BRIDGE_IN_2DQUERYBLTSCOMPLETE;
+
+#else
+
 typedef struct PVRSRV_BRIDGE_IN_2DQUERYBLTSCOMPLETE_TAG
 {
 	IMG_UINT32				ui32BridgeFlags; /* Must be first member of structure */
@@ -420,6 +437,8 @@ typedef struct PVRSRV_BRIDGE_IN_2DQUERYBLTSCOMPLETE_TAG
 #endif
 	IMG_BOOL				bWaitForComplete;
 }PVRSRV_BRIDGE_IN_2DQUERYBLTSCOMPLETE;
+
+#endif
 
 
 #define PVRSRV_BRIDGE_SGX_SHAREDPBDESC_MAX_SUBMEMINFOS 10

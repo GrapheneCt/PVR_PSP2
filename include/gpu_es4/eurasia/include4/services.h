@@ -1372,12 +1372,7 @@ PVRSRV_ERROR IMG_CALLCONV PVRSRVGetDCBuffers2(IMG_HANDLE hDevice,
 IMG_IMPORT
 PVRSRV_ERROR IMG_CALLCONV PVRSRVSwapToDCBuffer (IMG_HANDLE hDevice,
 #if defined (SUPPORT_SID_INTERFACE)
-#if defined (__psp2__)
-										IMG_SID    hBufferOld,
-										IMG_SID    hBufferNew,
-#else
 										IMG_SID    hBuffer,
-#endif
 #else
 										IMG_HANDLE hBuffer,
 #endif

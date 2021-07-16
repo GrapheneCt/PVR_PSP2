@@ -579,24 +579,6 @@ int main(int argc, char ** argv)
 	for(i=0; i < ui32NumSwaps; i++)
 	{
 
-#ifdef __psp2__
-
-		eResult = PVRSRVSwapToDCBuffer(hDisplayDevice,
-			ahBuffer[ui32OldSelectBuffer],
-			ahBuffer[ui32SelectBuffer],
-			0,
-			IMG_NULL,
-			ui32SwapInterval,
-			0);
-
-		ui32OldSelectBuffer++;
-		if (ui32OldSelectBuffer == ui32NumSwapChainBuffers)
-		{
-			ui32OldSelectBuffer = 0;
-		}
-
-#else
-
 		eResult = PVRSRVSwapToDCBuffer (hDisplayDevice,
 									ahBuffer[ui32SelectBuffer],
 									0,
@@ -606,8 +588,6 @@ int main(int argc, char ** argv)
 									0);
 #else
 									IMG_NULL);
-#endif
-
 #endif
 
 		FAIL_IF_ERROR2(eResult);

@@ -9,6 +9,27 @@
 #include "eurasia/services4/include/pvr_bridge.h"
 
 /******************************************************************************
+ Function Name      : PVRSRVCallocUserModeMem
+ Inputs             :
+ Outputs            :
+ Returns            :
+ Description        :
+
+******************************************************************************/
+IMG_EXPORT IMG_PVOID IMG_CALLCONV PVRSRVCallocUserModeMem(IMG_UINT32 ui32Size)
+{
+	IMG_PVOID ret = PVRSRVAllocUserModeMem(ui32Size);
+
+	if (!ret)
+		return IMG_NULL;
+
+	sceClibMemset(ret, 0, ui32Size);
+
+	return ret;
+}
+
+
+/******************************************************************************
  Function Name      : PVRSRVMemSet
  Inputs             :
  Outputs            :

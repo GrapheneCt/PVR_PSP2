@@ -40,7 +40,7 @@ PVRSRV_ERROR IMG_CALLCONV SGX2DQueryBlitsComplete(PVRSRV_DEV_DATA *psDevData,
 	}
 
 	sBridgeIn.hDevCookie = psDevData->hDevCookie;
-	sBridgeIn.hKernSyncInfo = psSyncInfo->hKernelSyncInfo;
+	sBridgeIn.psSyncInfo = psSyncInfo;
 	sBridgeIn.bWaitForComplete = bWaitForComplete;
 
 	if (PVRSRVBridgeCall(psDevData->psConnection->hServices,

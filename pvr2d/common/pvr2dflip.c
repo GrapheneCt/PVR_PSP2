@@ -30,6 +30,7 @@ Modifications :-
  $Log: pvr2dflip.c $
 ******************************************************************************/
 
+#include "psp2_pvr_desc.h"
 #include "img_defs.h"
 #include "services.h"
 #include "pvr2d.h"
@@ -339,25 +340,6 @@ PVR2DERROR DestroyFlipChain(PVR2DCONTEXT *psContext, PVR2D_FLIPCHAIN *psFlipChai
 	PVR2D_BUFFER *psBuffer;
 	IMG_UINT32 i;
 	PVRSRV_ERROR ePVRSRVError = PVRSRV_ERROR_RETRY;
-
-	if(psFlipChain->hDCSwapChain)
-	{
-		while(ePVRSRVError == PVRSRV_ERROR_RETRY)
-		{
-			ePVRSRVError = PVRSRVSwapToDCSystem(psContext->hDisplayClassDevice, psFlipChain->hDCSwapChain);
-
-			if(ePVRSRVError == PVRSRV_ERROR_RETRY && psContext->sMiscInfo.hOSGlobalEvent != 0)
-			{
-				PVRSRVEventObjectWait(psContext->psServices, psContext->sMiscInfo.hOSGlobalEvent);
-			}
-		}
-
-		if(ePVRSRVError != PVRSRV_OK)
-		{
-			PVR2D_DPF((PVR_DBG_ERROR, "DestroyFlipChain: Can't flip to system buffer"));
-			return PVR2DERROR_DEVICE_UNAVAILABLE;
-		}	
-	}
 	
 	if(psFlipChain->psBuffer)
 	{
@@ -584,26 +566,7 @@ PVR2DERROR PVR2DPresentFlip (PVR2DCONTEXTHANDLE hContext,
 		return PVR2DERROR_INVALID_PARAMETER;		
 	}
 
-	if (!psMemInfo)
-	{
-		/* NULL means swap to system */
-		while(eError == PVRSRV_ERROR_RETRY)
-		{
-			eError = PVRSRVSwapToDCSystem(psContext->hDisplayClassDevice, psFlipChain->hDCSwapChain);
-
-			if(eError == PVRSRV_ERROR_RETRY && psContext->sMiscInfo.hOSGlobalEvent != 0)
-			{
-				PVRSRVEventObjectWait(psContext->psServices, psContext->sMiscInfo.hOSGlobalEvent);
-			}
-		}
-
-		if(eError != PVRSRV_OK)
-		{
-			PVR2D_DPF((PVR_DBG_ERROR, "PVR2DPresentFlip: Can't flip to system buffer"));
-			return PVR2DERROR_DEVICE_UNAVAILABLE;
-		}	
-	}
-	else
+	if (psMemInfo)
 	{
 		if (psBuffer->eType != PVR2D_MEMINFO_DISPLAY_OWNED)
 		{

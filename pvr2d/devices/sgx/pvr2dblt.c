@@ -30,8 +30,7 @@ Modifications :-
 $Log: pvr2dblt.c $
 ******************************************************************************/
 
-#include <memory.h>
-
+#include "psp2_pvr_desc.h"
 #include "img_defs.h"
 #include "services.h"
 #include "pvr2d.h"
@@ -1898,9 +1897,7 @@ PVR2DERROR PVR2DQueryBlitsComplete(	PVR2DCONTEXTHANDLE hContext,
 	const PVR2DCONTEXT				*psContext = (PVR2DCONTEXT *)hContext;
 	const PVRSRV_CLIENT_MEM_INFO	*psClientMemInfo;
 
-	IMG_UINT32		ulClockusStart;
-	IMG_UINT32		ulClockusCurrent;
-	IMG_UINT32		ulClockusDelta;
+	PVRSRV_ERROR	eRet;
 
 	if (!hContext)
 	{
@@ -1916,70 +1913,29 @@ PVR2DERROR PVR2DQueryBlitsComplete(	PVR2DCONTEXTHANDLE hContext,
 
 	psClientMemInfo = (PVRSRV_CLIENT_MEM_INFO *)pMemInfo->hPrivateData;
 
-	if (!psClientMemInfo || !psClientMemInfo->psClientSyncInfo || !psClientMemInfo->psClientSyncInfo->psSyncData)
+	if (!psClientMemInfo || !psClientMemInfo->psClientSyncInfo)
 	{
 		PVR2D_DPF((PVR_DBG_ERROR, "PVR2DQueryBlitsComplete: Invalid MemInfo"));
 		return PVR2DERROR_INVALID_PARAMETER;
 	}
 
-	{ // const scope for ui32WriteOpsPending and ui32ReadOpsPending
+	eRet = SGX2DQueryBlitsComplete(&psContext->sDevData, psClientMemInfo->psClientSyncInfo, uiWaitForComplete);
 
-		// Snapshot the pending counters
-		const IMG_UINT32 ui32WriteOpsPending = psClientMemInfo->psClientSyncInfo->psSyncData->ui32WriteOpsPending;
-		const IMG_UINT32 ui32ReadOpsPending = psClientMemInfo->psClientSyncInfo->psSyncData->ui32ReadOpsPending;
-		const IMG_UINT32 ui32ReadOps2Pending = psClientMemInfo->psClientSyncInfo->psSyncData->ui32ReadOps2Pending;
-	
-		// Check sync object psClientSyncInfo for blt completion
-		if (OpsComplete(psClientMemInfo, ui32WriteOpsPending, ui32ReadOpsPending, ui32ReadOps2Pending))
-		{
-			// Completed
-			return PVR2D_OK;
-		}
-
-		if (!uiWaitForComplete) // Caller wants status without waiting
-		{
-			// Report correct busy status, this is not an error
-			return PVR2DERROR_BLT_NOTCOMPLETE;
-		}
-
-		ulClockusStart = PVRSRVClockus();
-
-		// Poll for completion without blocking.
-		while (!OpsComplete(psClientMemInfo, ui32WriteOpsPending, ui32ReadOpsPending, ui32ReadOps2Pending))
-		{
-			// Wait for an SGX global event (without blocking)
-			PVRSRVEventObjectWait(psContext->psServices, psContext->sMiscInfo.hOSGlobalEvent);
-
-			// Detect timeout
-			ulClockusCurrent =  PVRSRVClockus();
-
-			if (ulClockusStart > ulClockusCurrent)
-			{
-				// Counter wraped
-				ulClockusDelta = ulClockusCurrent + ( ((IMG_UINT32)0xFFFFFFFF) - ulClockusStart);
-			}
-			else
-			{
-				// Normal case
-				ulClockusDelta = ulClockusCurrent - ulClockusStart;
-			}
-
-			if (ulClockusDelta > (PVR2D_TIMEOUT_MS * 1000))
-			{
-				if (OpsComplete(psClientMemInfo, ui32WriteOpsPending, ui32ReadOpsPending, ui32ReadOps2Pending))
-				{
-					return PVR2D_OK;
-				}
-				else
-				{
-					PVR2D_DPF((PVR_DBG_ERROR, "PVR2DQueryBlitsComplete: timeout. sync object failed to complete"));
-					return PVR2DERROR_BLT_NOTCOMPLETE; // Timed out
-				}
-			}
-
-		}//while
-
-	} // const scope
+	if (eRet == PVRSRV_OK)
+	{
+		// Completed
+		return PVR2D_OK;
+	} 
+	else if (eRet == PVRSRV_ERROR_CMD_NOT_PROCESSED)
+	{
+		// if !uiWaitForComplete and blt not complete
+		return PVR2DERROR_BLT_NOTCOMPLETE;
+	}
+	else if (eRet == PVRSRV_ERROR_TIMEOUT)
+	{
+		PVR2D_DPF((PVR_DBG_ERROR, "PVR2DQueryBlitsComplete: timeout. sync object failed to complete"));
+		return PVR2DERROR_BLT_NOTCOMPLETE; // Timed out
+	}
 
 	return PVR2D_OK;
 

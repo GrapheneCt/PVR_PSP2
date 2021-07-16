@@ -30,6 +30,8 @@ typedef struct PSP2_SWAPCHAIN {
 	DISPLAY_DIMS sDims;
 } PSP2_SWAPCHAIN;
 
+static PVRSRV_CLIENT_SYNC_INFO *s_psOldBufSyncInfo = IMG_NULL;
+
 static IMG_BOOL s_flipChainExists = IMG_FALSE;
 static IMG_UINT32 s_ui32CurrentSwapChainIdx = 0;
 static IMG_PVOID s_pvCurrentNewBuf[PSP2_SWAPCHAIN_MAX_PENDING_COUNT];
@@ -382,6 +384,12 @@ PVRSRV_ERROR IMG_CALLCONV PVRSRVCreateDCSwapChain(IMG_HANDLE	hDevice,
 		return PVRSRV_ERROR_TOO_FEW_BUFFERS;
 	}
 
+	if ((ui32Flags & PVRSRV_CREATE_SWAPCHAIN_SHARED) || (ui32Flags & PVRSRV_CREATE_SWAPCHAIN_QUERY))
+	{
+		PVR_DPF((PVR_DBG_ERROR, "PVRSRVCreateDCSwapChain: Attempt to use unsupported flags"));
+		return PVRSRV_ERROR_NOT_SUPPORTED;
+	}
+
 	if (s_flipChainExists)
 	{
 		PVR_DPF((PVR_DBG_ERROR, "PVRSRVCreateDCSwapChain: Flip chain already exists"));
@@ -592,8 +600,7 @@ IMG_HANDLE *phBuffer)
  ******************************************************************************/
 IMG_EXPORT
 PVRSRV_ERROR IMG_CALLCONV PVRSRVSwapToDCBuffer(IMG_HANDLE	hDevice,
-	IMG_SID		hBufferOld,
-	IMG_SID		hBufferNew,
+	IMG_SID		hBuffer,
 	IMG_UINT32	ui32ClipRectCount,
 	IMG_RECT	*psClipRect,
 	IMG_UINT32	ui32SwapInterval,
@@ -603,12 +610,13 @@ PVRSRV_ERROR IMG_CALLCONV PVRSRVSwapToDCBuffer(IMG_HANDLE	hDevice,
 	IMG_HANDLE	hPrivateTag)
 #endif
 {
+	IMG_UINT32 uiSwapSyncNum = 0;
 	PVRSRV_ERROR eError = PVRSRV_OK;
 	PVRSRV_PSP2_OP_CLIENT_SYNC_INFO syncInfoArg;
 	PVRSRV_CLIENT_MEM_INFO *psBufMemInfoOld = IMG_NULL;
 	PVRSRV_CLIENT_MEM_INFO *psBufMemInfoNew = IMG_NULL;
 
-	if (!hDevice || !hBufferOld || !hBufferNew)
+	if (!hDevice || !hBuffer)
 	{
 		PVR_DPF((PVR_DBG_ERROR, "PVRSRVSwapToDCBuffer: Invalid params"));
 		return PVRSRV_ERROR_INVALID_PARAMS;
@@ -631,11 +639,20 @@ PVRSRV_ERROR IMG_CALLCONV PVRSRVSwapToDCBuffer(IMG_HANDLE	hDevice,
 		return PVRSRV_ERROR_INVALID_SWAPINTERVAL;
 	}
 
-	psBufMemInfoOld = (PVRSRV_CLIENT_MEM_INFO *)hBufferOld;
-	psBufMemInfoNew = (PVRSRV_CLIENT_MEM_INFO *)hBufferNew;
+	psBufMemInfoNew = (PVRSRV_CLIENT_MEM_INFO *)hBuffer;
 
-	syncInfoArg.psInfoOld = psBufMemInfoOld->psClientSyncInfo;
-	syncInfoArg.psInfoNew = psBufMemInfoNew->psClientSyncInfo;
+	if (!s_psOldBufSyncInfo) {
+		syncInfoArg.psInfoOld = psBufMemInfoNew->psClientSyncInfo;
+		syncInfoArg.psInfoNew = IMG_NULL;
+		uiSwapSyncNum = 1;
+	}
+	else {
+		syncInfoArg.psInfoOld = s_psOldBufSyncInfo;
+		syncInfoArg.psInfoNew = psBufMemInfoNew->psClientSyncInfo;
+		uiSwapSyncNum = 2;
+	}
+
+	s_psOldBufSyncInfo = psBufMemInfoNew->psClientSyncInfo;
 
 	sceKernelWaitEventFlag(s_hSwapChainReadyEvf, 1, SCE_KERNEL_EVF_WAITMODE_OR | SCE_KERNEL_EVF_WAITMODE_CLEAR_PAT, NULL, NULL);
 
@@ -651,7 +668,7 @@ PVRSRV_ERROR IMG_CALLCONV PVRSRVSwapToDCBuffer(IMG_HANDLE	hDevice,
 		(PVRSRV_CONNECTION *)hDevice,
 		s_hKernelSwapChainSync[s_ui32CurrentSwapChainIdx],
 		&syncInfoArg,
-		2,
+		uiSwapSyncNum,
 		PVRSRV_MODIFYSYNCOPS_FLAGS_RO_INC,
 		IMG_NULL,
 		IMG_NULL);

@@ -5077,26 +5077,6 @@ static IMG_VOID *srft_PerThread(IMG_VOID	*pvArg)
         {
             /* Flip to buffer */
 
-#ifdef __psp2__
-
-            i32OldSelectBuffer = ui32SwapChainIndex - 1;
-            if (i32OldSelectBuffer < 0)
-                i32OldSelectBuffer = psConfig->ui32NumSwapChainBuffers - 1;
-
-            eResult = PVRSRVSwapToDCBuffer(psShared->hDisplayDevice,
-                                           psShared->phSwapChainBuffers[i32OldSelectBuffer],
-                                           psShared->phSwapChainBuffers[ui32SwapChainIndex],
-                                           0,
-                                           IMG_NULL,
-                                           psConfig->ui32SwapInterval,
-#if defined (SUPPORT_SID_INTERFACE)
-                                           0);
-#else
-                                           IMG_NULL);
-#endif
-
-#else
-
             eResult = PVRSRVSwapToDCBuffer(psShared->hDisplayDevice,
                                            psShared->phSwapChainBuffers[ui32SwapChainIndex],
                                            0,
@@ -5106,8 +5086,6 @@ static IMG_VOID *srft_PerThread(IMG_VOID	*pvArg)
                                            0);
 #else
                                            IMG_NULL);
-#endif
-
 #endif
 
             sgxut_fail_if_error_quiet(eResult);
