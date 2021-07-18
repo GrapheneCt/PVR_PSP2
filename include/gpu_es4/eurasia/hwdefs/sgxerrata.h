@@ -33,6 +33,10 @@
 #ifndef _SGXERRATA_H_
 #define _SGXERRATA_H_
 
+#if defined(__psp2__)
+#include "psp2_pvr_desc.h"
+#endif
+
 /*
 	For each SGX core revision specify which HW BRNs required SW workarounds
 */

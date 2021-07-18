@@ -33,7 +33,8 @@ $Log: pvr2dint.h $
 #ifndef PVR2D_INT_H
 #define PVR2D_INT_H
 
-
+#include "psp2_pvr_desc.h"
+#include "psp2_pvr_defs.h"
 
 #include "sgxapi.h"
 #include "sgxmmu.h"

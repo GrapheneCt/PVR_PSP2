@@ -30,6 +30,9 @@ Modifications :-
 $Log: pvr2dinit.c $
 ******************************************************************************/
 
+#include "psp2_pvr_defs.h"
+#include "psp2_pvr_desc.h"
+
 #include "img_defs.h"
 #include "services.h"
 #include "pvr2d.h"
@@ -680,7 +683,7 @@ cleanup:
 #if defined(TRANSFER_QUEUE)
 	if (psContext->hTransferContext)
 	{
-		eSrvError = SGXDestroyTransferContext(psContext->hTransferContext, CLEANUP_WITH_POLL);
+		eSrvError = SGXDestroyTransferContext(&psContext->sDevData, psContext->hTransferContext, CLEANUP_WITH_POLL);
 		if (eSrvError != PVRSRV_OK)
 		{
 			PVR2D_DPF((PVR_DBG_ERROR, "PVR2DCreateDeviceContext: SGXDestroyTransferContext failed"));
@@ -798,7 +801,7 @@ PVR2DERROR PVR2DDestroyDeviceContext (PVR2DCONTEXTHANDLE hContext)
 	/* Don't free the tranfser context if we didn't create it */
 	if (psContext->hTransferContext)
 	{
-		eSrvError = SGXDestroyTransferContext(psContext->hTransferContext, CLEANUP_WITH_POLL);
+		eSrvError = SGXDestroyTransferContext(&psContext->sDevData, psContext->hTransferContext, CLEANUP_WITH_POLL);
 		if (eSrvError != PVRSRV_OK)
 		{
 			bReturnError = IMG_TRUE;
@@ -873,7 +876,7 @@ PVR2DERROR PVR2DDestroyDeviceContext (PVR2DCONTEXTHANDLE hContext)
 				Note that this function should be called from any function
 				which utilises psContext->hTransferContext.
 ******************************************************************************/
-PVR2DERROR IMG_INTERNAL ValidateTransferContext(PVR2DCONTEXT *psContext)
+PVR2DERROR ValidateTransferContext(PVR2DCONTEXT *psContext)
 {
 	SGX_TRANSFERCONTEXTCREATE sCreateTransfer;
 	PVRSRV_ERROR				eSrvError;
@@ -885,19 +888,8 @@ PVR2DERROR IMG_INTERNAL ValidateTransferContext(PVR2DCONTEXT *psContext)
 	}
 
 	sCreateTransfer.hDevMemContext = psContext->hDevMemContext;
-	if(psContext->sMiscInfo.ui32StatePresent 
-		& PVRSRV_MISC_INFO_GLOBALEVENTOBJECT_PRESENT)
-	{ 
-		sCreateTransfer.hOSEvent = psContext->sMiscInfo.hOSGlobalEvent;
-	}
-	else
-	{
-#if defined (SUPPORT_SID_INTERFACE)
-		sCreateTransfer.hOSEvent = 0;
-#else
-		sCreateTransfer.hOSEvent = IMG_NULL;
-#endif
-	}
+	sCreateTransfer.hShadowMemblockRef = 0;
+
 	eSrvError = SGXCreateTransferContext(&psContext->sDevData,
 										130 * 1024,
 										&sCreateTransfer,
@@ -908,40 +900,6 @@ PVR2DERROR IMG_INTERNAL ValidateTransferContext(PVR2DCONTEXT *psContext)
 		return PVR2DERROR_GENERIC_ERROR;
 	}
 
-#if defined(SUPPORT_SGX_LOW_LATENCY_SCHEDULING) || defined(SUPPORT_SGX_PRIORITY_SCHEDULING)
-	if((psContext->ulFlags & PVR2D_CONTEXT_FLAGS_PRIORITY_MASK) != PVR2D_CONTEXT_FLAGS_NORMAL_PRIORITY_CONTEXT)
-	{
-		IMG_UINT32 ui32Priority = psContext->ulFlags & PVR2D_CONTEXT_FLAGS_PRIORITY_MASK;
-		SGX_CONTEXT_PRIORITY ePriority = SGX_CONTEXT_PRIORITY_MEDIUM;
-
-		switch(ui32Priority)
-		{
-			case PVR2D_CONTEXT_FLAGS_LOW_PRIORITY_CONTEXT:
-			{
-				ePriority = SGX_CONTEXT_PRIORITY_LOW;
-				break;
-			}
-			case PVR2D_CONTEXT_FLAGS_HIGH_PRIORITY_CONTEXT:
-			{
-				ePriority = SGX_CONTEXT_PRIORITY_HIGH;
-				break;
-			}
-		}
-
-		if(SGXSetContextPriority(&psContext->sDevData,
-							     &ePriority,
-								 IMG_NULL,
-								 psContext->hTransferContext) != PVRSRV_OK)
-		{
-			eSrvError = SGXDestroyTransferContext(psContext->hTransferContext, CLEANUP_WITH_POLL);
-			if (eSrvError != PVRSRV_OK)
-			{
-				PVR2D_DPF((PVR_DBG_ERROR, "ValidateTransferContext: SGXDestroyTransferContext failed"));
-			}
-			return PVR2DERROR_GENERIC_ERROR;
-		}
-	}
-#endif /* defined(SUPPORT_SGX_LOW_LATENCY_SCHEDULING) || defined(SUPPORT_SGX_PRIORITY_SCHEDULING) */
 	return PVR2D_OK;
 }
 #endif /* TRANSFER_QUEUE */

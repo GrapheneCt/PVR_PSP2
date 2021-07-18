@@ -1031,7 +1031,7 @@ typedef struct _SGXTQ_VPBLITOP_
 typedef struct _SGX_TRANSFERCONTEXTCREATE_
 {
 	IMG_SID					hDevMemContext;
-	IMG_SID					hPbMem;
+	IMG_UINT32				hShadowMemblockRef;
 } SGX_TRANSFERCONTEXTCREATE;
 #else
 typedef struct _SGX_TRANSFERCONTEXTCREATE_

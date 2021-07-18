@@ -99,6 +99,12 @@
     <Filter Include="Source Files\eurasia\services4\srvclient\bridged\sgx">
       <UniqueIdentifier>{db87c7de-0b2d-4c61-aac7-436e30b751b2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\eurasia\services4\srvclient\devices">
+      <UniqueIdentifier>{76dbb08a-2868-4e77-9b29-3c42a38abbe2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\eurasia\services4\srvclient\devices\sgx">
+      <UniqueIdentifier>{9a495bf5-5238-4367-b1e5-3b629699aea9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="eurasia\services4\srvclient\env\playstation\common\osfunc_um.c">
@@ -136,6 +142,12 @@
     </ClCompile>
     <ClCompile Include="eurasia\services4\srvclient\bridged\sgx\bridged_sgx_glue.c">
       <Filter>Source Files\eurasia\services4\srvclient\bridged\sgx</Filter>
+    </ClCompile>
+    <ClCompile Include="eurasia\services4\srvclient\devices\sgx\sgxtransfer_2d.c">
+      <Filter>Source Files\eurasia\services4\srvclient\devices\sgx</Filter>
+    </ClCompile>
+    <ClCompile Include="psp2\heap.c">
+      <Filter>Source Files\psp2</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -279,6 +291,15 @@
     </ClInclude>
     <ClInclude Include="..\include\gpu_es4\eurasia\services4\include\sgx_bridge.h">
       <Filter>Header Files\eurasia\services4\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gpu_es4\eurasia\services4\srvclient\devices\sgx\sgxtransfer_client.h">
+      <Filter>Header Files\eurasia\services4\srvclient\devices\sgx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gpu_es4\eurasia\services4\srvclient\devices\sgx\sgxutils_client.h">
+      <Filter>Header Files\eurasia\services4\srvclient\devices\sgx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gpu_es4\eurasia\services4\srvclient\devices\sgx\sgxtransfer_buffer.h">
+      <Filter>Header Files\eurasia\services4\srvclient\devices\sgx</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

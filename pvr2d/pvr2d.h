@@ -41,6 +41,9 @@ extern "C" {
 #if defined (__linux__)
 #define PVR2D_EXPORT __attribute__((visibility("default")))
 #define PVR2D_IMPORT
+#elif defined (__psp2__) && defined (PVR2D_PSP2_PRX_EXPORT)
+#define PVR2D_EXPORT __declspec(dllexport)
+#define PVR2D_IMPORT __declspec(dllexport)
 #else
 #define PVR2D_EXPORT
 #define PVR2D_IMPORT
@@ -250,6 +253,7 @@ typedef struct _PVR2D_ALPHABLT
 /* surface memory info structure */
 typedef struct _PVR2DMEMINFO
 {
+	IMG_INT32			i32MemBlockUID;
 	PVR2D_VOID			*pBase;
 	PVR2D_ULONG			ui32MemSize;
 	PVR2D_ULONG			ui32DevAddr;
@@ -514,6 +518,9 @@ typedef void* PVR2DFLIPCHAINHANDLE;
 #define PVR2D_MEM_CACHED			0x00000001UL	/* Caller must flush and sync when necessary */
 #define PVR2D_MEM_WRITECOMBINE		0x00000002UL
 #define PVR2D_GPU_PAGEABLE			0x00000004UL	/* buffer can be migrated in/out of GPU address space */
+
+#define PVR2D_PSP2_MEM_MAIN			0x00000008UL	/* Use main user memory */
+#define PVR2D_PSP2_MEM_CDRAM		0x00000016UL	/* Use CDRAM */
 
 /* Functions that the library exports */
 

@@ -38,7 +38,6 @@ $Log: pvr2dblt.c $
 #include "pvr2d.h"
 #include "pvr2dint.h"
 #include "sgxapi.h"
-//#include "sgxtransfer_client.h"
 
 // Debug with syncronous blts
 // #define SYNC_DEBUG
@@ -1201,7 +1200,7 @@ PVR2DERROR PVR2DBltClipped(PVR2DCONTEXTHANDLE hContext,
 {
 #if defined(PVR2D_ALT_2DHW)
 
-	// Blt via PTLA
+	// Blt via 3D core
 	PVR2DERROR Ret = AltBltClipped (hContext, pBltInfo, ulNumClipRects, pClipRect);
 	return Ret;
 
@@ -1810,6 +1809,72 @@ static IMG_UINT32 LocalAbsDiff(const IMG_UINT32 a, const IMG_UINT32 b)
 	{
 		return b - a;
 	}
+}
+
+
+/******************************************************************************
+ @Function	OpsComplete
+
+ @Input		pMemInfo : Client Mem info structure
+
+ @Return	PVR2D_TRUE if all reading and writing have completed, else PVR2D_FALSE
+
+ @Description : tests if all reading and writing have completed on a surface
+******************************************************************************/
+static PVR2D_BOOL OpsComplete(const PVRSRV_CLIENT_MEM_INFO *psMemInfo,
+						const IMG_UINT32 ui32WriteOpsPending, const IMG_UINT32 ui32ReadOpsPending,
+						const IMG_UINT32 ui32ReadOps2Pending)
+{
+	const IMG_UINT32 ui32WriteOpsComplete = psMemInfo->psClientSyncInfo->psSyncData->ui32WriteOpsComplete;
+	const IMG_UINT32 ui32ReadOpsComplete = psMemInfo->psClientSyncInfo->psSyncData->ui32ReadOpsComplete;
+	const IMG_UINT32 ui32ReadOps2Complete = psMemInfo->psClientSyncInfo->psSyncData->ui32ReadOps2Complete;
+
+	if ( LocalAbsDiff(ui32WriteOpsPending, ui32WriteOpsComplete) > 0x80000000 )
+	{
+		// Op complete counter has wrapped so the opposite to the normal rule applies
+		if (ui32WriteOpsComplete > ui32WriteOpsPending)
+		{
+			// op not complete
+			return PVR2D_FALSE;
+		}
+	}
+	else if (ui32WriteOpsComplete < ui32WriteOpsPending) // normal rule
+	{
+		// op not complete
+		return PVR2D_FALSE;
+	}
+
+	if ( LocalAbsDiff(ui32ReadOpsPending, ui32ReadOpsComplete) > 0x80000000 )
+	{
+		// Op complete counter has wrapped so the opposite to the normal rule applies
+		if (ui32ReadOpsComplete > ui32ReadOpsPending)
+		{
+			// op not complete
+			return PVR2D_FALSE;
+		}
+	}
+	else if (ui32ReadOpsComplete < ui32ReadOpsPending) // normal rule
+	{
+		// op not complete
+		return PVR2D_FALSE;
+	}
+
+	if ( LocalAbsDiff(ui32ReadOps2Pending, ui32ReadOps2Complete) > 0x80000000 )
+	{
+		// Op complete counter has wrapped so the opposite to the normal rule applies
+		if (ui32ReadOps2Complete > ui32ReadOps2Pending)
+		{
+			// op not complete
+			return PVR2D_FALSE;
+		}
+	}
+	else if (ui32ReadOps2Complete < ui32ReadOps2Pending) // normal rule
+	{
+		// op not complete
+		return PVR2D_FALSE;
+	}
+
+	return PVR2D_TRUE;
 }
 
 /******************************************************************************
@@ -2599,8 +2664,8 @@ static PVR2DERROR AltPresentBlt (const PVR2DCONTEXTHANDLE hContext, const PPVR2D
 	PVRSRVPDumpComment(psContext->psServices, "PVR2DPresentBlt:SGXQueueTransfer", IMG_FALSE);
 #endif
 
-	// Transfer queue blt (PTLA present blt)
-	eResult = SGXQueue2DTransfer(psContext->hTransferContext, &sBlitInfo);
+	// Transfer queue blt (3D Core present blt)
+	eResult = SGXQueueTransfer(psContext->hTransferContext, &sBlitInfo);
 
 	if (eResult != PVRSRV_OK)
 	{
@@ -3069,8 +3134,9 @@ static PVR2DERROR AltBltClipped (	PVR2DCONTEXTHANDLE hContext,
 				to it’s ReadOpsComplete member on completion of the blit. The PVR2D_BLIT_ISSUE_STATUS_UPDATES
 				flag is to be used in conjunction with PVR2D_BLIT_NO_SRC_SYNC_INFO only.
 			*/
-			PVR2D_DPF((PVR_DBG_ERROR, "PVR2DBltClipped: PVR2D_BLIT_ISSUE_STATUS_UPDATES flag is not supported on this platform"));
-			return PVR2DERROR_NOT_YET_IMPLEMENTED;
+			sBlitInfo.ui32NumStatusValues			 = 1;
+			sBlitInfo.asMemUpdates[0].ui32UpdateVal  = pSrcMemInfo->psClientSyncInfo->psSyncData->ui32ReadOpsPending;
+			sBlitInfo.asMemUpdates[0].ui32UpdateAddr = pSrcMemInfo->psClientSyncInfo->sReadOpsCompleteDevVAddr.uiAddr;
 		}
 	}
 	else if (ui32BltFlags & BLT_FLAG_COLOURFILL) // Solid fill blts
@@ -3274,8 +3340,8 @@ static PVR2DERROR AltBltClipped (	PVR2DCONTEXTHANDLE hContext,
 	PVRSRVPDumpComment(psContext->psServices, "PVR2D:SGXQueueTransfer", IMG_FALSE);
 #endif//#if defined(PDUMP)
 	
-	// Transfer queue blt (PTLA BltClipped)
-	eResult = SGXQueue2DTransfer(psContext->hTransferContext, &sBlitInfo);
+	// Transfer queue blt (3D Core BltClipped)
+	eResult = SGXQueueTransfer(psContext->hTransferContext, &sBlitInfo);
 	
 	if (eResult != PVRSRV_OK)
 	{

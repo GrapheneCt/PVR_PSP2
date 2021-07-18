@@ -31,6 +31,8 @@ Modifications :-
 ******************************************************************************/
 
 #include "psp2_pvr_desc.h"
+#include "psp2_pvr_defs.h"
+
 #include "img_defs.h"
 #include "services.h"
 #include "pvr2d.h"
@@ -580,24 +582,16 @@ PVR2DERROR PVR2DPresentFlip (PVR2DCONTEXTHANDLE hContext,
 			return PVR2DERROR_DEVICE_NOT_PRESENT;			
 		}
 
-		while(eError == PVRSRV_ERROR_RETRY)
-		{
-			eError = PVRSRVSwapToDCBuffer (psContext->hDisplayClassDevice,
-										   psBuffer->hDisplayBuffer,
-										   psFlipChain->ui32NumActiveClipRects,
-										   (IMG_RECT *)psFlipChain->psClipRects,
-										   psFlipChain->ui32SwapInterval,
+		eError = PVRSRVSwapToDCBuffer (psContext->hDisplayClassDevice,
+										psBuffer->hDisplayBuffer,
+										psFlipChain->ui32NumActiveClipRects,
+										(IMG_RECT *)psFlipChain->psClipRects,
+										psFlipChain->ui32SwapInterval,
 #if defined (SUPPORT_SID_INTERFACE)
-										   (IMG_SID)lRenderID);
+										(IMG_SID)lRenderID);
 #else
-										   (IMG_HANDLE)lRenderID);
+										(IMG_HANDLE)lRenderID);
 #endif
-
-			if(eError == PVRSRV_ERROR_RETRY && psContext->sMiscInfo.hOSGlobalEvent != 0)
-			{
-				PVRSRVEventObjectWait(psContext->psServices, psContext->sMiscInfo.hOSGlobalEvent);
-			}
-		}
 
 		if(eError != PVRSRV_OK)
 		{
@@ -671,45 +665,14 @@ PVR2DERROR PVR2DSetPresentFlipProperties (	PVR2DCONTEXTHANDLE hContext,
 
 	if(ulPropertyMask & PVR2D_PRESENT_PROPERTY_DSTPOS)
 	{
-		IMG_RECT sDstRect;
-
-		sDstRect.x0 = lDstXPos;
-		sDstRect.y0 = lDstYPos;
-		sDstRect.x1 = lDstXPos + (IMG_INT32)psFlipChain->sSrcSurfAttrib.sDims.ui32Width;
-		sDstRect.y1 = lDstYPos + (IMG_INT32)psFlipChain->sSrcSurfAttrib.sDims.ui32Height;
-
-		if(PVRSRVSetDCDstRect ( psContext->hDisplayClassDevice,
-					psFlipChain->hDCSwapChain,
-					&sDstRect) != PVRSRV_OK)
-		{
-			return PVR2DERROR_GENERIC_ERROR;
-		}
+		PVR2D_DPF((PVR_DBG_ERROR, "PVR2DSetPresentFlipProperties error - PVR2D_PRESENT_PROPERTY_DSTPOS is unimplemented!"));
+		return PVR2DERROR_INVALID_PARAMETER;
 	}
 
 	if(ulPropertyMask & PVR2D_PRESENT_PROPERTY_CLIPRECTS)
 	{
-		if (ulNumClipRects >  MAX_CLIP_RECTS || ulNumClipRects == 0)
-		{
-			 return PVR2DERROR_INVALID_PARAMETER;
-		}
-
-		if(ulNumClipRects > psFlipChain->ui32NumClipRects)
-		{
-			psFlipChain->psClipRects = PVR2DRealloc(psContext,
-								psFlipChain->psClipRects,
-								ulNumClipRects * sizeof(PVR2DRECT));
-			if(!psFlipChain->psClipRects)
-			{
-				PVR2D_DPF((PVR_DBG_ERROR, "PVR2DSetPresentBltProperties error - Out of memory!"));
-				return PVR2DERROR_MEMORY_UNAVAILABLE;
-			}
-
-			psFlipChain->ui32NumClipRects = ulNumClipRects;
-		}
-
-		PVRSRVMemCopy(psFlipChain->psClipRects,
-				pClipRects, ulNumClipRects * sizeof(PVR2DRECT));
-		psFlipChain->ui32NumActiveClipRects = ulNumClipRects;
+		PVR2D_DPF((PVR_DBG_ERROR, "PVR2DSetPresentFlipProperties error - PVR2D_PRESENT_PROPERTY_CLIPRECTS is unimplemented!"));
+		return PVR2DERROR_INVALID_PARAMETER;
 	}
 
 	return PVR2D_OK;

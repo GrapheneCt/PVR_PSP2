@@ -1,5 +1,5 @@
-#ifndef SCE_GXM_INTERNAL_PVR_DESC_H
-#define SCE_GXM_INTERNAL_PVR_DESC_H
+#ifndef PSP2_PVR_DESC_H
+#define PSP2_PVR_DESC_H
 
 // Contains GPU description for PSP2
 

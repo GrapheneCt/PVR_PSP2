@@ -1,5 +1,5 @@
-#ifndef SCE_GXM_INTERNAL_PVR_DEFS_H
-#define SCE_GXM_INTERNAL_PVR_DEFS_H
+#ifndef PSP2_PVR_DEFS_H
+#define PSP2_PVR_DEFS_H
 
 // Contains platform-specific definitions for PSP2
 
@@ -78,7 +78,7 @@ typedef struct _SGX_PSP2_CONTROL_STREAM_
 	} uData;
 } SGX_PSP2_CONTROL_STREAM;
 
-typedef struct
+typedef struct _SGX_RTINFO_
 {
 	IMG_UINT32 ui32NumPixelsX;
 	IMG_UINT32 ui32NumPixelsY;
@@ -88,7 +88,7 @@ typedef struct
 	IMG_BOOL   bMacrotileSync;
 } SGX_RTINFO;
 
-typedef struct
+typedef struct _SGX_RTINFO_EXT_
 {
 	IMG_UINT32       ui32NumPixelsInX;
 	IMG_UINT32       ui32NumPixelsInY;
@@ -121,14 +121,14 @@ IMG_INT PVRSRVWaitSyncOp(IMG_SID hKernelSyncInfoModObj, IMG_UINT32 *pui32Timeout
 
 IMG_INT PVRSRV_BridgeDispatchKM(IMG_UINT32 cmd, IMG_PVOID psBridgePackageKM);
 
-PVRSRV_ERROR PVRSRVRegisterMemBlock(PVRSRV_DEV_DATA *psDevData, SceUID memblockUid, IMG_SID *phMemHandle, IMG_BOOL flag);
+PVRSRV_ERROR PVRSRVRegisterMemBlock(PVRSRV_DEV_DATA *psDevData, SceUID memblockUid, IMG_SID *phShadowMemblockRef, IMG_BOOL bMapAsPartition);
 
 PVRSRV_ERROR PVRSRVUnregisterMemBlock(PVRSRV_DEV_DATA *psDevData, SceUID memblockUid);
 
 PVRSRV_ERROR PVRSRVMapMemoryToGpu(
 	PVRSRV_DEV_DATA *psDevData,
 	IMG_SID hDevMemContext,
-	IMG_UINT32 ui32HeapIndex,
+	IMG_SID hHeapHandle,
 	IMG_UINT32 ui32Size,
 	IMG_UINT32 ui32GpuDevVaddr,
 	IMG_PVOID pMemBase,
@@ -138,12 +138,12 @@ PVRSRV_ERROR PVRSRVMapMemoryToGpu(
 PVRSRV_ERROR PVRSRVUnmapMemoryFromGpu(
 	PVRSRV_DEV_DATA *psDevData,
 	IMG_PVOID pMemBase,
-	IMG_INT32 ui32HeapIndex,
-	IMG_INT32 i32Unk4);
+	IMG_SID hHeapHandle,
+	IMG_BOOL bUnk4);
 
 PVRSRV_ERROR IMG_CALLCONV SGXTransferControlStream(
-	SGX_PSP2_CONTROL_STREAM *psControlStream, 
-	IMG_UINT32 ui32ControlStreamWords, 
+	IMG_UINT32 *pui32CtrlStream,
+	IMG_UINT32 ui32CtrlSizeInDwords,
 	PVRSRV_DEV_DATA *psDevData, 
 	IMG_HANDLE hTransferContext, 
 	PVRSRV_CLIENT_SYNC_INFO *psSyncInfo,
@@ -156,6 +156,8 @@ PVRSRV_ERROR IMG_CALLCONV SGXGetRenderTargetInfo(IMG_HANDLE hRTDataSet, SGX_RTIN
 PVRSRV_ERROR IMG_CALLCONV SGXGetRenderTargetInfoExt(IMG_HANDLE hRTDataSet, SGX_RTINFO_EXT *psRTInfoExt);
 
 PVRSRV_ERROR IMG_CALLCONV SGXGetRenderTargetDriverMemBlock(IMG_HANDLE hRTDataSet, IMG_INT32 *pi32DriverMemBlockUID, IMG_BOOL *pbInternalUID);
+
+int sceGpuSignalWait(void *unkTLS, unsigned int timeout);
 
 
 #endif

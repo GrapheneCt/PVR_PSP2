@@ -1,4 +1,5 @@
 #include <kernel.h>
+#include <libheap.h>
 
 #include "psp2_pvr_desc.h"
 #include "psp2_pvr_defs.h"
@@ -7,6 +8,35 @@
 #include "eurasia/include4/pvr_debug.h"
 #include "eurasia/services4/include/servicesint.h"
 #include "eurasia/services4/include/pvr_bridge.h"
+
+static ScePVoid s_userModeHeap = SCE_NULL;
+
+int _PVRSRVCreateUserModeHeap()
+{
+	s_userModeHeap = sceHeapCreateHeap("PVRSRVUserModeHeap", 1 * 1024 * 1024, 0, SCE_NULL);
+
+	if (!s_userModeHeap)
+	{
+		PVR_DPF((PVR_DBG_ERROR, "_PVRSRVCreateUserModeHeap, failed to create user mode heap"));
+		return SCE_ERROR_ERRNO_ENOMEM;
+	}
+
+	return SCE_OK;
+}
+
+/******************************************************************************
+ Function Name      : PVRSRVAllocUserModeMem
+ Inputs             :
+ Outputs            :
+ Returns            :
+ Description        :
+
+******************************************************************************/
+IMG_EXPORT IMG_PVOID IMG_CALLCONV PVRSRVAllocUserModeMem(IMG_UINT32 ui32Size)
+{
+	return (IMG_PVOID)sceHeapAllocHeapMemory(s_userModeHeap, ui32Size);
+}
+
 
 /******************************************************************************
  Function Name      : PVRSRVCallocUserModeMem
@@ -18,16 +48,45 @@
 ******************************************************************************/
 IMG_EXPORT IMG_PVOID IMG_CALLCONV PVRSRVCallocUserModeMem(IMG_UINT32 ui32Size)
 {
-	IMG_PVOID ret = PVRSRVAllocUserModeMem(ui32Size);
+	IMG_PVOID ret = (IMG_PVOID)sceHeapAllocHeapMemory(s_userModeHeap, ui32Size);
 
 	if (!ret)
+	{
 		return IMG_NULL;
+	}
 
 	sceClibMemset(ret, 0, ui32Size);
 
 	return ret;
 }
 
+
+/******************************************************************************
+ Function Name      : PVRSRVReallocUserModeMem
+ Inputs             :
+ Outputs            :
+ Returns            :
+ Description        :
+
+******************************************************************************/
+IMG_EXPORT IMG_PVOID IMG_CALLCONV PVRSRVReallocUserModeMem(IMG_PVOID pvBase, IMG_SIZE_T uNewSize)
+{
+	return (IMG_PVOID)sceHeapReallocHeapMemory(s_userModeHeap, pvBase, uNewSize);
+}
+
+
+/******************************************************************************
+ Function Name      : PVRSRVFreeUserModeMem
+ Inputs             :
+ Outputs            :
+ Returns            :
+ Description        :
+
+******************************************************************************/
+IMG_EXPORT IMG_VOID IMG_CALLCONV PVRSRVFreeUserModeMem(IMG_PVOID pvMem)
+{
+	sceHeapFreeHeapMemory(s_userModeHeap, pvMem);
+}
 
 /******************************************************************************
  Function Name      : PVRSRVMemSet

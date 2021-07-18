@@ -24,6 +24,9 @@
     <Filter Include="Header Files\devices\sgx">
       <UniqueIdentifier>{5da825c6-3c46-4cf8-9ae6-7e6c0c56c5db}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\psp2">
+      <UniqueIdentifier>{ef17b3e5-52ba-4393-b0b8-3fdc701131f8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pvr2d.h">
@@ -46,14 +49,17 @@
     <ClCompile Include="common\pvr2dmode.c">
       <Filter>Source Files\common</Filter>
     </ClCompile>
+    <ClCompile Include="devices\sgx\pvr2dinit.c">
+      <Filter>Source Files\devices\sgx</Filter>
+    </ClCompile>
     <ClCompile Include="devices\sgx\pvr2dblt.c">
       <Filter>Source Files\devices\sgx</Filter>
     </ClCompile>
-    <ClCompile Include="devices\sgx\pvr2dblt3d.c">
-      <Filter>Source Files\devices\sgx</Filter>
+    <ClCompile Include="psp2\module.c">
+      <Filter>Source Files\psp2</Filter>
     </ClCompile>
-    <ClCompile Include="devices\sgx\pvr2dinit.c">
-      <Filter>Source Files\devices\sgx</Filter>
+    <ClCompile Include="devices\sgx\pvr2dblt3d.c">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

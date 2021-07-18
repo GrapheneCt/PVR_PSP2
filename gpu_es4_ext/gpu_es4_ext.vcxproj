@@ -20,8 +20,10 @@
     <ClCompile Include="eurasia\services4\srvclient\bridged\bridged_pvr_glue.c" />
     <ClCompile Include="eurasia\services4\srvclient\bridged\sgx\bridged_sgx_glue.c" />
     <ClCompile Include="eurasia\services4\srvclient\common\resources.c" />
+    <ClCompile Include="eurasia\services4\srvclient\devices\sgx\sgxtransfer_2d.c" />
     <ClCompile Include="eurasia\services4\srvclient\env\playstation\common\osfunc_um.c" />
     <ClCompile Include="eurasia\services4\srvclient\env\playstation\common\pvr_debug.c" />
+    <ClCompile Include="psp2\heap.c" />
     <ClCompile Include="psp2\module.c" />
   </ItemGroup>
   <ItemGroup>
@@ -69,6 +71,9 @@
     <ClInclude Include="..\include\gpu_es4\eurasia\services4\include\sgx_mkif_client.h" />
     <ClInclude Include="..\include\gpu_es4\eurasia\services4\include\sgx_mkif_km.h" />
     <ClInclude Include="..\include\gpu_es4\eurasia\services4\srvclient\devices\sgx\sgxinfo_client.h" />
+    <ClInclude Include="..\include\gpu_es4\eurasia\services4\srvclient\devices\sgx\sgxtransfer_buffer.h" />
+    <ClInclude Include="..\include\gpu_es4\eurasia\services4\srvclient\devices\sgx\sgxtransfer_client.h" />
+    <ClInclude Include="..\include\gpu_es4\eurasia\services4\srvclient\devices\sgx\sgxutils_client.h" />
     <ClInclude Include="..\include\gpu_es4\eurasia\services4\system\psp2\sysinfo.h" />
     <ClInclude Include="..\include\gpu_es4\psp2_pvr_defs.h" />
     <ClInclude Include="..\include\gpu_es4\psp2_pvr_desc.h" />
@@ -108,7 +113,7 @@
       <PreprocessorDefinitions>_DEBUG;PSP2_PRX_EXPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <AdditionalIncludeDirectories>$(SCE_PSP2_SDK_DIR)\target\include\vdsuite\user;$(SCE_PSP2_SDK_DIR)\target\include\vdsuite\common;$(SolutionDir)include\gpu_es4;$(SolutionDir)include\gpu_es4\eurasia\include4;$(SolutionDir)include\gpu_es4\eurasia\hwdefs;$(SolutionDir)include\gpu_es4\eurasia\services4\include;$(SolutionDir)include\gpu_es4\eurasia\services4\system\psp2;$(SolutionDir)include\gpu_es4\eurasia\codegen\pds;$(SolutionDir)include\gpu_es4\eurasia\codegen\pixevent;$(SolutionDir)include\gpu_es4\eurasia\codegen\usegen;$(SolutionDir)include\gpu_es4\eurasia\codegen\pixfmts;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SCE_PSP2_SDK_DIR)\target\include\vdsuite\user;$(SCE_PSP2_SDK_DIR)\target\include\vdsuite\common;$(SolutionDir)include\gpu_es4;$(SolutionDir)include\gpu_es4\eurasia\include4;$(SolutionDir)include\gpu_es4\eurasia\hwdefs;$(SolutionDir)include\gpu_es4\eurasia\services4\include;$(SolutionDir)include\gpu_es4\eurasia\services4\system\psp2;$(SolutionDir)include\gpu_es4\eurasia\codegen\pds;$(SolutionDir)include\gpu_es4\eurasia\codegen\pixevent;$(SolutionDir)include\gpu_es4\eurasia\codegen\usegen;$(SolutionDir)include\gpu_es4\eurasia\codegen\pixfmts;$(SolutionDir)include\gpu_es4\eurasia\services4\srvclient\devices\sgx;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalDependencies>-lSceDisplayUser_stub;-lSceDisplay_stub;-lSceGpuEs4ForUser_stub;$(ProjectDir)libSceGpuEs4User_stub.a;%(AdditionalDependencies)</AdditionalDependencies>
@@ -124,7 +129,7 @@
       <PreprocessorDefinitions>NDEBUG;PSP2_PRX_EXPORT;%(PreprocessorDefinitions);</PreprocessorDefinitions>
       <OptimizationLevel>Level3</OptimizationLevel>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <AdditionalIncludeDirectories>$(SCE_PSP2_SDK_DIR)\target\include\vdsuite\user;$(SCE_PSP2_SDK_DIR)\target\include\vdsuite\common;$(SolutionDir)include\gpu_es4;$(SolutionDir)include\gpu_es4\eurasia\include4;$(SolutionDir)include\gpu_es4\eurasia\hwdefs;$(SolutionDir)include\gpu_es4\eurasia\services4\include;$(SolutionDir)include\gpu_es4\eurasia\services4\system\psp2;$(SolutionDir)include\gpu_es4\eurasia\codegen\pds;$(SolutionDir)include\gpu_es4\eurasia\codegen\pixevent;$(SolutionDir)include\gpu_es4\eurasia\codegen\usegen;$(SolutionDir)include\gpu_es4\eurasia\codegen\pixfmts;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SCE_PSP2_SDK_DIR)\target\include\vdsuite\user;$(SCE_PSP2_SDK_DIR)\target\include\vdsuite\common;$(SolutionDir)include\gpu_es4;$(SolutionDir)include\gpu_es4\eurasia\include4;$(SolutionDir)include\gpu_es4\eurasia\hwdefs;$(SolutionDir)include\gpu_es4\eurasia\services4\include;$(SolutionDir)include\gpu_es4\eurasia\services4\system\psp2;$(SolutionDir)include\gpu_es4\eurasia\codegen\pds;$(SolutionDir)include\gpu_es4\eurasia\codegen\pixevent;$(SolutionDir)include\gpu_es4\eurasia\codegen\usegen;$(SolutionDir)include\gpu_es4\eurasia\codegen\pixfmts;$(SolutionDir)include\gpu_es4\eurasia\services4\srvclient\devices\sgx;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalDependencies>-lSceDisplayUser_stub;-lSceDisplay_stub;-lSceGpuEs4ForUser_stub;$(ProjectDir)libSceGpuEs4User_stub.a;%(AdditionalDependencies)</AdditionalDependencies>

@@ -1031,7 +1031,7 @@ PVRSRV_ERROR IMG_CALLCONV PVRSRVAllocDeviceMem(IMG_CONST PVRSRV_DEV_DATA	*psDevD
 	IMG_UINT32		ui32Attribs,
 	IMG_SIZE_T		ui32Size,
 	IMG_SIZE_T		ui32Alignment,
-	IMG_SID			hHWmemCtx,
+	IMG_SID			hShadowMemblockRef,
 	PVRSRV_CLIENT_MEM_INFO	**ppsMemInfo);
 #else
 IMG_IMPORT
@@ -1644,13 +1644,8 @@ IMG_IMPORT IMG_BOOL IMG_CALLCONV PVRSRVGetAppHint(IMG_VOID			*pvHintState,
  *****************************************************************************/
 
 /* Exported APIs */
-#if defined(PSP2_PRX_EXPORT)
-IMG_PVOID IMG_CALLCONV PVRSRVAllocUserModeMem(IMG_SIZE_T ui32Size);
-IMG_VOID  IMG_CALLCONV PVRSRVFreeUserModeMem(IMG_PVOID pvMem);
-#else
 IMG_IMPORT IMG_PVOID IMG_CALLCONV PVRSRVAllocUserModeMem(IMG_SIZE_T ui32Size);
 IMG_IMPORT IMG_VOID  IMG_CALLCONV PVRSRVFreeUserModeMem(IMG_PVOID pvMem);
-#endif
 IMG_IMPORT IMG_PVOID IMG_CALLCONV PVRSRVCallocUserModeMem (IMG_SIZE_T ui32Size);
 IMG_IMPORT IMG_PVOID IMG_CALLCONV PVRSRVReallocUserModeMem (IMG_PVOID pvBase, IMG_SIZE_T uNewSize);
 IMG_IMPORT IMG_VOID PVRSRVMemCopy(IMG_VOID *pvDst, const IMG_VOID *pvSrc, IMG_SIZE_T ui32Size);

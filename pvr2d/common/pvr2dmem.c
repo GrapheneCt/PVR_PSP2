@@ -30,6 +30,11 @@ Modifications :-
 $Log: pvr2dmem.c $
 ******************************************************************************/
 
+#include <kernel.h>
+
+#include "psp2_pvr_desc.h"
+#include "psp2_pvr_defs.h"
+
 #include "img_defs.h"
 #include "services.h"
 #include "pvr2d.h"
@@ -37,7 +42,10 @@ $Log: pvr2dmem.c $
 
 /* MS define is signed */
 #undef PAGE_SIZE
-#define PAGE_SIZE	4096U
+#define PAGE_SIZE		4096U
+#define PAGE_SIZE_CDRAM	262144U
+
+#define ALIGN(x, a)	(((x) + ((a) - 1)) & ~((a) - 1))
 
 /******************************************************************************
  @Function	PVR2DMemAlloc
@@ -68,7 +76,8 @@ PVR2DERROR PVR2DMemAlloc (PVR2DCONTEXTHANDLE	hContext,
 	PVR2DCONTEXT *psContext = (PVR2DCONTEXT *)hContext;
 	PVR2D_BUFFER *psBuffer;
 	IMG_UINT32 ui32Attribs;
-	PVRSRV_ERROR srvErr;
+	IMG_INT32 i32Error;
+	IMG_UINT32 ui32MemBlockType;
 
 	if (!hContext)
 	{
@@ -83,9 +92,15 @@ PVR2DERROR PVR2DMemAlloc (PVR2DCONTEXTHANDLE	hContext,
 	}
 
 	// Check for illegal flags
-	if (ulFlags & ~(PVR2D_MEM_CACHED|PVR2D_MEM_WRITECOMBINE|PVR2D_GPU_PAGEABLE))
+	if (ulFlags & ~(PVR2D_PSP2_MEM_MAIN|PVR2D_PSP2_MEM_CDRAM))
 	{
 		PVR2D_DPF((PVR_DBG_ERROR, "PVR2D error - illegal flags"));
+		return PVR2DERROR_INVALID_PARAMETER;
+	}
+
+	// Alignment must be a power of 2
+	if ((ulAlign != 0) && ((ulAlign & (ulAlign - 1)) != 0))
+	{
 		return PVR2DERROR_INVALID_PARAMETER;
 	}
 
@@ -96,56 +111,89 @@ PVR2DERROR PVR2DMemAlloc (PVR2DCONTEXTHANDLE	hContext,
 		return PVR2DERROR_MEMORY_UNAVAILABLE;
 	}
 
-	ui32Attribs = PVRSRV_MEM_READ | PVRSRV_MEM_WRITE; // Add compulsary flags;
-
-	if (ulFlags & PVR2D_MEM_CACHED)
-	{
-		ui32Attribs |= PVRSRV_MEM_CACHED;
-	}
-	if (ulFlags & PVR2D_MEM_WRITECOMBINE)
-	{
-		ui32Attribs |= PVRSRV_MEM_WRITECOMBINE;
-	}
-	if (ulFlags & PVR2D_GPU_PAGEABLE)
-	{
-		ui32Attribs |= PVRSRV_HAP_GPU_PAGEABLE;
-	}
-
-	// Alignment must be a power of 2
-	if ((ulAlign != 0) && ((ulAlign & (ulAlign - 1)) != 0))
-	{
-		return PVR2DERROR_INVALID_PARAMETER;
-	}
-
-	if (ulFlags & (PVR2D_MEM_CACHED|PVR2D_MEM_WRITECOMBINE))
-	{
-		// If mem flags are specified then size/alignment must be a multiple of the SGX MMU hardware page size
-		ulBytes = (ulBytes + (PAGE_SIZE-1)) & ~(PAGE_SIZE-1);
-		ulAlign = (ulAlign + (PAGE_SIZE-1)) & ~(PAGE_SIZE-1);
-	}
-
-	srvErr = PVRSRVAllocDeviceMem(&psContext->sDevData,
-							psContext->h2DHeap,
-							ui32Attribs,
-							ulBytes, ulAlign, &psMemInfo);
-
-	if (srvErr != PVRSRV_OK)
+	psMemInfo = PVR2DCalloc(psContext, sizeof(PVRSRV_CLIENT_MEM_INFO));
+	if (!psMemInfo)
 	{
 		PVR2DFree(psContext, psBuffer);
-		PVR2D_DPF((PVR_DBG_ERROR, "PVR2D error - could not allocate device memory!"));
-		return PVR2DERROR_IOCTL_ERROR;
+		PVR2D_DPF((PVR_DBG_ERROR, "PVR2D error - could not allocate host mem"));
+		return PVR2DERROR_MEMORY_UNAVAILABLE;
 	}
 
-#if defined(PDUMP)
-	PVRSRVPDumpCommentf(psContext->psServices, IMG_FALSE,
-				"PVR2DMemAlloc : Size=0x%08X Alignment=0x%08X DevVAddr=0x%08X",
-				ulBytes, ulAlign, psMemInfo->sDevVAddr.uiAddr);
-#endif
+	ui32Attribs = PVRSRV_MEM_READ | PVRSRV_MEM_WRITE | PVRSRV_MEM_USER_SUPPLIED_DEVVADDR; // Add compulsary flags;
+
+	if ((ulFlags & PVR2D_PSP2_MEM_MAIN) || !ulFlags)
+	{
+		ui32MemBlockType = SCE_KERNEL_MEMBLOCK_TYPE_USER_NC_RW;
+		ulBytes = ALIGN(ulBytes, PAGE_SIZE);
+	} 
+	else if (ulFlags & PVR2D_PSP2_MEM_CDRAM)
+	{
+		ui32MemBlockType = SCE_KERNEL_MEMBLOCK_TYPE_USER_CDRAM_RW;
+		ulBytes = ALIGN(ulBytes, PAGE_SIZE_CDRAM);
+	}
+
+	SceKernelAllocMemBlockOpt opt;
+	sceClibMemset(&opt, 0, sizeof(SceKernelAllocMemBlockOpt));
+	opt.size = sizeof(SceKernelAllocMemBlockOpt);
+	opt.attr = SCE_KERNEL_ALLOC_MEMBLOCK_ATTR_HAS_ALIGNMENT;
+	opt.alignment = ulAlign;
+
+	psBuffer->sMemInfo.i32MemBlockUID = sceKernelAllocMemBlock(
+		"PVR2DSurfaceMemBlock",
+		ui32MemBlockType,
+		ulBytes,
+		&opt);
+
+
+	if (psBuffer->sMemInfo.i32MemBlockUID <= 0)
+	{
+		PVR2DFree(psContext, psMemInfo);
+		PVR2DFree(psContext, psBuffer);
+		PVR2D_DPF((PVR_DBG_ERROR, "PVR2D error - could not allocate memory!"));
+		return PVR2DERROR_MEMORY_UNAVAILABLE;
+	}
+
+	sceKernelGetMemBlockBase(psBuffer->sMemInfo.i32MemBlockUID, &psMemInfo->pvLinAddr);
+	psMemInfo->pvLinAddrKM = psMemInfo->pvLinAddr;
+	psMemInfo->sDevVAddr.uiAddr = psMemInfo->pvLinAddr;
+
+	i32Error = PVRSRVMapMemoryToGpu(&psContext->sDevData,
+		psContext->hDevMemContext,
+		psContext->hGeneralMappingHeap,
+		ulBytes,
+		0,
+		psBuffer->sMemInfo.pBase,
+		ui32Attribs,
+		IMG_NULL);
+
+	if (i32Error != PVRSRV_OK)
+	{
+		goto error_full_cleanup;
+	}
+
+	i32Error = PVRSRVAllocSyncInfo(&psContext->sDevData, &psMemInfo->psClientSyncInfo);
+
+	if (i32Error != PVRSRV_OK)
+	{
+		goto error_full_cleanup;
+	}
+
+	psMemInfo->uAllocSize = ulBytes;
+	psMemInfo->ui32ClientFlags = ui32Attribs;
+	psMemInfo->ui32Flags = psMemInfo->ui32ClientFlags;
 
 	psBuffer->eType = PVR2D_MEMINFO_ALLOCATED;
 	PVR2DMEMINFO_INITIALISE(&psBuffer->sMemInfo, psMemInfo);
 	*ppsMemInfoOut = (PVR2DMEMINFO *)psBuffer;
 	return PVR2D_OK;
+
+error_full_cleanup:
+
+	sceKernelFreeMemBlock(psBuffer->sMemInfo.i32MemBlockUID);
+	PVR2DFree(psContext, psMemInfo);
+	PVR2DFree(psContext, psBuffer);
+	PVR2D_DPF((PVR_DBG_ERROR, "PVR2D error - could not map memory to GPU!"));
+	return PVR2DERROR_MEMORY_UNAVAILABLE;
 }
 
 
@@ -176,40 +224,12 @@ PVR2DERROR PVR2DMemExport (PVR2DCONTEXTHANDLE	hContext,
 						  PVR2D_HANDLE			*phMemInfo)
 #endif
 {
-	PVR2DCONTEXT *psContext = (PVR2DCONTEXT *)hContext;
-	PVRSRV_CLIENT_MEM_INFO *psClientMemInfo;
-
+	PVR_UNREFERENCED_PARAMETER(hContext);
 	PVR_UNREFERENCED_PARAMETER(ulFlags);
 
-	if (!hContext)
-	{
-		PVR2D_DPF((PVR_DBG_ERROR, "PVR2D error - invalid context"));
-		return PVR2DERROR_INVALID_CONTEXT;
-	}
+	phMemInfo = psMemInfo;
 
-	if (!psMemInfo || !phMemInfo)
-	{
-		PVR2D_DPF((PVR_DBG_ERROR, "PVR2D error - invalid params"));
-		return PVR2DERROR_INVALID_PARAMETER;
-	}
-
-	psClientMemInfo = CLIENT_MEM_INFO_FROM_PVR2DMEMINFO(psMemInfo);
-
-	if (!psClientMemInfo)
-	{
-		PVR2D_DPF((PVR_DBG_ERROR, "PVR2D error - invalid params"));
-		return PVR2DERROR_INVALID_PARAMETER;
-	}
-
-	if(PVRSRVExportDeviceMem(&psContext->sDevData,
-							 psClientMemInfo,
-							 phMemInfo) != PVRSRV_OK)
-	{
-		PVR2D_DPF((PVR_DBG_ERROR, "PVR2D error - could not export device memory!"));
-		return PVR2DERROR_IOCTL_ERROR;
-	}
-
-	return PVR2D_OK;
+	return PVRSRV_OK;
 }
 
 
@@ -242,10 +262,6 @@ PVR2DERROR PVR2DMemWrap(PVR2DCONTEXTHANDLE hContext,
 	PVRSRV_CLIENT_MEM_INFO *psMemInfo;
 	PVR2DCONTEXT *psContext = (PVR2DCONTEXT *)hContext;
 	PVR2D_BUFFER *psBuffer;
-	IMG_UINT32 ui32Mem = (IMG_UINT32)pMem;
-	IMG_UINT32 ui32Offset = 0, ui32PageTableEntries;
-	IMG_SYS_PHYADDR *psPageTable = (IMG_SYS_PHYADDR *)0;
-	IMG_BOOL bPhysContig = (ulFlags & PVR2D_WRAPFLAG_CONTIGUOUS) ? IMG_TRUE : IMG_FALSE;
 	IMG_UINT32 i;
 
 	if (!hContext)
@@ -260,69 +276,47 @@ PVR2DERROR PVR2DMemWrap(PVR2DCONTEXTHANDLE hContext,
 		return PVR2DERROR_INVALID_PARAMETER;
 	}
 
-	if (plPageAddress)
-	{
-		/* client passed in a list of physical pages */
-		ui32Offset = (ui32Mem & PVR2D_MMU_PAGE_MASK);
-
-		ui32PageTableEntries =
-			bPhysContig ?  1 :
-		   (ui32Offset + ulBytes + PVR2D_MMU_PAGE_MASK) >> PVR2D_MMU_PAGE_SHIFT;
-
-		psPageTable = PVR2DCalloc(psContext, ui32PageTableEntries * sizeof(IMG_SYS_PHYADDR));
-		if (!psPageTable)
-		{
-			PVR2D_DPF((PVR_DBG_ERROR, "PVR2D error - could not allocate host mem"));
-			return PVR2DERROR_MEMORY_UNAVAILABLE;
-		}
-
-		for (i = 0; i < ui32PageTableEntries; i++)
-		{
-			psPageTable[i].uiAddr = plPageAddress[i];
-	    }
-	}
-
 	psBuffer = PVR2DCalloc(psContext, sizeof(PVR2D_BUFFER));
 	if (!psBuffer)
 	{
 		PVR2D_DPF((PVR_DBG_ERROR, "PVR2D error - could not allocate host mem"));
-		PVR2DFree(psContext, psPageTable);
 		return PVR2DERROR_MEMORY_UNAVAILABLE;
 	}
 
-	if (PVRSRVWrapExtMemory(&psContext->sDevData,
-							psContext->hDevMemContext,
-							ulBytes,
-							ui32Offset,
-							bPhysContig,
-							psPageTable,
-							pMem,
-							0,
-							&psMemInfo)	!= PVRSRV_OK)
+	psMemInfo = PVR2DCalloc(psContext, sizeof(PVRSRV_CLIENT_MEM_INFO));
+	if (!psMemInfo)
 	{
-		if (psPageTable)
-		{
-			PVR2DFree(psContext, psPageTable);
-		}
 		PVR2DFree(psContext, psBuffer);
+		PVR2D_DPF((PVR_DBG_ERROR, "PVR2D error - could not allocate host mem"));
+		return PVR2DERROR_MEMORY_UNAVAILABLE;
+	}
 
+	psMemInfo->pvLinAddr = pMem;
+	psMemInfo->pvLinAddrKM = psMemInfo->pvLinAddr;
+	psMemInfo->sDevVAddr.uiAddr = psMemInfo->pvLinAddr;
+
+	if (PVRSRVMapMemoryToGpu(&psContext->sDevData,
+		psContext->hDevMemContext,
+		psContext->hGeneralMappingHeap,
+		ulBytes,
+		0,
+		pMem,
+		PVRSRV_MEM_READ | PVRSRV_MEM_WRITE | PVRSRV_MEM_USER_SUPPLIED_DEVVADDR,
+		IMG_NULL) != PVRSRV_OK ||
+		PVRSRVAllocSyncInfo(&psContext->sDevData, &psMemInfo->psClientSyncInfo) != PVRSRV_OK)
+	{
+		PVR2DFree(psContext, psMemInfo);
+		PVR2DFree(psContext, psBuffer);
 		PVR2D_DPF((PVR_DBG_ERROR, "PVR2D error - could not wrap external memory!"));
 		return PVR2DERROR_MEMORY_UNAVAILABLE;
 	}
 
-	if (psPageTable)
-	{
-		PVR2DFree(psContext, psPageTable);
-	}
+	psMemInfo->uAllocSize = ulBytes;
+	psMemInfo->ui32ClientFlags = PVRSRV_MEM_READ | PVRSRV_MEM_WRITE | PVRSRV_MEM_USER_SUPPLIED_DEVVADDR;
+	psMemInfo->ui32Flags = psMemInfo->ui32ClientFlags;
+
 	psBuffer->eType = PVR2D_MEMINFO_WRAPPED;
 	PVR2DMEMINFO_INITIALISE(&psBuffer->sMemInfo, psMemInfo);
-
-	/*
-	 * Set the user mode address in the PVR2DMEMINFO, in case someone
-	 * tries accessing the wrapped memory via this route.
-	 */
-	psBuffer->sMemInfo.pBase = pMem;
-
 	*ppsMemInfo = (PVR2DMEMINFO *)psBuffer;
 
 	return PVR2D_OK;
@@ -358,68 +352,9 @@ PVR2DERROR PVR2DMemMap(PVR2DCONTEXTHANDLE hContext,
 #endif
 						PVR2DMEMINFO **ppsDstMem)
 {
-	PVRSRV_ERROR eResult;
-	PVR2DCONTEXT *psContext;
-	PVRSRV_CLIENT_MEM_INFO *psDstMemInfo;
-	PVR2D_BUFFER *psDstBuffer;
+	PVR2DMEMINFO *psMemInfo = (PVR2DMEMINFO *)hMemHandle;
 
-	PVR_UNREFERENCED_PARAMETER(ulFlags);
-
-	if (!hContext)
-	{
-		PVR2D_DPF((PVR_DBG_ERROR, "PVR2D error - invalid context"));
-		return PVR2DERROR_INVALID_CONTEXT;
-	}
-
-	/* check the parameters */
-	if (!hMemHandle || !ppsDstMem)
-	{
-		PVR2D_DPF((PVR_DBG_ERROR,"PVR2DMemMap error: invalid parameters"));
-		return PVR2DERROR_INVALID_PARAMETER;
-	}
-
-	/* setup the context */
-	psContext = (PVR2DCONTEXT *)hContext;
-
-	/*
-		the memory that is being mapped could have been allocated
-		from the current process or a different process.
-		In either case, the only significant input information for
-		the buffer to map is the hMemHandle exported by PVR2DMemExport.
-	*/
-
-	/*
-		construct a client meminfo for the original allocation
-	*/
-
-	/* allocate memory for the meminfo */
-	psDstBuffer = PVR2DCalloc(psContext, sizeof(PVR2D_BUFFER));
-	if (!psDstBuffer)
-	{
-		PVR2D_DPF((PVR_DBG_ERROR, "PVR2D error - could not allocate host mem"));
-		return PVR2DERROR_MEMORY_UNAVAILABLE;
-	}
-
-	/* map the meminfo */
-	eResult = PVRSRVMapDeviceMemory(&psContext->sDevData,
-									hMemHandle,
-									psContext->hGeneralMappingHeap,
-									&psDstMemInfo);
-	if (eResult != PVRSRV_OK)
-	{
-		PVR2D_DPF((PVR_DBG_ERROR, "PVR2DMemMap error: mapping of meminfo failed"));
-		PVR2DFree(psContext, psDstBuffer);
-		return PVR2DERROR_MAPPING_FAILED;
-	}
-
-	/* set up the PVR2D mem info */
-	psDstBuffer->eType = PVR2D_MEMINFO_MAPPED;
-	PVR2DMEMINFO_INITIALISE(&psDstBuffer->sMemInfo, psDstMemInfo);
-
-	/* return the new meminfo */
-	*ppsDstMem = &psDstBuffer->sMemInfo;
-
-	return PVR2D_OK;
+	return PVR2DMemWrap(hContext, psMemInfo->pBase, ulFlags, psMemInfo->ui32MemSize, IMG_NULL, ppsDstMem);
 }
 
 
@@ -483,37 +418,43 @@ PVR2DERROR PVR2DMemFree (PVR2DCONTEXTHANDLE hContext, PVR2DMEMINFO *psMem)
 	switch(psBuffer->eType)
 	{
 		case PVR2D_MEMINFO_ALLOCATED:
-			if(PVRSRVFreeDeviceMem(&psContext->sDevData, psClientMemInfo) != PVRSRV_OK)
+			if (PVRSRVFreeSyncInfo(&psContext->sDevData, psClientMemInfo->psClientSyncInfo) != PVRSRV_OK)
 			{
-				PVR2D_DPF((PVR_DBG_ERROR, "PVR2DMemFree error - could not free device memory!"));
+				PVR2D_DPF((PVR_DBG_ERROR, "PVR2DMemFree error - could not free sync object memory!"));
 				return PVR2DERROR_IOCTL_ERROR;
 			}
-			
-#if defined(PDUMP)
-			PVRSRVPDumpCommentf( psContext->psServices, IMG_FALSE,
-									"PVR2DMemFree : DevVAddr=0x%08X",
-									psClientMemInfo->sDevVAddr.uiAddr);
-#endif
 
+			if (PVRSRVUnmapMemoryFromGpu(&psContext->sDevData, psBuffer->sMemInfo.pBase, psContext->hGeneralMappingHeap, IMG_FALSE) != PVRSRV_OK)
+			{
+				PVR2D_DPF((PVR_DBG_ERROR, "PVR2DMemFree error - could not unmap memory from GPU!"));
+				return PVR2DERROR_IOCTL_ERROR;
+			}
+
+			if (sceKernelFreeMemBlock(psBuffer->sMemInfo.i32MemBlockUID) != SCE_OK)
+			{
+				PVR2D_DPF((PVR_DBG_ERROR, "PVR2DMemFree error - could not free memblock!"));
+				return PVR2DERROR_IOCTL_ERROR;
+			}
+
+			PVR2DFree(psContext, psBuffer->sMemInfo.hPrivateData);
 			PVR2DFree(psContext, psMem);
 			break;
 
 		case PVR2D_MEMINFO_WRAPPED:
-			if(PVRSRVUnwrapExtMemory(&psContext->sDevData, psClientMemInfo) != PVRSRV_OK)
+		case PVR2D_MEMINFO_MAPPED:
+			if (PVRSRVFreeSyncInfo(&psContext->sDevData, psClientMemInfo->psClientSyncInfo) != PVRSRV_OK)
 			{
-				PVR2D_DPF((PVR_DBG_ERROR, "PVR2DMemFree error - could not unwrap external memory!"));
+				PVR2D_DPF((PVR_DBG_ERROR, "PVR2DMemFree error - could not free sync object memory!"));
 				return PVR2DERROR_IOCTL_ERROR;
 			}
 
-			PVR2DFree(psContext, psMem);
-			break;
-
-		case PVR2D_MEMINFO_MAPPED:
-			if(PVRSRVUnmapDeviceMemory(&psContext->sDevData, psClientMemInfo) != PVRSRV_OK)
+			if (PVRSRVUnmapMemoryFromGpu(&psContext->sDevData, psBuffer->sMemInfo.pBase, psContext->hGeneralMappingHeap, IMG_FALSE) != PVRSRV_OK)
 			{
-				PVR2D_DPF((PVR_DBG_ERROR, "PVR2DMemFree error: unmap of meminfo failed"));
-				return PVR2DERROR_MAPPING_FAILED;
+				PVR2D_DPF((PVR_DBG_ERROR, "PVR2DMemFree error - could not unmap memory from GPU!"));
+				return PVR2DERROR_IOCTL_ERROR;
 			}
+
+			PVR2DFree(psContext, psBuffer->sMemInfo.hPrivateData);
 			PVR2DFree(psContext, psMem);
 			break;
 
@@ -539,8 +480,8 @@ PVR2DERROR PVR2DMemFree (PVR2DCONTEXTHANDLE hContext, PVR2DMEMINFO *psMem)
 PVR2D_EXPORT
 PVR2DERROR PVR2DRemapToDev(PVR2DCONTEXTHANDLE hContext, PVR2DMEMINFO *psMem)
 {
-	PVRSRV_CLIENT_MEM_INFO *psClientMemInfo;
 	PVR2DCONTEXT *psContext = (PVR2DCONTEXT *)hContext;
+	PVR2D_BUFFER *psBuffer = (PVR2D_BUFFER *)psMem;
 
 	if (!hContext)
 	{
@@ -554,22 +495,18 @@ PVR2DERROR PVR2DRemapToDev(PVR2DCONTEXTHANDLE hContext, PVR2DMEMINFO *psMem)
 		return PVR2DERROR_INVALID_PARAMETER;
 	}
 
-	psClientMemInfo = CLIENT_MEM_INFO_FROM_PVR2DMEMINFO(psMem);
-
-	if (!psClientMemInfo)
+	if (PVRSRVMapMemoryToGpu(&psContext->sDevData,
+		psContext->hDevMemContext,
+		psContext->hGeneralMappingHeap,
+		psBuffer->sMemInfo.ui32MemSize,
+		0,
+		psBuffer->sMemInfo.pBase,
+		PVRSRV_MEM_READ | PVRSRV_MEM_WRITE | PVRSRV_MEM_USER_SUPPLIED_DEVVADDR,
+		IMG_NULL) != PVRSRV_OK)
 	{
-		PVR2D_DPF((PVR_DBG_ERROR, "PVR2DRemapToDev - invalid params"));
-		return PVR2DERROR_INVALID_PARAMETER;
-	}
-
-	if (PVRSRVRemapToDev(&psContext->sDevData, psClientMemInfo) != PVRSRV_OK)
-	{
-		PVR2D_DPF((PVR_DBG_ERROR, "PVR2DRemapToDev error - could not unmap from device!"));
+		PVR2D_DPF((PVR_DBG_ERROR, "PVR2DRemapToDev error - could not map memory to GPU!"));
 		return PVR2DERROR_IOCTL_ERROR;
 	}
-
-	/* device virtual address might have changed */
-	psMem->ui32DevAddr = psClientMemInfo->sDevVAddr.uiAddr;
 
 	return PVR2D_OK;
 }
@@ -590,6 +527,7 @@ PVR2DERROR PVR2DUnmapFromDev(PVR2DCONTEXTHANDLE hContext, PVR2DMEMINFO *psMem)
 {
 	PVRSRV_CLIENT_MEM_INFO *psClientMemInfo;
 	PVR2DCONTEXT *psContext = (PVR2DCONTEXT *)hContext;
+	PVR2D_BUFFER *psBuffer = (PVR2D_BUFFER *)psMem;
 	PVR2DERROR eResult;
 
 	if (!hContext)
@@ -621,9 +559,9 @@ PVR2DERROR PVR2DUnmapFromDev(PVR2DCONTEXTHANDLE hContext, PVR2DMEMINFO *psMem)
 		return eResult;
 	}
 
-	if (PVRSRVUnmapFromDev(&psContext->sDevData, psClientMemInfo) != PVRSRV_OK)
+	if (PVRSRVUnmapMemoryFromGpu(&psContext->sDevData, psBuffer->sMemInfo.pBase, psContext->hGeneralMappingHeap, IMG_FALSE) != PVRSRV_OK)
 	{
-		PVR2D_DPF((PVR_DBG_ERROR, "PVR2DUnmapFromDev error - could not unmap from device!"));
+		PVR2D_DPF((PVR_DBG_ERROR, "PVR2DUnmapFromDev error - could not unmap memory from GPU!"));
 		return PVR2DERROR_IOCTL_ERROR;
 	}
 
@@ -712,6 +650,7 @@ PVR2DERROR PVR2DModifyPendingOps(const PVR2DCONTEXTHANDLE hContext,
 	if(PVRSRVModifyPendingSyncOps(psContext->psServices, 
 								  hSyncInfoModObj,
 								  psClientMemInfo->psClientSyncInfo,
+								  1,
 								  bIsWriteOp ? PVRSRV_MODIFYSYNCOPS_FLAGS_WO_INC : 
 											   PVRSRV_MODIFYSYNCOPS_FLAGS_RO_INC,
 								  (IMG_UINT32*) pulReadOpsPending,
@@ -851,17 +790,7 @@ PVR2DERROR PVR2DFlushToSyncModObj(const PVR2DCONTEXTHANDLE hContext,
 			break;
 		}
 
-		if(PVRSRVEventObjectWait(psContext->psServices, psContext->sMiscInfo.hOSGlobalEvent) == PVRSRV_ERROR_TIMEOUT)
-		{
-#if defined (SUPPORT_SGX)
-			/* Sometimes SGX needs a little encouragement */
-			if(SGXScheduleProcessQueues(&psContext->sDevData) != PVRSRV_OK)
-			{
-				PVR2D_DPF((PVR_DBG_ERROR, "PVR2D error - SGXScheduleProcessQueues failed"));
-			}
-#endif
-		}
-
+		sceGpuSignalWait(sceKernelGetTLSAddr(0x44), 100000);
 	}
 
 	switch(eError)
@@ -919,68 +848,8 @@ PVR2DERROR PVR2DTakeSyncToken(const PVR2DCONTEXTHANDLE hContext,
 							  PVR2D_ULONG *pulReadOpsPending,
 							  PVR2D_ULONG *pulWriteOpsPending)
 {
-	PVRSRV_CLIENT_MEM_INFO	*psClientMemInfo;
-	PVR2DCONTEXT			*psContext			= (PVR2DCONTEXT *)hContext;
-	PVRSRV_SYNC_TOKEN		*psToken;
-
-	if (!hContext)
-	{
-		PVR2D_DPF((PVR_DBG_ERROR, "PVR2D error - invalid context"));
-		return PVR2DERROR_INVALID_CONTEXT;
-	}
-
-	if(!psMemInfo)
-	{
-		PVR2D_DPF((PVR_DBG_ERROR, "PVR2D error - invalid params"));
-		return PVR2DERROR_INVALID_PARAMETER;
-	}
-
-	if(!phSyncToken)
-	{
-		PVR2D_DPF((PVR_DBG_ERROR, "PVR2D error - invalid params"));
-		return PVR2DERROR_INVALID_PARAMETER;
-	}
-
-	psClientMemInfo = CLIENT_MEM_INFO_FROM_PVR2DMEMINFO(psMemInfo);
-
-	if (!psClientMemInfo)
-	{
-		PVR2D_DPF((PVR_DBG_ERROR, "PVR2D error - invalid params"));
-		return PVR2DERROR_INVALID_PARAMETER;
-	}
-	
-	if((psToken = PVR2DCalloc(psContext, sizeof(PVRSRV_SYNC_TOKEN))) == IMG_NULL)
-	{
-		PVR2D_DPF((PVR_DBG_ERROR, "PVR2D error - could not allocate host mem"));
-		return PVR2DERROR_MEMORY_UNAVAILABLE;
-	}
-
-	if(PVRSRVSyncOpsTakeToken(psContext->psServices,
-#if defined (SUPPORT_SID_INTERFACE)
-							  psClientMemInfo->psClientSyncInfo->hKernelSyncInfo,
-#else
-							  psClientMemInfo->psClientSyncInfo,
-#endif
-							  psToken) != PVRSRV_OK)
-	{
-		PVR2D_DPF((PVR_DBG_ERROR, "PVR2D error - invalid params"));
-		PVR2DFree(psContext, psToken);
-		return PVR2DERROR_INVALID_PARAMETER;
-	}
-
-	*phSyncToken = (PVR2D_HANDLE) psToken;
-
-	if(pulReadOpsPending)
-	{
-		*pulReadOpsPending = psToken->sPrivate.ui32ReadOpsPendingSnapshot;
-	} 	
-
-	if(pulWriteOpsPending)
-	{
-		*pulWriteOpsPending = psToken->sPrivate.ui32WriteOpsPendingSnapshot;
-	}
-
-	return PVR2D_OK;
+	PVR2D_DPF((PVR_DBG_ERROR, "PVR2D error - PVR2DTakeSyncToken is unimplemented"));
+	return PVR2DERROR_NOT_YET_IMPLEMENTED;
 }
 
 /******************************************************************************
@@ -999,24 +868,8 @@ PVR2D_EXPORT
 PVR2DERROR PVR2DReleaseSyncToken(const PVR2DCONTEXTHANDLE hContext,
 								 PVR2D_HANDLE hSyncToken)
 {
-	PVR2DCONTEXT			*psContext	= (PVR2DCONTEXT *)hContext;
-	PVRSRV_SYNC_TOKEN		*psToken	= (PVRSRV_SYNC_TOKEN*) hSyncToken;
-
-	if (!psContext)
-	{
-		PVR2D_DPF((PVR_DBG_ERROR, "PVR2D error - invalid context"));
-		return PVR2DERROR_INVALID_CONTEXT;
-	}
-
-	if(!psToken)
-	{
-		PVR2D_DPF((PVR_DBG_ERROR, "PVR2D error - invalid params"));
-		return PVR2DERROR_INVALID_PARAMETER;
-	}
-
-	PVR2DFree(psContext, psToken);
-
-	return PVR2D_OK;
+	PVR2D_DPF((PVR_DBG_ERROR, "PVR2D error - PVR2DReleaseSyncToken is unimplemented"));
+	return PVR2DERROR_NOT_YET_IMPLEMENTED;
 }
 
 /******************************************************************************
@@ -1045,87 +898,8 @@ PVR2DERROR PVR2DFlushToSyncToken(const PVR2DCONTEXTHANDLE hContext,
 								 PVR2D_HANDLE hSyncToken,
 								 PVR2D_BOOL bWait)
 {
-	PVRSRV_ERROR			eError;
-	PVRSRV_CLIENT_MEM_INFO	*psClientMemInfo;
-	PVR2DCONTEXT			*psContext			= (PVR2DCONTEXT *)hContext;
-	PVRSRV_SYNC_TOKEN		*psToken			= (PVRSRV_SYNC_TOKEN*) hSyncToken;
-
-	if (!hContext)
-	{
-		PVR2D_DPF((PVR_DBG_ERROR, "PVR2D error - invalid context"));
-		return PVR2DERROR_INVALID_CONTEXT;
-	}
-
-	if(!psMemInfo)
-	{
-		PVR2D_DPF((PVR_DBG_ERROR, "PVR2D error - invalid params"));
-		return PVR2DERROR_INVALID_PARAMETER;
-	}
-
-	if(!hSyncToken)
-	{
-		PVR2D_DPF((PVR_DBG_ERROR, "PVR2D error - invalid params"));
-		return PVR2DERROR_INVALID_PARAMETER;
-	}
-
-	psClientMemInfo = CLIENT_MEM_INFO_FROM_PVR2DMEMINFO(psMemInfo);
-
-	if (!psClientMemInfo)
-	{
-		PVR2D_DPF((PVR_DBG_ERROR, "PVR2D error - invalid params"));
-		return PVR2DERROR_INVALID_PARAMETER;
-	}
-	
-	/* Wait not implemented in the bridge, so wait here if requested */
-	while((eError = PVRSRVSyncOpsFlushToToken(psContext->psServices,
-#if defined (SUPPORT_SID_INTERFACE)
-											  psClientMemInfo->psClientSyncInfo->hKernelSyncInfo,
-#else
-											  psClientMemInfo->psClientSyncInfo,
-#endif
-											  psToken,
-											  IMG_FALSE)) == PVRSRV_ERROR_RETRY)
-	{
-		if(!bWait)
-		{
-			break;
-		}
-
-		if(PVRSRVEventObjectWait(psContext->psServices, psContext->sMiscInfo.hOSGlobalEvent) == PVRSRV_ERROR_TIMEOUT)
-		{
-#if defined (SUPPORT_SGX)
-			/* Sometimes SGX needs a little encouragement */
-			if(SGXScheduleProcessQueues(&psContext->sDevData) != PVRSRV_OK)
-			{
-				PVR2D_DPF((PVR_DBG_ERROR, "PVR2D error - SGXScheduleProcessQueues failed"));
-			}
-#endif
-		}
-	}
-
-	switch(eError)
-	{
-		case PVRSRV_OK: 
-		{
-			return PVR2D_OK;
-		}
-		case PVRSRV_ERROR_RETRY: 
-		{
-			return PVR2DERROR_BLT_NOTCOMPLETE;
-		}		
-		case PVRSRV_ERROR_HANDLE_INDEX_OUT_OF_RANGE:
-		case PVRSRV_ERROR_HANDLE_NOT_ALLOCATED:
-		case PVRSRV_ERROR_HANDLE_TYPE_MISMATCH:
-		{
-			PVR2D_DPF((PVR_DBG_ERROR, "PVR2D error - invalid handle"));
-			return PVR2DERROR_INVALID_PARAMETER;
-		}
-		default:
-		{
-			PVR2D_DPF((PVR_DBG_ERROR, "PVR2D error - unknown error"));
-			return PVR2DERROR_GENERIC_ERROR;
-		}
-	}
+	PVR2D_DPF((PVR_DBG_ERROR, "PVR2D error - PVR2DFlushToSyncToken is unimplemented"));
+	return PVR2DERROR_NOT_YET_IMPLEMENTED;
 }
 
 /******************************************************************************
@@ -1140,25 +914,18 @@ PVR2DERROR PVR2DFlushToSyncToken(const PVR2DCONTEXTHANDLE hContext,
 ******************************************************************************/
 PVR2D_EXPORT
 PVR2DERROR PVR2DWaitForNextHardwareEvent(const PVR2DCONTEXTHANDLE hContext)
-{		
-	PVR2DCONTEXT *psContext	= (PVR2DCONTEXT *)hContext;
+{
 	PVRSRV_ERROR eError;
 	
-	if (!hContext)
-	{
-		PVR2D_DPF((PVR_DBG_ERROR, "PVR2D error - invalid context"));
-		return PVR2DERROR_INVALID_CONTEXT;
-	}
-	
-	eError = PVRSRVEventObjectWait(psContext->psServices, psContext->sMiscInfo.hOSGlobalEvent);
+	eError = sceGpuSignalWait(sceKernelGetTLSAddr(0x44), 100000);
 
 	switch(eError)
 	{
-		case PVRSRV_OK: 
+		case SCE_OK: 
 		{
 			return PVR2D_OK;
 		}
-		case PVRSRV_ERROR_TIMEOUT: 
+		case SCE_KERNEL_ERROR_WAIT_TIMEOUT:
 		{
 			return PVR2DERROR_BLT_NOTCOMPLETE;
 		}		

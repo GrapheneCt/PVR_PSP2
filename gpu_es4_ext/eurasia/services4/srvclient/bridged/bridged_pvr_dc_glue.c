@@ -522,6 +522,8 @@ IMG_HANDLE hSwapChain)
 		sceKernelFreeMemBlock(psSwapChain->hDispMemUID[i]);
 	}
 
+	s_psOldBufSyncInfo = IMG_NULL;
+
 	s_flipChainExists = IMG_FALSE;
 
 	sceKernelSetEventFlag(s_hSwapChainPendingEvf, 1);

@@ -121,3 +121,19 @@ IMG_EXPORT IMG_VOID PVRSRVDebugPrintf(IMG_UINT32 ui32DebugLevel,
 
 	sceClibPrintf("%s\n", szBuffer);
 }
+
+/*----------------------------------------------------------------------------
+<function>
+	FUNCTION   : PVRDebugAssertFail
+	PURPOSE    : To indicate to the user that a debug assertion has failed and
+				 to prevent the program from continuing.
+	PARAMETERS : In : pszFile - The name of the source file where the assertion failed
+				 In : uLine - The line number of the failed assertion
+	RETURNS    : NEVER!
+</function>
+------------------------------------------------------------------------------*/
+IMG_EXPORT IMG_VOID PVRSRVDebugAssertFail(const IMG_CHAR *pszFile, IMG_UINT32 uLine)
+{
+	PVRSRVDebugPrintf(DBGPRIV_FATAL, pszFile, uLine, "Debug assertion failed!");
+	abort();
+}

@@ -8,7 +8,11 @@ Library: SceGpuEs4User libnamenid: 0xFAFCA413
 Library: SceGpuEs4User function: PVRSRVAcquireDeviceData nidvalue: 0x70800B46
 Library: SceGpuEs4User function: PVRSRVAllocDeviceMem nidvalue: 0x071E62F0
 Library: SceGpuEs4User function: PVRSRVAllocSyncInfo nidvalue: 0x94286660
-Library: SceGpuEs4User function: PVRSRVAllocUserModeMem nidvalue: 0x7AF40138
+
+// Replaced in ext lib
+//Library: SceGpuEs4User function: PVRSRVAllocUserModeMem nidvalue: 0x7AF40138
+//Library: SceGpuEs4User function: PVRSRVFreeUserModeMem nidvalue: 0x1BE5985A
+
 Library: SceGpuEs4User function: PVRSRVConnect nidvalue: 0x228252A2
 Library: SceGpuEs4User function: PVRSRVCreateDeviceMemContext nidvalue: 0x1E0A9C4A
 Library: SceGpuEs4User function: PVRSRVCreateSyncInfoModObj nidvalue: 0x416C8813
@@ -17,7 +21,6 @@ Library: SceGpuEs4User function: PVRSRVDisconnect nidvalue: 0xA5B14369
 Library: SceGpuEs4User function: PVRSRVEnumerateDevices nidvalue: 0x4447D217
 Library: SceGpuEs4User function: PVRSRVFreeDeviceMem nidvalue: 0xB6CFD213
 Library: SceGpuEs4User function: PVRSRVFreeSyncInfo nidvalue: 0xB26DF3D2
-Library: SceGpuEs4User function: PVRSRVFreeUserModeMem nidvalue: 0x1BE5985A
 Library: SceGpuEs4User function: PVRSRVGetMiscInfo nidvalue: 0x73E945A1
 Library: SceGpuEs4User function: PVRSRVMapMemoryToGpu nidvalue: 0x56893E98
 Library: SceGpuEs4User function: PVRSRVModifyPendingSyncOps nidvalue: 0x0D27286F
