@@ -63,7 +63,7 @@
       <AdditionalIncludeDirectories>$(SCE_PSP2_SDK_DIR)\target\include\vdsuite\user;$(SCE_PSP2_SDK_DIR)\target\include\vdsuite\common;$(SolutionDir)include\gpu_es4;$(SolutionDir)include\gpu_es4\eurasia\include4;$(SolutionDir)include\gpu_es4\eurasia\hwdefs;$(SolutionDir)include\gpu_es4\eurasia\services4\srvclient\devices\sgx;$(ProjectDir);$(ProjectDir)devices\sgx;$(SolutionDir)include\gpu_es4\eurasia\services4\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>-lSceGpuEs4ForUser_stub;$(OutDir)gpu_es4_ext_stub.a;$(SolutionDir)gpu_es4_ext\libSceGpuEs4User_stub.a;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>-lSceGpuEs4ForUser_stub;$(OutDir)libgpu_es4_ext_stub.a;$(SolutionDir)gpu_es4_ext\libSceGpuEs4User_stub.a;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SCE_PSP2_SDK_DIR)\target\lib\vdsuite;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>--no-required-files</AdditionalOptions>
     </Link>
@@ -76,7 +76,7 @@
       <AdditionalIncludeDirectories>$(SCE_PSP2_SDK_DIR)\target\include\vdsuite\user;$(SCE_PSP2_SDK_DIR)\target\include\vdsuite\common;$(SolutionDir)include\gpu_es4;$(SolutionDir)include\gpu_es4\eurasia\include4;$(SolutionDir)include\gpu_es4\eurasia\hwdefs;$(SolutionDir)include\gpu_es4\eurasia\services4\srvclient\devices\sgx;$(ProjectDir);$(ProjectDir)devices\sgx;$(SolutionDir)include\gpu_es4\eurasia\services4\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>-lSceGpuEs4ForUser_stub;$(OutDir)gpu_es4_ext_stub.a;$(SolutionDir)gpu_es4_ext\libSceGpuEs4User_stub.a;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>-lSceGpuEs4ForUser_stub;$(OutDir)libgpu_es4_ext_stub.a;$(SolutionDir)gpu_es4_ext\libSceGpuEs4User_stub.a;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SCE_PSP2_SDK_DIR)\target\lib\vdsuite;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>--no-required-files</AdditionalOptions>
     </Link>

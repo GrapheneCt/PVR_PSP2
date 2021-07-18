@@ -39,7 +39,7 @@ $Log: sgx_init_test.c $
 #ifdef __psp2__
 #include <kernel.h>
 
-SCE_USER_MODULE_LIST("app0:gpu_es4_ext.suprx");
+SCE_USER_MODULE_LIST("app0:libgpu_es4_ext.suprx");
 
 #include "psp2_pvr_desc.h"
 #include "psp2_pvr_defs.h"

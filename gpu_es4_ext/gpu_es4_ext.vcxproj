@@ -80,6 +80,7 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{CDEA7506-F160-44E3-936F-EFCF86D92E91}</ProjectGuid>
+    <ProjectName>libgpu_es4_ext</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|PSVita'" Label="Configuration">

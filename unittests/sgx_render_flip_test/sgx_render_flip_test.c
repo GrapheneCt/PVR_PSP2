@@ -41,7 +41,7 @@ $Log: sgx_render_flip_test.c $
 
 #define ALIGN(x, a)	(((x) + ((a) - 1)) & ~((a) - 1))
 
-SCE_USER_MODULE_LIST("app0:gpu_es4_ext.suprx");
+SCE_USER_MODULE_LIST("app0:libgpu_es4_ext.suprx");
 
 #include "psp2_pvr_desc.h"
 #include "psp2_pvr_defs.h"
