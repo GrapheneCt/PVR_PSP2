@@ -82,8 +82,8 @@ typedef struct
 {
 	IMG_UINT32 ui32NumPixelsX;
 	IMG_UINT32 ui32NumPixelsY;
-	IMG_UINT32 ui16MSAASamplesInX;
-	IMG_UINT32 ui16MSAASamplesInY;
+	IMG_UINT16 ui16MSAASamplesInX;
+	IMG_UINT16 ui16MSAASamplesInY;
 
 	IMG_BOOL   bMacrotileSync;
 } SGX_RTINFO;

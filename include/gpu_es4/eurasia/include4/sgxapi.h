@@ -367,7 +367,7 @@ typedef struct _SGX_KICKTA_COMMON_
 #if defined(EUR_CR_PDS_PP_INDEPENDANT_STATE)
 	IMG_UINT32			ui32TriangleSplitPixelThreshold;
 #if defined(__psp2__)
-	IMG_BOOL			ui32PerQuadrantPixelSplit;
+	IMG_BOOL			bPerQuadrantPixelSplit;
 #endif
 #endif
 	IMG_DEV_VIRTADDR	sISPZLoadBase;
