@@ -39,44 +39,18 @@
 #define SGX_ADDRTFLAGS_MACROTILE_SYNC							0x00020000
 #define SGX_ADDRTFLAGS_CUSTOM_MACROTILE_COUNTS					0x00040000
 
-typedef struct _PVRSRV_PSP2_OP_CLIENT_SYNC_INFO_
+typedef struct _PVRSRV_OP_CLIENT_SYNC_INFO_
 {
 	PVRSRV_CLIENT_SYNC_INFO *psInfoOld;
 	PVRSRV_CLIENT_SYNC_INFO *psInfoNew;
-} PVRSRV_PSP2_OP_CLIENT_SYNC_INFO;
+} PVRSRV_OP_CLIENT_SYNC_INFO;
 
-typedef struct _SGXTQ_PSP2_DOWNSCALEOP_
+typedef struct _PVRSRV_MEM_INFO_
 {
-	IMG_UINT32 ui32SrcFormat;
-	IMG_PVOID  pSrcAddr;
-	IMG_UINT32 ui32SrcPixelOffset;
-	IMG_UINT32 ui32SrcPixelSize;
-	IMG_UINT32 ui32DstFormat;
-	IMG_PVOID  pDstAddr;
-	IMG_UINT32 ui32ControlWords;
-	IMG_UINT32 ui32DstPixelOffset;
-	IMG_UINT32 ui3DstPixelSize;
-} SGXTQ_PSP2_DOWNSCALEOP;
-
-typedef struct _SGXTQ_PSP2_FILLOP_
-{
-	IMG_UINT32 ui32SrcFormat;
-	IMG_PVOID  pSrcAddr;
-	IMG_UINT32 ui32SrcFormat2;
-	IMG_PVOID  pSrcAddr2;
-	IMG_UINT32 ui32ControlWords;
-	IMG_UINT32 ui32FillColor;
-	IMG_UINT32 ui32SrcPixelOffset;
-	IMG_UINT32 ui32SrcPixelSize;
-} SGXTQ_PSP2_FILLOP;
-
-typedef struct _SGX_PSP2_CONTROL_STREAM_
-{
-	union {
-		SGXTQ_PSP2_DOWNSCALEOP	sDownscale;
-		SGXTQ_PSP2_FILLOP		sFill;
-	} uData;
-} SGX_PSP2_CONTROL_STREAM;
+	IMG_PVOID pBase;
+	IMG_UINT32 ui32Size;
+	IMG_UINT32 ui32Flags;
+} PVRSRV_MEM_INFO;
 
 typedef struct _SGX_RTINFO_
 {
@@ -121,7 +95,7 @@ IMG_INT PVRSRVWaitSyncOp(IMG_SID hKernelSyncInfoModObj, IMG_UINT32 *pui32Timeout
 
 IMG_INT PVRSRV_BridgeDispatchKM(IMG_UINT32 cmd, IMG_PVOID psBridgePackageKM);
 
-PVRSRV_ERROR PVRSRVRegisterMemBlock(PVRSRV_DEV_DATA *psDevData, SceUID memblockUid, IMG_SID *phShadowMemblockRef, IMG_BOOL bMapAsPartition);
+PVRSRV_ERROR PVRSRVRegisterMemBlock(PVRSRV_DEV_DATA *psDevData, SceUID memblockUid, IMG_SID *phMemBlockProcRef, IMG_BOOL bUnmapFromCPU);
 
 PVRSRV_ERROR PVRSRVUnregisterMemBlock(PVRSRV_DEV_DATA *psDevData, SceUID memblockUid);
 
@@ -140,6 +114,8 @@ PVRSRV_ERROR PVRSRVUnmapMemoryFromGpu(
 	IMG_PVOID pMemBase,
 	IMG_SID hHeapHandle,
 	IMG_BOOL bUnk4);
+
+PVRSRV_ERROR PVRSRVGetMemInfo(PVRSRV_DEV_DATA *psDevData, IMG_PVOID pMemBase, PVRSRV_MEM_INFO *psMemInfo);
 
 PVRSRV_ERROR IMG_CALLCONV SGXTransferControlStream(
 	IMG_UINT32 *pui32CtrlStream,

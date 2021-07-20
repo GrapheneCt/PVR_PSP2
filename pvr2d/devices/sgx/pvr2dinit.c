@@ -888,7 +888,7 @@ PVR2DERROR ValidateTransferContext(PVR2DCONTEXT *psContext)
 	}
 
 	sCreateTransfer.hDevMemContext = psContext->hDevMemContext;
-	sCreateTransfer.hShadowMemblockRef = 0;
+	sCreateTransfer.hMemBlockProcRef = 0;
 
 	eSrvError = SGXCreateTransferContext(&psContext->sDevData,
 										130 * 1024,
