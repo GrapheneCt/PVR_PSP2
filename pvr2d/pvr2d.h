@@ -53,6 +53,8 @@ extern "C" {
 #define PVR2D_REV_MAJOR		3
 #define PVR2D_REV_MINOR		6
 
+#include <scetypes.h>
+
 /* Basic types */
 typedef enum
 {
@@ -680,10 +682,10 @@ PVR2D_IMPORT
 PVR2DERROR PVR2DGetAPIRev(PVR2D_LONG *lRevMajor, PVR2D_LONG *lRevMinor);
 
 PVR2D_EXPORT
-PVR2DERROR PVR2DRegisterDriverMemBlockPSP2(SceUID hMemBlockId, IMG_SID hProcRefId);
+PVR2DERROR PVR2DRegisterDriverMemBlockPSP2(SceUID hMemBlockId, PVR2D_SID hProcRefId);
 
 PVR2D_EXPORT
-IMG_SID PVR2DGetProcRefIdPSP2();
+PVR2D_SID PVR2DGetProcRefIdPSP2();
 
 PVR2D_IMPORT
 PVR2DERROR PVR2DLoadUseCode (const PVR2DCONTEXTHANDLE hContext, const PVR2D_UCHAR	*pUseCode,

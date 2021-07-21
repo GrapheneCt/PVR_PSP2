@@ -30,6 +30,10 @@ Modifications :-
 $Log: sgxtransfer_queue.c $
 ******************************************************************************/
 
+#if defined(__psp2__)
+#include "psp2_pvr_desc.h"
+#endif
+
 #if defined(TRANSFER_QUEUE)
 #include <stddef.h>
 
@@ -46,6 +50,8 @@ $Log: sgxtransfer_queue.c $
 #include "sgxtransfer_client.h"
 #include "sgxutils_client.h"
 #include "sgx_bridge_um.h"
+
+#if !defined(__psp2__)
 #include "pdump_um.h"
 
 #include "transferqueue_use_labels.h"
@@ -55,7 +61,7 @@ $Log: sgxtransfer_queue.c $
 #include "../../common/blitlib_src.h"
 #include "../../common/blitlib_dst.h"
 #include "../../common/blitlib_op.h"
-
+#endif
 
 #if !defined(FIX_HW_BRN_27298)
 
@@ -67,7 +73,7 @@ static IMG_UINT32 gui32DstAddr[5];
 #endif
 
 /* Prepare functions */
-#if defined(SGX_FEATURE_2D_HARDWARE)
+#if defined(SGX_FEATURE_2D_HARDWARE) && !defined(__psp2__)
 IMG_INTERNAL PVRSRV_ERROR Prepare2DCoreBlit(SGXTQ_CLIENT_TRANSFER_CONTEXT *psTQContext,
 									  SGX_QUEUETRANSFER *psQueueTransfer,
 									  SGXMKIF_2DCMD_SUBMIT *ps2DSubmit)
@@ -7678,6 +7684,7 @@ static PVRSRV_ERROR PrepareARGB2NV12Blit(SGXTQ_CLIENT_TRANSFER_CONTEXT	* psTQCon
  *							If SGXTQ_PREP_SUBMIT_SEPERATE isn't defined then this function is meant to be internal
  *							in services.
  ******************************************************************************/
+#if !defined(__psp2__)
 #if defined(SGXTQ_PREP_SUBMIT_SEPERATE)
 IMG_EXPORT PVRSRV_ERROR IMG_CALLCONV
 #else
@@ -7984,7 +7991,7 @@ SGXSubmitTransfer(IMG_HANDLE hTransferContext,
 	return PVRSRV_OK;
 }
 #endif
-
+#endif
 
 #ifdef BLITLIB
 /**
@@ -9016,6 +9023,7 @@ static PVRSRV_ERROR DispatchBlitlib(SGX_QUEUETRANSFER				* psQueueTransfer,
 static PVRSRV_ERROR Dispatch3dBlit(IMG_HANDLE hTransferContext,
 								   SGX_QUEUETRANSFER *psQueueTransfer)
 {
+#if !defined(__psp2__)
 	PVRSRV_ERROR eError;
 	PVRSRV_ERROR eAccumlateError = PVRSRV_OK;
 	IMG_UINT32 ui32CurPass = 0; /* The current pass through of the system */
@@ -9471,6 +9479,10 @@ Exit:
 	PVRSRVUnlockMutex(psTQContext->hMutex);
 
 	return eError;
+#else
+	PVR_DPF((PVR_DBG_ERROR, "3D Core transfers are not supported!"));
+	return PVRSRV_ERROR_NOT_SUPPORTED;
+#endif
 }
 
 #endif /* FIX_HW_BRN_27298 */
@@ -9488,9 +9500,16 @@ Exit:
  *							the client has to call the SGXKickTransfer() to really submit the queued
  *							commands.
  ******************************************************************************/
+#if defined(__psp2__)
+IMG_EXPORT
+PVRSRV_ERROR IMG_CALLCONV SGXQueueTransfer(PVRSRV_DEV_DATA *psDevData,
+										   IMG_HANDLE hTransferContext,
+										   SGX_QUEUETRANSFER *psQueueTransfer)
+#else
 IMG_EXPORT
 PVRSRV_ERROR IMG_CALLCONV SGXQueueTransfer(IMG_HANDLE hTransferContext,
 										   SGX_QUEUETRANSFER *psQueueTransfer)
+#endif
 {
 	PVRSRV_ERROR eError = PVRSRV_ERROR_NOT_SUPPORTED;
 
@@ -9524,7 +9543,11 @@ PVRSRV_ERROR IMG_CALLCONV SGXQueueTransfer(IMG_HANDLE hTransferContext,
 #if defined (SGX_FEATURE_PTLA)
 	if (!(psQueueTransfer->ui32Flags & SGX_TRANSFER_DISPATCH_DISABLE_PTLA))
 	{
+#if defined(__psp2__)
+		eError = SGXQueue2DTransfer(psDevData, hTransferContext, psQueueTransfer);
+#else
 		eError = SGXQueue2DTransfer(hTransferContext, psQueueTransfer);
+#endif
 		if (eError == PVRSRV_OK)
 		{
 			return PVRSRV_OK;

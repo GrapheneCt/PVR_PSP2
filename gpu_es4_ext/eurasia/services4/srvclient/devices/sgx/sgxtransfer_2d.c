@@ -92,16 +92,20 @@ static IMG_BOOL IsPo2 (const IMG_UINT32 v);
  *							the client has to call the SGXKickTransfer() to really submit the queued
  *							commands.
  ******************************************************************************/
+#if defined(__psp2__)
+IMG_INTERNAL
+PVRSRV_ERROR IMG_CALLCONV SGXQueue2DTransfer(PVRSRV_DEV_DATA *psDevData,
+											IMG_HANDLE hTransferContext,
+											SGX_QUEUETRANSFER *psQueueTransfer)
+#else
 IMG_INTERNAL
 PVRSRV_ERROR IMG_CALLCONV SGXQueue2DTransfer(IMG_HANDLE hTransferContext,
 										   SGX_QUEUETRANSFER *psQueueTransfer)
+#endif
 {
 	PVRSRV_ERROR eError;
-	SGXTQ_CLIENT_TRANSFER_CONTEXT *psTQContext;
 	IMG_UINT32 aui32ControlStream[PTLA_MAX_CMD_SIZE];
 	IMG_UINT32 ui32Bytes = 0; /* Initialise variable to avoid incorrect compiler warning */
-
-	psTQContext = (SGXTQ_CLIENT_TRANSFER_CONTEXT *) hTransferContext;
 
 	/*
 	 * The blit dispatcher
@@ -138,12 +142,13 @@ PVRSRV_ERROR IMG_CALLCONV SGXQueue2DTransfer(IMG_HANDLE hTransferContext,
 			eError = SGXTransferControlStream(
 				aui32ControlStream,
 				ui32Bytes,
-				&psTQContext->psDevData,
+				psDevData,
 				hTransferContext,
 				psQueueTransfer->asDests->psSyncInfo,
-				IMG_FALSE,
-				IMG_FALSE,
+				psQueueTransfer->ui32Flags & SGX_KICKTRANSFER_FLAGS_TATQ_SYNC,
+				psQueueTransfer->ui32Flags & SGX_KICKTRANSFER_FLAGS_3DTQ_SYNC,
 				IMG_NULL);
+			break;
 		}
 
 		default:
