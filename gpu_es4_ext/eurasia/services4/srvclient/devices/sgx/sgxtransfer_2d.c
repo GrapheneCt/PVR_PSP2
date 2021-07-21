@@ -1177,6 +1177,12 @@ static PVRSRV_ERROR GetPTLAFormat(const PVRSRV_PIXEL_FORMAT eFormat,
 			*pPTLAFormat = EURASIA_PTLA_FORMAT_8888ARGB;
 			break;
 		}
+
+		case PVRSRV_PIXEL_FORMAT_ABGR8888:
+		{
+			*pPTLAFormat = EURASIA_PTLA_FORMAT_8888ARGB;
+			break;
+		}
 		
 		case PVRSRV_PIXEL_FORMAT_ARGB1555:
 		{

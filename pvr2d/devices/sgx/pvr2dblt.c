@@ -100,7 +100,11 @@ static const PVR2D_ULONG bValidOutputFormat[64] =
 	1,			/* PVR2D_64BPP_RAW */
 	1,			/* PVR2D_128BPP_RAW */
 
-	0,0,0,0,0,0,0,0,0,0,
+	0,
+	0,
+	1,			/* PVR2D_ABGR8888 */
+	
+	0,0,0,0,0,0,0,
 	0,0,0,0,0,0,0,0,0,0,
 	0,0,0,0,0,0,0,0,0,0,
 	0,0,0
@@ -142,7 +146,11 @@ static const PVR2D_ULONG uiColorKeyMask[64] =
 	0,					/* PVR2D_64BPP_RAW */
 	0,					/* PVR2D_128BPP_RAW */
 	
-	0,0,0,0,0,0,0,0,0,0,
+	0,
+	0,
+	CKEY_MASK_8888,		/* PVR2D_ABGR8888 */
+	
+	0,0,0,0,0,0,0,
 	0,0,0,0,0,0,0,0,0,0,
 	0,0,0,0,0,0,0,0,0,0,
 	0,0,0
@@ -186,7 +194,11 @@ static const IMG_UINT32 ui32PaletteSize[64] =
 	0,		/* PVR2D_64BPP_RAW */
 	0,		/* PVR2D_128BPP_RAW */
 	
-	0,0,0,0,0,0,0,0,0,0,
+	0,
+	0,
+	0,		/* PVR2D_ABGR8888 */
+	
+	0,0,0,0,0,0,0,
 	0,0,0,0,0,0,0,0,0,0,
 	0,0,0,0,0,0,0,0,0,0,
 	0,0,0
@@ -276,11 +288,35 @@ static const IMG_UINT32 ui32PaletteSizeInBits[64] =
 	2,		/* PVR2D_PAL2 */
 	4,		/* PVR2D_PAL4 */
 	8,		/* PVR2D_PAL8 */
-	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,		/* PVR2D_ABGR8888 */
+
+	0,0,0,
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 	0
 };
-
 
 static PVR2DERROR AltPresentBlt(const PVR2DCONTEXTHANDLE hContext,
 								const PPVR2DMEMINFO pSrc,
@@ -333,6 +369,7 @@ IMG_INTERNAL PVRSRV_PIXEL_FORMAT GetPvrSrvPixelFormat(const PVR2DFORMAT Format)
 
 	switch (ui32Format)
 	{
+		case PVR2D_ABGR8888:		return PVRSRV_PIXEL_FORMAT_ABGR8888;
 		case PVR2D_ARGB8888:		return PVRSRV_PIXEL_FORMAT_ARGB8888;
 		case PVR2D_RGB565:			return PVRSRV_PIXEL_FORMAT_RGB565;
 		case PVR2D_ARGB4444:		return PVRSRV_PIXEL_FORMAT_ARGB4444;
@@ -407,7 +444,11 @@ static const IMG_UINT32 aPVR2DBitsPP[64] =
 	32, /* PVR2D_32BPP_RAW */
 	64, /* PVR2D_64BPP_RAW */
 	128, /* PVR2D_128BPP_RAW */
-	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+	0,
+	0,
+	32, /*PVR2D_ABGR8888*/
+	
+	0,0,0,0,0,0,0,0,0,0,0,0,0,
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 	0
 };
@@ -529,7 +570,9 @@ static const IMG_UINT32 aConvertPVR2DToSGX2D[64] =
  /*PVR2D_PAL2*/		EURASIA2D_SRC_2_PAL,	/* = EURASIA2D_PAT_2_PAL, *NO DEST* */
  /*PVR2D_PAL4*/		EURASIA2D_SRC_4_PAL,	/* = EURASIA2D_PAT_4_PAL, *NO DEST* */
  /*PVR2D_PAL8*/		EURASIA2D_SRC_8_PAL,	/* = EURASIA2D_PAT_8_PAL, *NO DEST* */
-	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+ /*PVR2D_ABGR8888*/	EURASIA2D_SRC_8888ARGB, /* Just hope it works */
+	0,0,0,
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 	0
 };
@@ -547,7 +590,31 @@ static const IMG_UINT32 aRequiresPalette[64] =
 	1,	/*PVR2D_PAL2*/
 	1,	/*PVR2D_PAL4*/
 	1,	/*PVR2D_PAL8*/
-	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,	/*PVR2D_ABGR8888*/
+	
+	0,0,0,
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 	0
 };
@@ -2600,11 +2667,7 @@ static PVR2DERROR AltPresentBlt (const PVR2DCONTEXTHANDLE hContext, const PPVR2D
 #endif
 
 	// Transfer queue blt (PTLA present blt)
-#if defined(__psp2__)
 	eResult = SGXQueueTransfer(&psContext->sDevData, psContext->hTransferContext, &sBlitInfo);
-#else
-	eResult = SGXQueueTransfer(psContext->hTransferContext, &sBlitInfo);
-#endif
 
 	if (eResult != PVRSRV_OK)
 	{
@@ -3279,11 +3342,7 @@ static PVR2DERROR AltBltClipped (	PVR2DCONTEXTHANDLE hContext,
 #endif//#if defined(PDUMP)
 	
 	// Transfer queue blt (PTLA BltClipped)
-#if defined(__psp2__)
 	eResult = SGXQueueTransfer(&psContext->sDevData, psContext->hTransferContext, &sBlitInfo);
-#else
-	eResult = SGXQueueTransfer(psContext->hTransferContext, &sBlitInfo);
-#endif
 
 	if (eResult != PVRSRV_OK)
 	{

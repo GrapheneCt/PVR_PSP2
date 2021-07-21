@@ -112,7 +112,7 @@
   <PropertyGroup />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|PSVita'">
     <ClCompile>
-      <PreprocessorDefinitions>_DEBUG;PSP2_PRX_EXPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;PVRSRV_NEED_PVR_DPF;PSP2_PRX_EXPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <AdditionalIncludeDirectories>$(SCE_PSP2_SDK_DIR)\target\include\vdsuite\user;$(SCE_PSP2_SDK_DIR)\target\include\vdsuite\common;$(SolutionDir)include\gpu_es4;$(SolutionDir)include\gpu_es4\eurasia\include4;$(SolutionDir)include\gpu_es4\eurasia\hwdefs;$(SolutionDir)include\gpu_es4\eurasia\services4\include;$(SolutionDir)include\gpu_es4\eurasia\services4\system\psp2;$(SolutionDir)include\gpu_es4\eurasia\codegen\pds;$(SolutionDir)include\gpu_es4\eurasia\codegen\pixevent;$(SolutionDir)include\gpu_es4\eurasia\codegen\usegen;$(SolutionDir)include\gpu_es4\eurasia\codegen\pixfmts;$(SolutionDir)include\gpu_es4\eurasia\services4\srvclient\devices\sgx;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>

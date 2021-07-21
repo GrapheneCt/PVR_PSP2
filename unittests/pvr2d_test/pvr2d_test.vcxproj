@@ -10,30 +10,15 @@
       <Platform>PSVita</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="devices\sgx\pvr2dint.h" />
-    <ClInclude Include="devices\sgx\pvr2dutils.h" />
-    <ClInclude Include="pvr2d.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="common\pvr2dflip.c" />
-    <ClCompile Include="common\pvr2dmem.c" />
-    <ClCompile Include="common\pvr2dmode.c" />
-    <ClCompile Include="devices\sgx\pvr2dblt.c" />
-    <ClCompile Include="devices\sgx\pvr2dblt3d.c" />
-    <ClCompile Include="devices\sgx\pvr2dinit.c" />
-    <ClCompile Include="psp2\module.c" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{C6BD621A-EB52-437C-8873-778A583BAC9B}</ProjectGuid>
-    <ProjectName>libpvr2d</ProjectName>
+    <ProjectGuid>{66FBF253-C3F1-47B1-9785-E91C9CA09504}</ProjectGuid>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|PSVita'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|PSVita'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <PropertyGroup Condition="'$(DebuggerFlavor)'=='PSVitaDebugger'" Label="OverrideDebuggerDefaults">
@@ -55,33 +40,33 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup />
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|PSVita'">
-    <ClCompile>
-      <PreprocessorDefinitions>_DEBUG;DEBUG;PVR2D_PSP2_PRX_EXPORT;SUPPORT_SGX;PVR2D_ALT_2DHW;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <AdditionalIncludeDirectories>$(SCE_PSP2_SDK_DIR)\target\include\vdsuite\user;$(SCE_PSP2_SDK_DIR)\target\include\vdsuite\common;$(SolutionDir)include\gpu_es4;$(SolutionDir)include\gpu_es4\eurasia\include4;$(SolutionDir)include\gpu_es4\eurasia\hwdefs;$(SolutionDir)include\gpu_es4\eurasia\services4\srvclient\devices\sgx;$(ProjectDir);$(ProjectDir)devices\sgx;$(SolutionDir)include\gpu_es4\eurasia\services4\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-    </ClCompile>
-    <Link>
-      <AdditionalDependencies>-lSceGpuEs4ForUser_stub;$(OutDir)libgpu_es4_ext_stub.a;$(SolutionDir)gpu_es4_ext\libSceGpuEs4User_stub.a;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SCE_PSP2_SDK_DIR)\target\lib\vdsuite;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalOptions>--no-required-files</AdditionalOptions>
-    </Link>
-  </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|PSVita'">
     <ClCompile>
-      <PreprocessorDefinitions>NDEBUG;PVR2D_PSP2_PRX_EXPORT;SUPPORT_SGX;PVR2D_ALT_2DHW;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <OptimizationLevel>Level3</OptimizationLevel>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions);</PreprocessorDefinitions>
+      <OptimizationLevel>Level2</OptimizationLevel>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <AdditionalIncludeDirectories>$(SCE_PSP2_SDK_DIR)\target\include\vdsuite\user;$(SCE_PSP2_SDK_DIR)\target\include\vdsuite\common;$(SolutionDir)include\gpu_es4;$(SolutionDir)include\gpu_es4\eurasia\include4;$(SolutionDir)include\gpu_es4\eurasia\hwdefs;$(SolutionDir)include\gpu_es4\eurasia\services4\srvclient\devices\sgx;$(ProjectDir);$(ProjectDir)devices\sgx;$(SolutionDir)include\gpu_es4\eurasia\services4\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SCE_PSP2_SDK_DIR)\target\include\vdsuite\user;$(SCE_PSP2_SDK_DIR)\target\include\vdsuite\common;$(SolutionDir)include;$(SolutionDir)include\gpu_es4\eurasia\include4;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>-lSceGpuEs4ForUser_stub;$(OutDir)libgpu_es4_ext_stub.a;$(SolutionDir)gpu_es4_ext\libSceGpuEs4User_stub.a;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SCE_PSP2_SDK_DIR)\target\lib\vdsuite;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalOptions>--no-required-files</AdditionalOptions>
-      <InfoStripping>StripSymsAndDebug</InfoStripping>
+      <AdditionalDependencies>$(OutDir)libpvr2d_stub.a;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|PSVita'">
+    <ClCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions);</PreprocessorDefinitions>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <AdditionalIncludeDirectories>$(SCE_PSP2_SDK_DIR)\target\include\vdsuite\user;$(SCE_PSP2_SDK_DIR)\target\include\vdsuite\common;$(SolutionDir)include;$(SolutionDir)include\gpu_es4\eurasia\include4;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>$(SCE_PSP2_SDK_DIR)\target\lib\vdsuite;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>$(OutDir)libpvr2d_stub.a;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="pvr2d_test.c" />
+  </ItemGroup>
   <Import Condition="'$(ConfigurationType)' == 'Makefile' and Exists('$(VCTargetsPath)\Platforms\$(Platform)\SCE.Makefile.$(Platform).targets')" Project="$(VCTargetsPath)\Platforms\$(Platform)\SCE.Makefile.$(Platform).targets" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.1500
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gpu_es4_ext", "gpu_es4_ext\gpu_es4_ext.vcxproj", "{CDEA7506-F160-44E3-936F-EFCF86D92E91}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libgpu_es4_ext", "gpu_es4_ext\gpu_es4_ext.vcxproj", "{CDEA7506-F160-44E3-936F-EFCF86D92E91}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "unittests", "unittests", "{AC35C601-4C98-4813-9277-7DA380AAF79F}"
 EndProject
@@ -27,9 +27,14 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sgx_render_flip_test", "uni
 		{CDEA7506-F160-44E3-936F-EFCF86D92E91} = {CDEA7506-F160-44E3-936F-EFCF86D92E91}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pvr2d", "pvr2d\pvr2d.vcxproj", "{C6BD621A-EB52-437C-8873-778A583BAC9B}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libpvr2d", "pvr2d\pvr2d.vcxproj", "{C6BD621A-EB52-437C-8873-778A583BAC9B}"
 	ProjectSection(ProjectDependencies) = postProject
 		{CDEA7506-F160-44E3-936F-EFCF86D92E91} = {CDEA7506-F160-44E3-936F-EFCF86D92E91}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pvr2d_test", "unittests\pvr2d_test\pvr2d_test.vcxproj", "{66FBF253-C3F1-47B1-9785-E91C9CA09504}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C6BD621A-EB52-437C-8873-778A583BAC9B} = {C6BD621A-EB52-437C-8873-778A583BAC9B}
 	EndProjectSection
 EndProject
 Global
@@ -62,6 +67,10 @@ Global
 		{C6BD621A-EB52-437C-8873-778A583BAC9B}.Debug|PSVita.Build.0 = Debug|PSVita
 		{C6BD621A-EB52-437C-8873-778A583BAC9B}.Release|PSVita.ActiveCfg = Release|PSVita
 		{C6BD621A-EB52-437C-8873-778A583BAC9B}.Release|PSVita.Build.0 = Release|PSVita
+		{66FBF253-C3F1-47B1-9785-E91C9CA09504}.Debug|PSVita.ActiveCfg = Debug|PSVita
+		{66FBF253-C3F1-47B1-9785-E91C9CA09504}.Debug|PSVita.Build.0 = Debug|PSVita
+		{66FBF253-C3F1-47B1-9785-E91C9CA09504}.Release|PSVita.ActiveCfg = Release|PSVita
+		{66FBF253-C3F1-47B1-9785-E91C9CA09504}.Release|PSVita.Build.0 = Release|PSVita
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -71,6 +80,7 @@ Global
 		{F32CEF03-D964-46E6-BAC6-E99EA779716F} = {AC35C601-4C98-4813-9277-7DA380AAF79F}
 		{1172F829-8CE4-4F72-9525-64666A1DAD5A} = {AC35C601-4C98-4813-9277-7DA380AAF79F}
 		{E46D35C4-0372-4A74-8E98-C6026E11913A} = {AC35C601-4C98-4813-9277-7DA380AAF79F}
+		{66FBF253-C3F1-47B1-9785-E91C9CA09504} = {AC35C601-4C98-4813-9277-7DA380AAF79F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {EBDCCD51-78C5-4385-ABB0-9EB38B12DB4F}

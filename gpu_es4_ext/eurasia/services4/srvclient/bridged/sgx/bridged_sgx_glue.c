@@ -31,8 +31,6 @@ PVRSRV_ERROR IMG_CALLCONV SGX2DQueryBlitsComplete(PVRSRV_DEV_DATA *psDevData,
 	PVRSRVMemSet(&sBridgeOut, 0x00, sizeof(sBridgeOut));
 	PVRSRVMemSet(&sBridgeIn, 0x00, sizeof(sBridgeIn));
 
-	PVR_DPF((PVR_DBG_VERBOSE, "SGX2DQueryBlitsComplete"));
-
 	if (!psDevData || !psSyncInfo)
 	{
 		PVR_DPF((PVR_DBG_ERROR, "SGX2DQueryBlitsComplete: Invalid psMiscInfo"));

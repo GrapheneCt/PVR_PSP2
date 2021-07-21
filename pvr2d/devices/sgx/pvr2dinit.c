@@ -503,15 +503,6 @@ PVR2DERROR PVR2DCreateDeviceContext (PVR2D_ULONG ulDevID,
 	}
 	bConnectedToServices = IMG_TRUE;
 	
-	// Get global event object
-	psContext->sMiscInfo.ui32StateRequest = PVRSRV_MISC_INFO_GLOBALEVENTOBJECT_PRESENT;
-	if (PVRSRVGetMiscInfo(psContext->psServices, &psContext->sMiscInfo) != PVRSRV_OK)
-	{
-		PVR2D_DPF((PVR_DBG_ERROR, "PVR2DCreateDeviceContext: PVRSRVGetMiscInfo failed"));
-		eError = PVR2DERROR_GENERIC_ERROR;
-		goto cleanup;
-	}
-	
 #ifdef PDUMP
 	PVRSRVPDumpComment(psContext->psServices, "PVR2DCreateDeviceContext : Set Frame 0", IMG_FALSE);
 	PVRSRVPDumpSetFrame(psContext->psServices, 0);
@@ -591,10 +582,7 @@ PVR2DERROR PVR2DCreateDeviceContext (PVR2D_ULONG ulDevID,
 				psContext->h2DHeap = asHeapInfo[i].hDevMemHeap;
 				psContext->s2DHeapBase = asHeapInfo[i].sDevVAddrBase;
 				bValid2DHeap = IMG_TRUE;
-#endif
-#if !defined(SUPPORT_SGX_GENERAL_MAPPING_HEAP)
-				psContext->hGeneralMappingHeap = asHeapInfo[i].hDevMemHeap;
-#endif				
+#endif			
 				break;
 			}
 
@@ -610,6 +598,10 @@ PVR2DERROR PVR2DCreateDeviceContext (PVR2D_ULONG ulDevID,
 			}
 		}
 	}
+
+#if !defined(SUPPORT_SGX_GENERAL_MAPPING_HEAP)
+	psContext->hGeneralMappingHeap = 0;
+#endif	
 
 	if (!bValid2DHeap)
 	{

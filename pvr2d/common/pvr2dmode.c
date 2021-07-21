@@ -78,6 +78,11 @@ static PVR2DERROR ConvertPVRSRVPixelFormatToPVR2D(PVRSRV_PIXEL_FORMAT ePixelForm
 			ePVR2DFormat = PVR2D_ARGB1555;
 			break;
 		}
+		case PVRSRV_PIXEL_FORMAT_ABGR8888:
+		{
+			ePVR2DFormat = PVR2D_ABGR8888;
+			break;
+		}
 		default:
 		{
 			PVR2D_DPF((PVR_DBG_ERROR, "ConvertPVRSRVPixelFormatToPVR2D: Invalid format %d",ePixelFormat));
