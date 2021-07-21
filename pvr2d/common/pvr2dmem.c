@@ -159,7 +159,7 @@ PVR2DERROR PVR2DMemAlloc (PVR2DCONTEXTHANDLE	hContext,
 
 	i32Error = PVRSRVMapMemoryToGpu(&psContext->sDevData,
 		psContext->hDevMemContext,
-		psContext->hGeneralMappingHeap,
+		0,
 		ulBytes,
 		0,
 		psMemInfo->pvLinAddr,

@@ -148,6 +148,7 @@ PVRSRV_ERROR IMG_CALLCONV SGXQueue2DTransfer(IMG_HANDLE hTransferContext,
 				psQueueTransfer->ui32Flags & SGX_KICKTRANSFER_FLAGS_TATQ_SYNC,
 				psQueueTransfer->ui32Flags & SGX_KICKTRANSFER_FLAGS_3DTQ_SYNC,
 				IMG_NULL);
+			break;
 		}
 
 		default:
