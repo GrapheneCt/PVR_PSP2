@@ -149,6 +149,9 @@
     <ClCompile Include="psp2\heap.c">
       <Filter>Source Files\psp2</Filter>
     </ClCompile>
+    <ClCompile Include="eurasia\services4\srvclient\devices\sgx\sgxtransfer_queue.c">
+      <Filter>Source Files\eurasia\services4\srvclient\devices\sgx</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\gpu_es4\psp2_pvr_defs.h">

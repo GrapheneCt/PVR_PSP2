@@ -971,9 +971,13 @@ PVRSRV_ERROR SGXSubmitTransfer(IMG_HANDLE hTransferContext,
 
 #if defined(__psp2__)
 IMG_INTERNAL
-#endif
+PVRSRV_ERROR IMG_CALLCONV SGXQueue2DTransfer(PVRSRV_DEV_DATA *psDevData,
+											 IMG_HANDLE			hTransferContext,
+											 SGX_QUEUETRANSFER	*psQueueTransfer);
+#else
 PVRSRV_ERROR IMG_CALLCONV SGXQueue2DTransfer(IMG_HANDLE			hTransferContext,
 											 SGX_QUEUETRANSFER	*psQueueTransfer);
+#endif
 #endif /* defined(SGX_FEATURE_PTLA) */
 
 #if defined(SGX_FEATURE_2D_HARDWARE)

@@ -2600,7 +2600,11 @@ static PVR2DERROR AltPresentBlt (const PVR2DCONTEXTHANDLE hContext, const PPVR2D
 #endif
 
 	// Transfer queue blt (PTLA present blt)
-	eResult = SGXQueue2DTransfer(psContext->hTransferContext, &sBlitInfo);
+#if defined(__psp2__)
+	eResult = SGXQueueTransfer(&psContext->sDevData, psContext->hTransferContext, &sBlitInfo);
+#else
+	eResult = SGXQueueTransfer(psContext->hTransferContext, &sBlitInfo);
+#endif
 
 	if (eResult != PVRSRV_OK)
 	{
@@ -3275,8 +3279,12 @@ static PVR2DERROR AltBltClipped (	PVR2DCONTEXTHANDLE hContext,
 #endif//#if defined(PDUMP)
 	
 	// Transfer queue blt (PTLA BltClipped)
-	eResult = SGXQueue2DTransfer(psContext->hTransferContext, &sBlitInfo);
-	
+#if defined(__psp2__)
+	eResult = SGXQueueTransfer(&psContext->sDevData, psContext->hTransferContext, &sBlitInfo);
+#else
+	eResult = SGXQueueTransfer(psContext->hTransferContext, &sBlitInfo);
+#endif
+
 	if (eResult != PVRSRV_OK)
 	{
 		if (eResult == PVRSRV_ERROR_TIMEOUT)

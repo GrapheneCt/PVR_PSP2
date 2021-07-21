@@ -1276,9 +1276,16 @@ PVRSRV_ERROR IMG_CALLCONV SGXDestroyTransferContext(IMG_HANDLE hTransferContext,
 													IMG_BOOL bForceCleanup);
 #endif
 
+#if defined(__psp2__)
+IMG_IMPORT
+PVRSRV_ERROR IMG_CALLCONV SGXQueueTransfer(PVRSRV_DEV_DATA *psDevData,
+											IMG_HANDLE hTransferContext,
+											SGX_QUEUETRANSFER *psQueueTransfer);
+#else
 IMG_IMPORT
 PVRSRV_ERROR IMG_CALLCONV SGXQueueTransfer(IMG_HANDLE hTransferContext,
 										  SGX_QUEUETRANSFER *psQueueTransfer);
+#endif
 
 #if defined(SGXTQ_PREP_SUBMIT_SEPERATE)
 IMG_IMPORT
