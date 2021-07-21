@@ -162,7 +162,7 @@ PVR2DERROR PVR2DMemAlloc (PVR2DCONTEXTHANDLE	hContext,
 		psContext->hGeneralMappingHeap,
 		ulBytes,
 		0,
-		psBuffer->sMemInfo.pBase,
+		psMemInfo->pvLinAddr,
 		ui32Attribs,
 		IMG_NULL);
 

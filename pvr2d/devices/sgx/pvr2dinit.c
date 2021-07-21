@@ -43,7 +43,7 @@ $Log: pvr2dinit.c $
 #include <string.h>		/* strncpy */
 
 static SceUID s_psp2DriverMemBlockUID = SCE_UID_INVALID_UID;
-static IMG_SID s_psp2ProcRefId = 0;
+static PVR2D_SID s_psp2ProcRefId = 0;
 
 /******************************************************************************
  @Function	PVR2DEnumerateDevices
@@ -674,7 +674,7 @@ PVR2DERROR PVR2DCreateDeviceContext (PVR2D_ULONG ulDevID,
 
 	if (s_psp2DriverMemBlockUID == SCE_UID_INVALID_UID)
 	{
-		s_psp2DriverMemBlockUID = sceKernelAllocMemBlock("PVR2DDriverMemBlock", SCE_KERNEL_MEMBLOCK_TYPE_USER_NC_RW, 68 * 1024, SCE_NULL);
+		s_psp2DriverMemBlockUID = sceKernelAllocMemBlock("PVR2DDriverMemBlock", SCE_KERNEL_MEMBLOCK_TYPE_USER_NC_RW, 72 * 1024, SCE_NULL);
 
 		if (s_psp2DriverMemBlockUID <= 0)
 		{
@@ -991,7 +991,7 @@ PVR2DERROR PVR2DGetAPIRev(PVR2D_LONG *lRevMajor, PVR2D_LONG *lRevMinor)
  @Description : Register SCE memblock to be used as internal driver memory
 ******************************************************************************/
 PVR2D_EXPORT
-PVR2DERROR PVR2DRegisterDriverMemBlockPSP2(SceUID hMemBlockId, IMG_SID hProcRefId)
+PVR2DERROR PVR2DRegisterDriverMemBlockPSP2(SceUID hMemBlockId, PVR2D_SID hProcRefId)
 {
 	if (hMemBlockId <= 0)
 	{
@@ -1011,7 +1011,7 @@ PVR2DERROR PVR2DRegisterDriverMemBlockPSP2(SceUID hMemBlockId, IMG_SID hProcRefI
  @Description : Get internal GPU driver process reference ID for memory allocations
 ******************************************************************************/
 PVR2D_EXPORT
-IMG_SID PVR2DGetProcRefIdPSP2()
+PVR2D_SID PVR2DGetProcRefIdPSP2()
 {
 	return s_psp2ProcRefId;
 }

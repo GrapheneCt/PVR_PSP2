@@ -6624,7 +6624,7 @@ main(IMG_INT argc, IMG_CHAR **argv)
             fnInfo("Attempt to create transfer context for SGX:\n");
             sCreateTransfer.hDevMemContext = sShared.hDevMemContext;
 #ifdef __psp2__
-            sCreateTransfer.hShadowMemblockRef = hPbMem;
+            sCreateTransfer.hMemBlockProcRef = hPbMem;
 #else
             sCreateTransfer.hOSEvent = sShared.hOSGlobalEvent;
 #endif
