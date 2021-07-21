@@ -42,6 +42,9 @@ $Log: pvr2dinit.c $
 
 #include <string.h>		/* strncpy */
 
+static SceUID s_psp2DriverMemBlockUID = SCE_UID_INVALID_UID;
+static IMG_SID s_psp2ProcRefId = 0;
+
 /******************************************************************************
  @Function	PVR2DEnumerateDevices
 
@@ -456,6 +459,7 @@ PVR2DERROR PVR2DCreateDeviceContext (PVR2D_ULONG ulDevID,
 	IMG_UINT32 ui32ClientHeapCount;
 	PVRSRV_HEAP_INFO asHeapInfo[PVRSRV_MAX_CLIENT_HEAPS];
 	IMG_BOOL bValid2DHeap = IMG_FALSE;
+	IMG_BOOL bValidDriverMemBlock = IMG_FALSE;
 	PVRSRV_ERROR eSrvError;
 
 	/* forward flags to Services */
@@ -483,6 +487,8 @@ PVR2DERROR PVR2DCreateDeviceContext (PVR2D_ULONG ulDevID,
 		PVR2D_DPF((PVR_DBG_ERROR, "PVR2DCreateDeviceContext: Not enough memory available"));
 		return PVR2DERROR_MEMORY_UNAVAILABLE;
 	}
+
+	psContext->bIsExtRegMemblock = IMG_TRUE;
 
 #if defined(EUR_CR_2D_ALPHA_COMPONENT_ZERO_MASK) && !defined(PVR2D_ALT_2DHW)
 	psContext->ui32AlphaRegValue = DEFAULT_ALPHA1555; /* Default 1555 lookup value */
@@ -666,6 +672,27 @@ PVR2DERROR PVR2DCreateDeviceContext (PVR2D_ULONG ulDevID,
 	}
 #endif /* SGX_FEATURE_2D_HARDWARE */
 
+	if (s_psp2DriverMemBlockUID == SCE_UID_INVALID_UID)
+	{
+		s_psp2DriverMemBlockUID = sceKernelAllocMemBlock("PVR2DDriverMemBlock", SCE_KERNEL_MEMBLOCK_TYPE_USER_NC_RW, 68 * 1024, SCE_NULL);
+
+		if (s_psp2DriverMemBlockUID <= 0)
+		{
+			eError = PVR2DERROR_MEMORY_UNAVAILABLE;
+			PVR2D_DPF((PVR_DBG_ERROR, "PVR2DCreateDeviceContext: sceKernelAllocMemBlock failed"));
+			goto cleanup;
+		}
+
+		psContext->bIsExtRegMemblock = IMG_FALSE;
+		bValidDriverMemBlock = IMG_TRUE;
+	}
+
+	if (PVRSRVRegisterMemBlock(&psContext->sDevData, s_psp2DriverMemBlockUID, &s_psp2ProcRefId, IMG_TRUE))
+	{
+		eError = PVR2DERROR_MEMORY_UNAVAILABLE;
+		PVR2D_DPF((PVR_DBG_ERROR, "PVR2DCreateDeviceContext: failed to register memblock"));
+		goto cleanup;
+	}
 	
 	*phContext = (PVR2DCONTEXTHANDLE)psContext;
 
@@ -735,6 +762,11 @@ cleanup:
 		{
 			PVR2D_DPF((PVR_DBG_ERROR, "PVR2DCreateDeviceContext: PVRSRVDisconnect failed"));
 		}
+	}
+
+	if (bValidDriverMemBlock)
+	{
+		sceKernelFreeMemBlock(s_psp2DriverMemBlockUID);
 	}
 
 	_PVR2DDestroyContext(psContext);
@@ -809,6 +841,22 @@ PVR2DERROR PVR2DDestroyDeviceContext (PVR2DCONTEXTHANDLE hContext)
 		}
 	}
 #endif
+
+	if (s_psp2DriverMemBlockUID > 0)
+	{
+		eSrvError = PVRSRVUnregisterMemBlock(&psContext->sDevData, s_psp2DriverMemBlockUID);
+		if (eSrvError != PVRSRV_OK)
+		{
+			bReturnError = IMG_TRUE;
+			PVR2D_DPF((PVR_DBG_ERROR, "PVR2DDestroyDeviceContext: PVRSRVUnregisterMemBlock failed"));
+		}
+	}
+
+	if (!psContext->bIsExtRegMemblock)
+	{
+		sceKernelFreeMemBlock(s_psp2DriverMemBlockUID);
+		s_psp2DriverMemBlockUID = SCE_UID_INVALID_UID;
+	}
 
 	if (psContext->hDisplayClassDevice)
 	{
@@ -888,7 +936,7 @@ PVR2DERROR ValidateTransferContext(PVR2DCONTEXT *psContext)
 	}
 
 	sCreateTransfer.hDevMemContext = psContext->hDevMemContext;
-	sCreateTransfer.hMemBlockProcRef = 0;
+	sCreateTransfer.hMemBlockProcRef = s_psp2ProcRefId;
 
 	eSrvError = SGXCreateTransferContext(&psContext->sDevData,
 										130 * 1024,
@@ -929,6 +977,43 @@ PVR2DERROR PVR2DGetAPIRev(PVR2D_LONG *lRevMajor, PVR2D_LONG *lRevMinor)
 		PVR2D_DPF((PVR_DBG_ERROR, "PVR2DGetAPIRev: Invalid params"));
 		return PVR2DERROR_INVALID_PARAMETER;
 	}
+}
+
+/******************************************************************************
+ @Function	PVR2DRegisterDriverMemBlockPSP2
+
+ @Input		hMemBlockId : SCE memblock UID
+
+ @Input		hProcRefId : GPU driver per-process reference ID. Pass 0 if first GPU driver allocation
+
+ @Return	PVR2DERROR : error code
+
+ @Description : Register SCE memblock to be used as internal driver memory
+******************************************************************************/
+PVR2D_EXPORT
+PVR2DERROR PVR2DRegisterDriverMemBlockPSP2(SceUID hMemBlockId, IMG_SID hProcRefId)
+{
+	if (hMemBlockId <= 0)
+	{
+		PVR2D_DPF((PVR_DBG_ERROR, "PVR2DRegisterDriverMemBlockPSP2: Invalid params"));
+		return PVR2DERROR_INVALID_PARAMETER;
+	}
+
+	s_psp2DriverMemBlockUID = hMemBlockId;
+	s_psp2ProcRefId = hProcRefId;
+}
+
+/******************************************************************************
+ @Function	PVR2DGetProcRefIdPSP2
+
+ @Return	IMG_SID : process reference ID
+
+ @Description : Get internal GPU driver process reference ID for memory allocations
+******************************************************************************/
+PVR2D_EXPORT
+IMG_SID PVR2DGetProcRefIdPSP2()
+{
+	return s_psp2ProcRefId;
 }
 
 /******************************************************************************

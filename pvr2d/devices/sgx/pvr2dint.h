@@ -230,6 +230,10 @@ typedef struct _PVR2DCONTEXT
 
 	PVRSRV_MISC_INFO				sMiscInfo;		/* contains the global event object */
 
+	/* PSP2-specific */
+
+	IMG_BOOL						bIsExtRegMemblock;
+
 }PVR2DCONTEXT;
 
 /* Internal rop macros */
