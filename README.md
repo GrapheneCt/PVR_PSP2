@@ -11,8 +11,9 @@ Driver layer GPU libraries and tests for PSP2
 | sgx_render_flip_test | Passed |
 
 
-# Library status
+# Library port status
 
 | Library  | Status |
 | ------------- | ------------- |
-| PVR2D | WIP  |
+| PVR2D | Completed  |
+| IMGEGL | WIP  |
