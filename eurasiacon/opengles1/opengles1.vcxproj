@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|PSVita">
+      <Configuration>Debug</Configuration>
+      <Platform>PSVita</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|PSVita">
+      <Configuration>Release</Configuration>
+      <Platform>PSVita</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\codegen\ffgen\codegen.c" />
+    <ClCompile Include="..\..\codegen\ffgen\ffgen.c" />
+    <ClCompile Include="..\..\codegen\ffgen\inst.c" />
+    <ClCompile Include="..\..\codegen\ffgen\lighting.c" />
+    <ClCompile Include="..\..\codegen\ffgen\reg.c" />
+    <ClCompile Include="..\..\codegen\ffgen\source.c" />
+    <ClCompile Include="..\..\codegen\ffgen\uscfns.c" />
+    <ClCompile Include="..\..\codegen\pds\pds.c" />
+    <ClCompile Include="..\..\codegen\pixevent\pixevent.c" />
+    <ClCompile Include="..\..\codegen\pixevent\pixeventpbesetup.c" />
+    <ClCompile Include="..\..\codegen\pixfmts\sgxpixfmts.c" />
+    <ClCompile Include="..\..\codegen\usegen\usegen.c" />
+    <ClCompile Include="..\..\common\dmscalc\dmscalc.c" />
+    <ClCompile Include="..\..\common\tls\psp2_tls.c" />
+    <ClCompile Include="..\..\tools\intern\useasm\useasm.c" />
+    <ClCompile Include="..\..\tools\intern\useasm\usedisasm.c" />
+    <ClCompile Include="..\..\tools\intern\useasm\useopt.c" />
+    <ClCompile Include="..\..\tools\intern\useasm\usetab.c" />
+    <ClCompile Include="..\..\tools\intern\useasm\utils.c" />
+    <ClCompile Include="..\common\buffers.c" />
+    <ClCompile Include="..\common\codeheap.c" />
+    <ClCompile Include="..\common\kickresource.c" />
+    <ClCompile Include="..\common\twiddle.c" />
+    <ClCompile Include="accum.c" />
+    <ClCompile Include="bufobj.c" />
+    <ClCompile Include="clear.c" />
+    <ClCompile Include="drawtex.c" />
+    <ClCompile Include="drawvarray.c" />
+    <ClCompile Include="eglglue.c" />
+    <ClCompile Include="eglimage.c" />
+    <ClCompile Include="fbo.c" />
+    <ClCompile Include="ffgeo.c" />
+    <ClCompile Include="fftex.c" />
+    <ClCompile Include="fftexhw.c" />
+    <ClCompile Include="fftnlgles.c" />
+    <ClCompile Include="fog.c" />
+    <ClCompile Include="get.c" />
+    <ClCompile Include="gles1errata.c" />
+    <ClCompile Include="makemips.c" />
+    <ClCompile Include="matrix.c" />
+    <ClCompile Include="metrics.c" />
+    <ClCompile Include="misc.c" />
+    <ClCompile Include="names.c" />
+    <ClCompile Include="pdump.c" />
+    <ClCompile Include="pixop.c" />
+    <ClCompile Include="profile.c" />
+    <ClCompile Include="psp2\module.c" />
+    <ClCompile Include="scissor.c" />
+    <ClCompile Include="sgxif.c" />
+    <ClCompile Include="shader.c" />
+    <ClCompile Include="spanpack.c" />
+    <ClCompile Include="state.c" />
+    <ClCompile Include="statehash.c" />
+    <ClCompile Include="tex.c" />
+    <ClCompile Include="texcombine.c" />
+    <ClCompile Include="texdata.c" />
+    <ClCompile Include="texformat.c" />
+    <ClCompile Include="texmgmt.c" />
+    <ClCompile Include="texrender.c" />
+    <ClCompile Include="texstream.c" />
+    <ClCompile Include="texyuv.c" />
+    <ClCompile Include="tnlapi.c" />
+    <ClCompile Include="useasmgles.c" />
+    <ClCompile Include="usegles.c" />
+    <ClCompile Include="validate.c" />
+    <ClCompile Include="vertex.c" />
+    <ClCompile Include="vertexarrobj.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="bufobj.h" />
+    <ClInclude Include="constants.h" />
+    <ClInclude Include="context.h" />
+    <ClInclude Include="drvgl.h" />
+    <ClInclude Include="drvglext.h" />
+    <ClInclude Include="drvglplatform.h" />
+    <ClInclude Include="fbo.h" />
+    <ClInclude Include="fftex.h" />
+    <ClInclude Include="fftexhw.h" />
+    <ClInclude Include="fftnlgles.h" />
+    <ClInclude Include="gles1errata.h" />
+    <ClInclude Include="lighting.h" />
+    <ClInclude Include="metrics.h" />
+    <ClInclude Include="misc.h" />
+    <ClInclude Include="names.h" />
+    <ClInclude Include="ogles_types.h" />
+    <ClInclude Include="osglue.h" />
+    <ClInclude Include="pds_compiled\pds_aux_vtx.h" />
+    <ClInclude Include="pds_compiled\pds_aux_vtx_sizeof.h" />
+    <ClInclude Include="pds_compiled\pds_mte_state_copy.h" />
+    <ClInclude Include="pds_compiled\pds_mte_state_copy_sizeof.h" />
+    <ClInclude Include="pdump.h" />
+    <ClInclude Include="profile.h" />
+    <ClInclude Include="shader.h" />
+    <ClInclude Include="spanpack.h" />
+    <ClInclude Include="state.h" />
+    <ClInclude Include="statehash.h" />
+    <ClInclude Include="texformat.h" />
+    <ClInclude Include="texture.h" />
+    <ClInclude Include="texyuv.h" />
+    <ClInclude Include="tnlstate.h" />
+    <ClInclude Include="useasmgles.h" />
+    <ClInclude Include="usegles.h" />
+    <ClInclude Include="validate.h" />
+    <ClInclude Include="vertexarrobj.h" />
+    <ClInclude Include="xform.h" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{75873915-C65E-4F1D-B719-C667EDE516BD}</ProjectGuid>
+    <ProjectName>libopengles1</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|PSVita'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|PSVita'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <PropertyGroup Condition="'$(DebuggerFlavor)'=='PSVitaDebugger'" Label="OverrideDebuggerDefaults">
+    <!--LocalDebuggerCommand>$(TargetPath)</LocalDebuggerCommand-->
+    <!--LocalDebuggerReboot>false</LocalDebuggerReboot-->
+    <!--LocalDebuggerCommandArguments></LocalDebuggerCommandArguments-->
+    <!--LocalDebuggerTarget></LocalDebuggerTarget-->
+    <!--LocalDebuggerWorkingDirectory>$(ProjectDir)</LocalDebuggerWorkingDirectory-->
+    <!--LocalMappingFile></LocalMappingFile-->
+    <!--LocalRunCommandLine></LocalRunCommandLine-->
+  </PropertyGroup>
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|PSVita'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|PSVita'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|PSVita'">
+    <ClCompile>
+      <PreprocessorDefinitions>_DEBUG;DEBUG;USER;PDS_BUILD_OPENGLES;USE_GCC__thread_KEYWORD;OGLES1_MODULE;SUPPORT_SGX;SUPPORT_OPENGLES1;SUPPORT_OPENGLES2;GLES1_EXTENSION_EGL_IMAGE_EXTERNAL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <AdditionalIncludeDirectories>$(SCE_PSP2_SDK_DIR)\target\include\vdsuite\user;$(SCE_PSP2_SDK_DIR)\target\include\vdsuite\common;$(SolutionDir)include\gpu_es4;$(SolutionDir)include\gpu_es4\eurasia\include4;$(SolutionDir)include\gpu_es4\eurasia\hwdefs;$(SolutionDir)include\gpu_es4\eurasia\services4\include;$(SolutionDir)include\gpu_es4\eurasia\services4\system\psp2;$(SolutionDir)codegen\pds;$(SolutionDir)codegen\pixevent;$(SolutionDir)codegen\usegen;$(SolutionDir)eurasiacon\include;$(SolutionDir)eurasiacon\common;$(SolutionDir)common\tls;$(SolutionDir)common\dmscalc;$(SolutionDir)include\gpu_es4\eurasia\services4\srvclient\devices\sgx;$(SolutionDir)codegen\ffgen;$(SolutionDir)tools\intern\useasm;$(SolutionDir)codegen\pixfmts;$(SolutionDir)intermediates\pds_mte_state_copy;$(SolutionDir)intermediates\pds_aux_vtx;$(SolutionDir)intermediates\pixelevent;$(SolutionDir)intermediates\pixelevent_tilexy;$(SolutionDir)intermediates\sgxsupport;$(SolutionDir)intermediates\errata;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>$(OutDir)libgpu_es4_ext_stub.a;$(OutDir)libpvrPSP2_WSEGL_stub.a;$(OutDir)libIMGEGL_stub.a;$(SolutionDir)gpu_es4_ext\libSceGpuEs4User_stub.a;-lSceGxm_stub;-lSceGpuEs4ForUser_stub;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SCE_PSP2_SDK_DIR)\target\lib\vdsuite;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>--no-required-files</AdditionalOptions>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|PSVita'">
+    <ClCompile>
+      <PreprocessorDefinitions>NDEBUG;USER;PDS_BUILD_OPENGLES;USE_GCC__thread_KEYWORD;OGLES1_MODULE;SUPPORT_SGX;SUPPORT_OPENGLES1;SUPPORT_OPENGLES2;GLES1_EXTENSION_EGL_IMAGE_EXTERNAL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <OptimizationLevel>Level2</OptimizationLevel>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <AdditionalIncludeDirectories>$(SCE_PSP2_SDK_DIR)\target\include\vdsuite\user;$(SCE_PSP2_SDK_DIR)\target\include\vdsuite\common;$(SolutionDir)include\gpu_es4;$(SolutionDir)include\gpu_es4\eurasia\include4;$(SolutionDir)include\gpu_es4\eurasia\hwdefs;$(SolutionDir)include\gpu_es4\eurasia\services4\include;$(SolutionDir)include\gpu_es4\eurasia\services4\system\psp2;$(SolutionDir)codegen\pds;$(SolutionDir)codegen\pixevent;$(SolutionDir)codegen\usegen;$(SolutionDir)eurasiacon\include;$(SolutionDir)eurasiacon\common;$(SolutionDir)common\tls;$(SolutionDir)common\dmscalc;$(SolutionDir)include\gpu_es4\eurasia\services4\srvclient\devices\sgx;$(SolutionDir)codegen\ffgen;$(SolutionDir)tools\intern\useasm;$(SolutionDir)codegen\pixfmts;$(SolutionDir)intermediates\pds_mte_state_copy;$(SolutionDir)intermediates\pds_aux_vtx;$(SolutionDir)intermediates\pixelevent;$(SolutionDir)intermediates\pixelevent_tilexy;$(SolutionDir)intermediates\sgxsupport;$(SolutionDir)intermediates\errata;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>$(OutDir)libgpu_es4_ext_stub.a;$(OutDir)libpvrPSP2_WSEGL_stub.a;$(OutDir)libIMGEGL_stub.a;$(SolutionDir)gpu_es4_ext\libSceGpuEs4User_stub.a;-lSceGxm_stub;-lSceGpuEs4ForUser_stub;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SCE_PSP2_SDK_DIR)\target\lib\vdsuite;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <InfoStripping>StripSymsAndDebug</InfoStripping>
+      <AdditionalOptions>--no-required-files</AdditionalOptions>
+    </Link>
+  </ItemDefinitionGroup>
+  <Import Condition="'$(ConfigurationType)' == 'Makefile' and Exists('$(VCTargetsPath)\Platforms\$(Platform)\SCE.Makefile.$(Platform).targets')" Project="$(VCTargetsPath)\Platforms\$(Platform)\SCE.Makefile.$(Platform).targets" />
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

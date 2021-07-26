@@ -1,0 +1,347 @@
+#line 1 "codegen/pds/pixelevent_tilexy.asm"
+#line 1 "/home001/myeonggyu.son/omap_ics_release_4AI.1.2_2/android/vendor/ti/GFX_Linux_DDK/eurasia//"
+#line 1 "<built-in>"
+#line 1 "<command-line>"
+#line 1 "/home001/myeonggyu.son/omap_ics_release_4AI.1.2_2/android/vendor/ti/GFX_Linux_DDK/eurasia/eurasiacon/binary2_540_omap4430_android_release/config.h" 1
+#line 1 "<command-line>" 2
+#line 1 "codegen/pds/pixelevent_tilexy.asm"
+#line 24 "codegen/pds/pixelevent_tilexy.asm"
+#line 1 "hwdefs/sgxdefs.h" 1
+#line 30 "hwdefs/sgxdefs.h"
+#line 1 "hwdefs/sgxerrata.h" 1
+#line 31 "hwdefs/sgxdefs.h" 2
+#line 1 "hwdefs/sgxfeaturedefs.h" 1
+#line 766 "hwdefs/sgxfeaturedefs.h"
+#line 1 "include4/img_types.h" 1
+#line 39 "include4/img_types.h"
+typedef unsigned int IMG_UINT, *IMG_PUINT;
+typedef signed int IMG_INT, *IMG_PINT;
+
+typedef unsigned char IMG_UINT8, *IMG_PUINT8;
+typedef unsigned char IMG_BYTE, *IMG_PBYTE;
+typedef signed char IMG_INT8, *IMG_PINT8;
+typedef char IMG_CHAR, *IMG_PCHAR;
+
+typedef unsigned short IMG_UINT16, *IMG_PUINT16;
+typedef signed short IMG_INT16, *IMG_PINT16;
+
+typedef unsigned int IMG_UINT32, *IMG_PUINT32;
+typedef signed int IMG_INT32, *IMG_PINT32;
+#line 67 "include4/img_types.h"
+  typedef unsigned long long IMG_UINT64, *IMG_PUINT64;
+  typedef long long IMG_INT64, *IMG_PINT64;
+
+
+
+
+
+
+
+typedef float IMG_FLOAT, *IMG_PFLOAT;
+typedef double IMG_DOUBLE, *IMG_PDOUBLE;
+
+
+typedef enum tag_img_bool
+{
+ IMG_FALSE = 0,
+ IMG_TRUE = 1,
+ IMG_FORCE_ALIGN = 0x7FFFFFFF
+} IMG_BOOL, *IMG_PBOOL;
+
+typedef void IMG_VOID, *IMG_PVOID;
+
+typedef IMG_INT32 IMG_RESULT;
+
+
+
+
+
+
+ typedef unsigned int IMG_UINTPTR_T;
+ typedef IMG_UINT32 IMG_SIZE_T;
+
+
+typedef IMG_PVOID IMG_HANDLE;
+
+typedef void** IMG_HVOID, * IMG_PHVOID;
+
+
+
+
+typedef IMG_UINT32 IMG_SID;
+
+typedef IMG_UINT32 IMG_EVENTSID;
+
+
+
+
+
+ typedef IMG_HANDLE IMG_S_HANDLE;
+#line 160 "include4/img_types.h"
+typedef IMG_PVOID IMG_CPU_VIRTADDR;
+
+
+typedef struct _IMG_DEV_VIRTADDR
+{
+
+ IMG_UINT32 uiAddr;
+
+
+} IMG_DEV_VIRTADDR;
+
+typedef IMG_UINT32 IMG_DEVMEM_SIZE_T;
+
+
+typedef struct _IMG_CPU_PHYADDR
+{
+
+ IMG_UINTPTR_T uiAddr;
+} IMG_CPU_PHYADDR;
+
+
+typedef struct _IMG_DEV_PHYADDR
+{
+
+
+ IMG_UINTPTR_T uiAddr;
+
+
+
+
+} IMG_DEV_PHYADDR;
+
+
+typedef struct _IMG_SYS_PHYADDR
+{
+
+ IMG_UINTPTR_T uiAddr;
+} IMG_SYS_PHYADDR;
+
+#line 1 "include4/img_defs.h" 1
+#line 33 "include4/img_defs.h"
+#line 1 "include4/img_types.h" 1
+#line 34 "include4/img_defs.h" 2
+
+typedef enum img_tag_TriStateSwitch
+{
+ IMG_ON = 0x00,
+ IMG_OFF,
+ IMG_IGNORE
+
+} img_TriStateSwitch, * img_pTriStateSwitch;
+#line 86 "include4/img_defs.h"
+typedef char TCHAR, *PTCHAR, *PTSTR;
+#line 200 "include4/img_types.h" 2
+#line 767 "hwdefs/sgxfeaturedefs.h" 2
+
+#line 1 "hwdefs/sgxcoretypes.h" 1
+#line 31 "hwdefs/sgxcoretypes.h"
+typedef enum
+{
+ SGX_CORE_ID_INVALID = 0,
+ SGX_CORE_ID_520 = 1,
+ SGX_CORE_ID_530 = 2,
+ SGX_CORE_ID_531 = 3,
+ SGX_CORE_ID_535 = 4,
+ SGX_CORE_ID_540 = 5,
+ SGX_CORE_ID_541 = 6,
+ SGX_CORE_ID_543 = 7,
+ SGX_CORE_ID_544 = 8,
+ SGX_CORE_ID_545 = 9,
+ SGX_CORE_ID_554 = 10
+} SGX_CORE_ID_TYPE;
+
+typedef struct _SGX_CORE_INFO
+{
+ SGX_CORE_ID_TYPE eID;
+ IMG_UINT32 uiRev;
+} SGX_CORE_INFO, *PSGX_CORE_INFO;
+
+typedef struct _SGX_CORE_BUGS
+{
+
+
+
+
+
+ IMG_UINT32 ui32Flags;
+} SGX_CORE_BUGS, *PSGX_CORE_BUGS;
+
+typedef struct _SGX_CORE_FEATURES
+{
+
+
+
+
+
+ IMG_UINT32 ui32Flags;
+ IMG_UINT32 ui32Flags2;
+
+
+
+ IMG_UINT32 ui32NumMutexes;
+
+
+
+ IMG_UINT32 ui32NumMonitors;
+
+
+
+ IMG_UINT32 ui32TextureStateSize;
+
+
+
+ IMG_UINT32 ui32IterationStateSize;
+
+
+
+ IMG_UINT32 ui32NumUSEPipes;
+
+
+
+
+ IMG_UINT32 ui32NumProgramCounterBits;
+
+
+
+ IMG_UINT32 ui32NumInternalRegisters;
+
+
+
+
+ IMG_UINT32 const* puInvalidSpecialRegistersForNonBitwiseCount;
+
+
+
+
+ IMG_UINT32 const* auInvalidSpecialRegistersForNonBitwise;
+
+
+
+ IMG_CHAR const* pszCoreName;
+} SGX_CORE_FEATURES, *PSGX_CORE_FEATURES;
+
+typedef struct _SGX_CORE_DESC
+{
+
+
+
+ SGX_CORE_ID_TYPE eCoreType;
+
+
+
+
+ IMG_UINT32 ui32CoreRevision;
+
+
+
+ SGX_CORE_BUGS sBugs;
+
+
+
+ const SGX_CORE_FEATURES* psFeatures;
+} SGX_CORE_DESC, *PSGX_CORE_DESC;
+typedef SGX_CORE_DESC const* PCSGX_CORE_DESC;
+#line 769 "hwdefs/sgxfeaturedefs.h" 2
+#line 32 "hwdefs/sgxdefs.h" 2
+#line 46 "hwdefs/sgxdefs.h"
+#line 1 "hwdefs/sgx540defs.h" 1
+#line 47 "hwdefs/sgxdefs.h" 2
+#line 369 "hwdefs/sgxdefs.h"
+#line 1 "hwdefs/sgx540usedefs.h" 1
+#line 370 "hwdefs/sgxdefs.h" 2
+#line 7656 "hwdefs/sgxdefs.h"
+#line 1 "hwdefs/sgxusespecialbankdefs.h" 1
+#line 7657 "hwdefs/sgxdefs.h" 2
+#line 25 "codegen/pds/pixelevent_tilexy.asm" 2
+#line 358 "codegen/pds/pixelevent_tilexy.asm"
+data dword PTOFF0, PTOFF1, PTOFF2;
+data dword EOT0, EOT1, EOT2;
+data dword EOR0, EOR1, EOR2;
+data dword EOT_DOUTA1;
+temp dword temp_ds1 = ds1[48];
+temp dword param0 = ds0[48];
+temp dword temp_EOT2 = ds1[49];
+
+
+
+
+mov32 temp_ds1, (1UL << 3)
+and param0, ir1, temp_ds1
+tstz p0, param0
+p0 bra not_PTOFF
+
+
+
+
+mov32 temp_ds1, PTOFF2
+movs doutu, PTOFF0, PTOFF1, temp_ds1
+halt
+
+not_PTOFF:
+
+
+
+
+mov32 temp_ds1, (1UL << 1)
+and param0, ir1, temp_ds1
+tstz p0, param0
+p0 bra not_EOT
+
+
+
+
+mov32 temp_ds1, EOT_DOUTA1
+movs douta, ir0, temp_ds1
+
+
+
+
+shl param0, ir0, (11 - 0)
+mov32 temp_ds1, ~0xFFF807FFU
+and param0, param0, temp_ds1
+mov32 temp_ds1, EOT2
+or temp_EOT2, param0, temp_ds1
+
+
+
+
+shl param0, ir0, (19 - 8)
+mov32 temp_ds1, ~0xF807FFFFU
+and param0, param0, temp_ds1
+or temp_EOT2, param0, temp_EOT2
+
+
+
+
+shl param0, ir1, 27 - 2
+mov32 temp_ds1, ~0xF7FFFFFFU
+and param0, param0, temp_ds1
+or temp_EOT2, param0, temp_EOT2
+
+
+
+
+movs doutu, EOT0, EOT1, temp_EOT2
+
+halt
+
+not_EOT:
+
+
+
+
+mov32 temp_ds1, (1UL << 2)
+and param0, ir1, temp_ds1
+tstz p0, param0
+p0 bra not_eor
+
+
+
+
+mov32 temp_ds1, EOR2
+movs doutu, EOR0, EOR1, temp_ds1
+
+not_eor:
+
+halt

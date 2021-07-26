@@ -8,6 +8,11 @@
 #include "eurasia/include4/services.h"
 #include "eurasia/include4/sgxapi.h"
 
+#define PSP2_SWAPCHAIN_MAX_PENDING_COUNT 1
+#define PSP2_SWAPCHAIN_MAX_BUFFER_NUM 4
+#define PSP2_SWAPCHAIN_MIN_INTERVAL 0
+#define PSP2_SWAPCHAIN_MAX_INTERVAL 6
+
 #define PVRSRV_PSP2_GENERIC_MEMORY_ATTRIB (PVRSRV_MEM_READ \
 										  | PVRSRV_MEM_WRITE \
 										  | PVRSRV_HAP_NO_GPU_VIRTUAL_ON_ALLOC \
@@ -22,6 +27,8 @@
 #define PVRSRV_PSP2_GENERIC_MEMORY_ATTRIB_RDONLY_NC (PVRSRV_MEM_READ \
 										  | PVRSRV_HAP_NO_GPU_VIRTUAL_ON_ALLOC \
 										  | PVRSRV_MEM_NO_SYNCOBJ)
+
+#define PVRSRV_PSP2_COMPULSORY_ALLOC_FLAGS (PVRSRV_MEM_NO_SYNCOBJ | PVRSRV_HAP_NO_GPU_VIRTUAL_ON_ALLOC)
 
 #define SGX_PIXELSHADER_SHARED_HEAP_ID	0x12
 #define SGX_VERTEXSHADER_SHARED_HEAP_ID	0x13
@@ -90,6 +97,22 @@ typedef struct _SGX_RTINFO_EXT_
 
 	IMG_UINT32       ui32Flags;
 } SGX_RTINFO_EXT;
+
+typedef struct _PVRSRV_PSP2_APPHINT_
+{
+	IMG_UINT32 ui32PDSFragBufferSize;
+	IMG_UINT32 ui32ParamBufferSize;
+	IMG_UINT32 ui32ExternalZBufferMode;
+	IMG_UINT32 ui32ExternalZBufferXSize;
+	IMG_UINT32 ui32ExternalZBufferYSize;
+	IMG_UINT32 ui32DumpProfileData;
+	IMG_UINT32 ui32ProfileStartFrame;
+	IMG_UINT32 ui32ProfileEndFrame;
+	IMG_UINT32 ui32DisableMetricsOutput;
+	IMG_CHAR szWindowSystem[256]; //path to libpvrPSP2_WSEGL module
+	IMG_CHAR szGLES1[256]; //path to libGLESv1_CM module
+	IMG_CHAR szGLES2[256]; //path to libGLESv2 module
+} PVRSRV_PSP2_APPHINT;
 
 IMG_INT PVRSRVWaitSyncOp(IMG_SID hKernelSyncInfoModObj, IMG_UINT32 *pui32Timeout);
 

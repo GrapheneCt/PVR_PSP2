@@ -248,6 +248,17 @@ int main(int argc, char ** argv)
 		DPF("Buffer memory flags: 0x%X\n", psBufMemInfo[i]->ulFlags);
 	}
 
+	DPF("Try waiting on PVR2DQueryBlitsComplete without transfer OPs\n");
+
+	eError = PVR2DQueryBlitsComplete(hPvr2dCtx, psBufMemInfo[0], IMG_TRUE);
+
+	if (eError != PVR2D_OK)
+	{
+		DPF("Result: ");
+		PrintError(eError);
+		DPF("\n");
+	}
+
 	DPF("Prerotate through display buffers\n");
 
 	eError = PVR2DPresentFlip(hPvr2dCtx, hFlipChainHandle, psBufMemInfo[0], 0);

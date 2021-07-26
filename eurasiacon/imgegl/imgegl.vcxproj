@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|PSVita">
+      <Configuration>Debug</Configuration>
+      <Platform>PSVita</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|PSVita">
+      <Configuration>Release</Configuration>
+      <Platform>PSVita</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\common\tls\psp2_tls.c" />
+    <ClCompile Include="..\common\buffers.c" />
+    <ClCompile Include="..\common\codeheap.c" />
+    <ClCompile Include="..\common\kickresource.c" />
+    <ClCompile Include="..\common\twiddle.c" />
+    <ClCompile Include="egl\eglentrypoints.c" />
+    <ClCompile Include="imgegl\blobcache.c" />
+    <ClCompile Include="imgegl\cfg.c" />
+    <ClCompile Include="imgegl\cfg_core.c" />
+    <ClCompile Include="imgegl\egl_eglimage.c" />
+    <ClCompile Include="imgegl\egl_psp2.c" />
+    <ClCompile Include="imgegl\egl_sync.c" />
+    <ClCompile Include="imgegl\function_table.c" />
+    <ClCompile Include="imgegl\generic_ws.c" />
+    <ClCompile Include="imgegl\khronos_egl.c" />
+    <ClCompile Include="imgegl\metrics.c" />
+    <ClCompile Include="imgegl\qsort_s.c" />
+    <ClCompile Include="imgegl\srv.c" />
+    <ClCompile Include="imgegl\srv_sgx.c" />
+    <ClCompile Include="imgegl\tls.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="imgegl\blobcache.h" />
+    <ClInclude Include="imgegl\cfg.h" />
+    <ClInclude Include="imgegl\cfg_core.h" />
+    <ClInclude Include="imgegl\egl_eglimage.h" />
+    <ClInclude Include="imgegl\egl_internal.h" />
+    <ClInclude Include="imgegl\egl_sync.h" />
+    <ClInclude Include="imgegl\function_table.h" />
+    <ClInclude Include="imgegl\generic_ws.h" />
+    <ClInclude Include="imgegl\metrics.h" />
+    <ClInclude Include="imgegl\qsort.h" />
+    <ClInclude Include="imgegl\srv.h" />
+    <ClInclude Include="imgegl\tls.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="imgegl\attrib.h" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{3BFA6509-315D-4A93-A1B9-AAF4B2DACC00}</ProjectGuid>
+    <ProjectName>libIMGEGL</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|PSVita'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|PSVita'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <PropertyGroup Condition="'$(DebuggerFlavor)'=='PSVitaDebugger'" Label="OverrideDebuggerDefaults">
+    <!--LocalDebuggerCommand>$(TargetPath)</LocalDebuggerCommand-->
+    <!--LocalDebuggerReboot>false</LocalDebuggerReboot-->
+    <!--LocalDebuggerCommandArguments></LocalDebuggerCommandArguments-->
+    <!--LocalDebuggerTarget></LocalDebuggerTarget-->
+    <!--LocalDebuggerWorkingDirectory>$(ProjectDir)</LocalDebuggerWorkingDirectory-->
+    <!--LocalMappingFile></LocalMappingFile-->
+    <!--LocalRunCommandLine></LocalRunCommandLine-->
+  </PropertyGroup>
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|PSVita'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|PSVita'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|PSVita'">
+    <ClCompile>
+      <PreprocessorDefinitions>NDEBUG;EGL_MODULE;IMGEGL_MODULE;PDS_BUILD_OPENGLES;PROFILE_COMMON;SUPPORT_SGX;SUPPORT_OPENGLES1;SUPPORT_OPENGLES1_V1;SUPPORT_OPENGLES2;IMG_PSP2_PRX_EXPORT;USE_GCC__thread_KEYWORD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <OptimizationLevel>Level3</OptimizationLevel>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <AdditionalIncludeDirectories>$(SCE_PSP2_SDK_DIR)\target\include\vdsuite\user;$(SCE_PSP2_SDK_DIR)\target\include\vdsuite\common;$(SolutionDir)include\gpu_es4;$(SolutionDir)include\gpu_es4\eurasia\include4;$(SolutionDir)include\gpu_es4\eurasia\hwdefs;$(SolutionDir)include\gpu_es4\eurasia\services4\include;$(SolutionDir)include\gpu_es4\eurasia\services4\system\psp2;$(SolutionDir)include\gpu_es4\eurasia\codegen\pds;$(SolutionDir)include\gpu_es4\eurasia\codegen\pixevent;$(SolutionDir)include\gpu_es4\eurasia\codegen\usegen;$(SolutionDir)eurasiacon\include;$(SolutionDir)eurasiacon\common;$(SolutionDir)common\tls;$(SolutionDir)common\dmscalc;$(SolutionDir)include\gpu_es4\eurasia\services4\srvclient\devices\sgx;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>$(OutDir)libgpu_es4_ext_stub.a;$(OutDir)libpvrPSP2_WSEGL_stub.a;$(SolutionDir)gpu_es4_ext\libSceGpuEs4User_stub.a;-lSceGxm_stub;-lSceGpuEs4ForUser_stub;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SCE_PSP2_SDK_DIR)\target\lib\vdsuite;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <InfoStripping>StripSymsAndDebug</InfoStripping>
+      <AdditionalOptions>--no-required-files</AdditionalOptions>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|PSVita'">
+    <ClCompile>
+      <PreprocessorDefinitions>_DEBUG;DEBUG;EGL_MODULE;IMGEGL_MODULE;PDS_BUILD_OPENGLES;PROFILE_COMMON;SUPPORT_SGX;SUPPORT_OPENGLES1;SUPPORT_OPENGLES1_V1;SUPPORT_OPENGLES2;PVRSRV_NEED_PVR_DPF;IMG_PSP2_PRX_EXPORT;USE_GCC__thread_KEYWORD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <AdditionalIncludeDirectories>$(SCE_PSP2_SDK_DIR)\target\include\vdsuite\user;$(SCE_PSP2_SDK_DIR)\target\include\vdsuite\common;$(SolutionDir)include\gpu_es4;$(SolutionDir)include\gpu_es4\eurasia\include4;$(SolutionDir)include\gpu_es4\eurasia\hwdefs;$(SolutionDir)include\gpu_es4\eurasia\services4\include;$(SolutionDir)include\gpu_es4\eurasia\services4\system\psp2;$(SolutionDir)include\gpu_es4\eurasia\codegen\pds;$(SolutionDir)include\gpu_es4\eurasia\codegen\pixevent;$(SolutionDir)include\gpu_es4\eurasia\codegen\usegen;$(SolutionDir)eurasiacon\include;$(SolutionDir)eurasiacon\common;$(SolutionDir)common\tls;$(SolutionDir)common\dmscalc;$(SolutionDir)include\gpu_es4\eurasia\services4\srvclient\devices\sgx;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>$(OutDir)libgpu_es4_ext_stub.a;$(OutDir)libpvrPSP2_WSEGL_stub.a;$(SolutionDir)gpu_es4_ext\libSceGpuEs4User_stub.a;-lSceGxm_stub;-lSceGpuEs4ForUser_stub;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SCE_PSP2_SDK_DIR)\target\lib\vdsuite;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>--no-required-files</AdditionalOptions>
+    </Link>
+  </ItemDefinitionGroup>
+  <Import Condition="'$(ConfigurationType)' == 'Makefile' and Exists('$(VCTargetsPath)\Platforms\$(Platform)\SCE.Makefile.$(Platform).targets')" Project="$(VCTargetsPath)\Platforms\$(Platform)\SCE.Makefile.$(Platform).targets" />
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

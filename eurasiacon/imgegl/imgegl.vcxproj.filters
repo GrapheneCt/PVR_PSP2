@@ -1,0 +1,133 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;cc;s;asm</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp</Extensions>
+    </Filter>
+    <Filter Include="Source Files\egl">
+      <UniqueIdentifier>{47dcdbc3-c945-4c70-9aee-6f9a54b4ad41}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\imgegl">
+      <UniqueIdentifier>{28777a51-032c-4eaf-9fb7-a59ccda5ae55}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\imgegl">
+      <UniqueIdentifier>{759e23fe-66a1-46b0-af34-8af3096e2de4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\common">
+      <UniqueIdentifier>{98f89e72-2534-4dca-8524-18f97d5d420f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\common\tls">
+      <UniqueIdentifier>{c205b15b-bb6d-4414-a06c-578e9e9ec723}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="imgegl\blobcache.c">
+      <Filter>Source Files\imgegl</Filter>
+    </ClCompile>
+    <ClCompile Include="imgegl\cfg.c">
+      <Filter>Source Files\imgegl</Filter>
+    </ClCompile>
+    <ClCompile Include="imgegl\cfg_core.c">
+      <Filter>Source Files\imgegl</Filter>
+    </ClCompile>
+    <ClCompile Include="imgegl\egl_eglimage.c">
+      <Filter>Source Files\imgegl</Filter>
+    </ClCompile>
+    <ClCompile Include="imgegl\egl_sync.c">
+      <Filter>Source Files\imgegl</Filter>
+    </ClCompile>
+    <ClCompile Include="imgegl\function_table.c">
+      <Filter>Source Files\imgegl</Filter>
+    </ClCompile>
+    <ClCompile Include="imgegl\khronos_egl.c">
+      <Filter>Source Files\imgegl</Filter>
+    </ClCompile>
+    <ClCompile Include="imgegl\metrics.c">
+      <Filter>Source Files\imgegl</Filter>
+    </ClCompile>
+    <ClCompile Include="imgegl\qsort_s.c">
+      <Filter>Source Files\imgegl</Filter>
+    </ClCompile>
+    <ClCompile Include="imgegl\srv.c">
+      <Filter>Source Files\imgegl</Filter>
+    </ClCompile>
+    <ClCompile Include="imgegl\srv_sgx.c">
+      <Filter>Source Files\imgegl</Filter>
+    </ClCompile>
+    <ClCompile Include="imgegl\tls.c">
+      <Filter>Source Files\imgegl</Filter>
+    </ClCompile>
+    <ClCompile Include="egl\eglentrypoints.c">
+      <Filter>Source Files\egl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\buffers.c">
+      <Filter>Source Files\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\codeheap.c">
+      <Filter>Source Files\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\kickresource.c">
+      <Filter>Source Files\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\twiddle.c">
+      <Filter>Source Files\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\common\tls\psp2_tls.c">
+      <Filter>Source Files\common\tls</Filter>
+    </ClCompile>
+    <ClCompile Include="imgegl\egl_psp2.c">
+      <Filter>Source Files\imgegl</Filter>
+    </ClCompile>
+    <ClCompile Include="imgegl\generic_ws.c">
+      <Filter>Source Files\imgegl</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="imgegl\blobcache.h">
+      <Filter>Header Files\imgegl</Filter>
+    </ClInclude>
+    <ClInclude Include="imgegl\cfg.h">
+      <Filter>Header Files\imgegl</Filter>
+    </ClInclude>
+    <ClInclude Include="imgegl\cfg_core.h">
+      <Filter>Header Files\imgegl</Filter>
+    </ClInclude>
+    <ClInclude Include="imgegl\egl_eglimage.h">
+      <Filter>Header Files\imgegl</Filter>
+    </ClInclude>
+    <ClInclude Include="imgegl\egl_internal.h">
+      <Filter>Header Files\imgegl</Filter>
+    </ClInclude>
+    <ClInclude Include="imgegl\egl_sync.h">
+      <Filter>Header Files\imgegl</Filter>
+    </ClInclude>
+    <ClInclude Include="imgegl\function_table.h">
+      <Filter>Header Files\imgegl</Filter>
+    </ClInclude>
+    <ClInclude Include="imgegl\generic_ws.h">
+      <Filter>Header Files\imgegl</Filter>
+    </ClInclude>
+    <ClInclude Include="imgegl\metrics.h">
+      <Filter>Header Files\imgegl</Filter>
+    </ClInclude>
+    <ClInclude Include="imgegl\qsort.h">
+      <Filter>Header Files\imgegl</Filter>
+    </ClInclude>
+    <ClInclude Include="imgegl\srv.h">
+      <Filter>Header Files\imgegl</Filter>
+    </ClInclude>
+    <ClInclude Include="imgegl\tls.h">
+      <Filter>Header Files\imgegl</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="imgegl\attrib.h">
+      <Filter>Header Files\imgegl</Filter>
+    </None>
+  </ItemGroup>
+</Project>

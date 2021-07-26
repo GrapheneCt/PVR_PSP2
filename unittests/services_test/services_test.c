@@ -547,7 +547,7 @@ start_again:
 	sCreateRenderContext.ui32Flags = 2 | 4;
 	sCreateRenderContext.ui32PBSize = 4 * 1024 * 1024 - 0x80000;
 	sCreateRenderContext.ui32PBSizeLimit = sCreateRenderContext.ui32PBSize;
-	sCreateRenderContext.hPbMem = hPbMem;
+	sCreateRenderContext.hMemBlockProcRef = hPbMem;
 	sCreateRenderContext.bPerContextPB = IMG_TRUE;
 
 #else
@@ -602,7 +602,7 @@ start_again:
 	sAddRTInfo.ui8MacrotileCountY = 0;
 	sAddRTInfo.i32DataMemblockUID = rtMemUID;
 	sAddRTInfo.bUseExternalUID = IMG_FALSE;
-	sAddRTInfo.hDataMemory = hRtMem;
+	sAddRTInfo.hMemBlockProcRef = hRtMem;
 	sAddRTInfo.ui32MultisampleLocations = 0;
 
 #endif

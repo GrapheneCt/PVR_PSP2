@@ -13,11 +13,6 @@
 
 #define PSP2_DISPLAY_ID 0x09dfef50
 
-#define PSP2_SWAPCHAIN_MAX_PENDING_COUNT 1
-#define PSP2_SWAPCHAIN_MAX_BUFFER_NUM 4
-#define PSP2_SWAPCHAIN_MIN_INTERVAL 0
-#define PSP2_SWAPCHAIN_MAX_INTERVAL 6
-
 typedef struct PSP2_SWAPCHAIN {
 	PVRSRV_CONNECTION *psConnection;
 	SceUID hSwapChainReadyEvf;
@@ -116,7 +111,7 @@ PVRSRV_ERROR IMG_CALLCONV PVRSRVEnumerateDeviceClass(const PVRSRV_CONNECTION *ps
 		else
 		{
 			/* Fill in device id array */
-			PVR_ASSERT(*pui32DevCount == devCount);
+			PVR_ASSERT(*pui32DevCount == 1);
 			pui32DevID[0] = PSP2_DISPLAY_ID;
 		}
 	}

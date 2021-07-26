@@ -3973,7 +3973,7 @@ static IMG_VOID srft_AddRenderTarget(SRFT_CONFIG		*psConfig,
 #endif
 
     sAddRTInfo.ui32Flags			= 0;
-    sAddRTInfo.ui32RendersPerFrame	= psConfig->ui32RendersPerFrame;
+	sAddRTInfo.ui32RendersPerFrame = psConfig->ui32RendersPerFrame;
     sAddRTInfo.hRenderContext		= hRenderContext;
     sAddRTInfo.hDevCookie			= psSGXDevData->hDevCookie;
     sAddRTInfo.ui32NumPixelsX		= ui32RectangleSizeX;
@@ -4010,7 +4010,7 @@ static IMG_VOID srft_AddRenderTarget(SRFT_CONFIG		*psConfig,
     sAddRTInfo.ui8MacrotileCountY = 0;
     sAddRTInfo.i32DataMemblockUID = rtMemUID;
     sAddRTInfo.bUseExternalUID = IMG_FALSE;
-    sAddRTInfo.hDataMemory = hRtMem;
+    sAddRTInfo.hMemBlockProcRef = hRtMem;
     sAddRTInfo.ui32MultisampleLocations = 0;
 
 #endif
@@ -6653,7 +6653,7 @@ main(IMG_INT argc, IMG_CHAR **argv)
     sCreateRenderContext.ui32PBSizeLimit = sCreateRenderContext.ui32PBSize;
     sCreateRenderContext.ui32MaxSACount = 128;
     sCreateRenderContext.bPerContextPB = sConfig.bPerContextPB;
-    sCreateRenderContext.hPbMem = hPbMem;
+    sCreateRenderContext.hMemBlockProcRef = hPbMem;
 
     /*
        We don't need to test the visibility buffer, but don't pass 0 since it

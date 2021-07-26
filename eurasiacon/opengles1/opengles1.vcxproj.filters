@@ -1,0 +1,368 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;cc;s;asm</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp</Extensions>
+    </Filter>
+    <Filter Include="Header Files\pds_compiled">
+      <UniqueIdentifier>{d38016be-7fac-420a-a0fc-0befc98e99e0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\psp2">
+      <UniqueIdentifier>{abf445bd-7cc8-4cca-a05a-e10379cf6c20}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\common">
+      <UniqueIdentifier>{5212d9a0-fa51-4a7a-9255-cd14285412a7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\common\tls">
+      <UniqueIdentifier>{08ef52be-73bf-483b-82fd-5e51d25fb1e2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\codegen">
+      <UniqueIdentifier>{e6f0d395-358c-409f-8217-37f0a4145d02}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\codegen\pixfmts">
+      <UniqueIdentifier>{69d64730-3b36-4ab0-be41-c11c0dc05312}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\codegen\pixevent">
+      <UniqueIdentifier>{02d3975c-9495-4c56-af61-5f11edcaf883}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\codegen\usegen">
+      <UniqueIdentifier>{778e7f8b-0745-4254-acc7-bd486e6174ca}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\codegen\pds">
+      <UniqueIdentifier>{71169325-e7c4-4658-bbb4-05330038d613}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\codegen\ffgen">
+      <UniqueIdentifier>{0605ed1d-957e-4cb8-bb24-668b6bac7444}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\tools">
+      <UniqueIdentifier>{d8a82d65-42d0-4110-93ee-719a5fa86e78}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\tools\intern">
+      <UniqueIdentifier>{8063ac0d-f511-4e0c-b67f-47dcccc538b8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\tools\intern\useasm">
+      <UniqueIdentifier>{f11410af-d50d-4b31-9b8b-c060cd62167d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\common\dmscalc">
+      <UniqueIdentifier>{8e277f17-4b89-4a14-ba90-0b44bea064e7}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="accum.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="bufobj.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="clear.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="drawtex.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="drawvarray.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="eglglue.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="eglimage.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="fbo.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ffgeo.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="fftex.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="fftexhw.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="fftnlgles.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="fog.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="get.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="gles1errata.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="makemips.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="matrix.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="metrics.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="misc.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="names.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pdump.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pixop.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="profile.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="scissor.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="sgxif.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="shader.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="spanpack.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="state.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="statehash.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tex.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="texcombine.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="texdata.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="texformat.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="texmgmt.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="texrender.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="texstream.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="texyuv.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tnlapi.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="useasmgles.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="usegles.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="validate.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="vertex.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="vertexarrobj.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="psp2\module.c">
+      <Filter>Source Files\psp2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\kickresource.c">
+      <Filter>Source Files\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\buffers.c">
+      <Filter>Source Files\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\codeheap.c">
+      <Filter>Source Files\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\twiddle.c">
+      <Filter>Source Files\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\common\tls\psp2_tls.c">
+      <Filter>Source Files\common\tls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\codegen\pds\pds.c">
+      <Filter>Source Files\codegen\pds</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\codegen\usegen\usegen.c">
+      <Filter>Source Files\codegen\usegen</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\codegen\pixevent\pixevent.c">
+      <Filter>Source Files\codegen\pixevent</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\codegen\pixevent\pixeventpbesetup.c">
+      <Filter>Source Files\codegen\pixevent</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\codegen\pixfmts\sgxpixfmts.c">
+      <Filter>Source Files\codegen\pixfmts</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\useasm\useopt.c">
+      <Filter>Source Files\tools\intern\useasm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\useasm\useasm.c">
+      <Filter>Source Files\tools\intern\useasm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\useasm\usedisasm.c">
+      <Filter>Source Files\tools\intern\useasm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\useasm\utils.c">
+      <Filter>Source Files\tools\intern\useasm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\useasm\usetab.c">
+      <Filter>Source Files\tools\intern\useasm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\codegen\ffgen\codegen.c">
+      <Filter>Source Files\codegen\ffgen</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\codegen\ffgen\ffgen.c">
+      <Filter>Source Files\codegen\ffgen</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\codegen\ffgen\inst.c">
+      <Filter>Source Files\codegen\ffgen</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\codegen\ffgen\lighting.c">
+      <Filter>Source Files\codegen\ffgen</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\codegen\ffgen\reg.c">
+      <Filter>Source Files\codegen\ffgen</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\codegen\ffgen\source.c">
+      <Filter>Source Files\codegen\ffgen</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\codegen\ffgen\uscfns.c">
+      <Filter>Source Files\codegen\ffgen</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\common\dmscalc\dmscalc.c">
+      <Filter>Source Files\common\dmscalc</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="bufobj.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="constants.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="context.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="drvgl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="drvglext.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="drvglplatform.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="fbo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="fftex.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="fftexhw.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="fftnlgles.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="gles1errata.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lighting.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="metrics.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="misc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="names.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ogles_types.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="osglue.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pdump.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="profile.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="shader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="spanpack.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="state.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="statehash.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="texformat.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="texture.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="texyuv.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tnlstate.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="useasmgles.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="usegles.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="validate.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="vertexarrobj.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="xform.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pds_compiled\pds_aux_vtx.h">
+      <Filter>Header Files\pds_compiled</Filter>
+    </ClInclude>
+    <ClInclude Include="pds_compiled\pds_aux_vtx_sizeof.h">
+      <Filter>Header Files\pds_compiled</Filter>
+    </ClInclude>
+    <ClInclude Include="pds_compiled\pds_mte_state_copy.h">
+      <Filter>Header Files\pds_compiled</Filter>
+    </ClInclude>
+    <ClInclude Include="pds_compiled\pds_mte_state_copy_sizeof.h">
+      <Filter>Header Files\pds_compiled</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

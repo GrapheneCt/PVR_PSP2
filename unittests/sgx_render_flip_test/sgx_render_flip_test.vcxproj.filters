@@ -9,6 +9,21 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hpp</Extensions>
     </Filter>
+    <Filter Include="Source Files\codegen">
+      <UniqueIdentifier>{e62a2802-d732-4f7e-a387-fc4e532de6f6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\codegen\pds">
+      <UniqueIdentifier>{b2febbe0-7ddf-4087-be4a-90f730b7b31d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\codegen\usegen">
+      <UniqueIdentifier>{51655a4e-315a-42b6-be0f-1187bb1771a2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\codegen\pixevent">
+      <UniqueIdentifier>{9eb597cf-57a8-4d83-bbfa-4a08507dc4b0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\codegen\pixfmts">
+      <UniqueIdentifier>{2b9d6dc6-fd6f-4ce1-b9d5-e6b921ae3353}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sgx_render_flip_test.c">
@@ -16,6 +31,21 @@
     </ClCompile>
     <ClCompile Include="sgx_unittest_utils.c">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\codegen\pixfmts\sgxpixfmts.c">
+      <Filter>Source Files\codegen\pixfmts</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\codegen\pixevent\pixevent.c">
+      <Filter>Source Files\codegen\pixevent</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\codegen\pixevent\pixeventpbesetup.c">
+      <Filter>Source Files\codegen\pixevent</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\codegen\usegen\usegen.c">
+      <Filter>Source Files\codegen\usegen</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\codegen\pds\pds.c">
+      <Filter>Source Files\codegen\pds</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

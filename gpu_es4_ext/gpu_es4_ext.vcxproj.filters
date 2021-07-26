@@ -78,23 +78,8 @@
     <Filter Include="Header Files\eurasia\codegen\usegen">
       <UniqueIdentifier>{4681acb0-6b1c-4cf5-b403-7229b4c9c3dd}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\eurasia\codegen">
-      <UniqueIdentifier>{9b4c5680-41b6-4d34-ae5f-1e962ba755af}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\eurasia\codegen\pds">
-      <UniqueIdentifier>{d42a9b06-ff4c-4ae2-9b5a-2e6adc9bc1df}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\eurasia\codegen\usegen">
-      <UniqueIdentifier>{a0bdb7d1-e39f-4f8e-a896-a6f46138e42e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\eurasia\codegen\pixevent">
-      <UniqueIdentifier>{b17a070b-cd52-4217-a811-d2ba4ee9e95e}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\eurasia\codegen\pixfmts">
       <UniqueIdentifier>{7227445b-d41c-455d-9862-f04cc14f0abb}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\eurasia\codegen\pixfmts">
-      <UniqueIdentifier>{9d1f3c08-efb7-4299-922d-8767c2e7d9a2}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\eurasia\services4\srvclient\bridged\sgx">
       <UniqueIdentifier>{db87c7de-0b2d-4c61-aac7-436e30b751b2}</UniqueIdentifier>
@@ -125,21 +110,6 @@
     <ClCompile Include="eurasia\services4\srvclient\env\playstation\common\pvr_debug.c">
       <Filter>Source Files\eurasia\services4\srvclient\env\playstation\common</Filter>
     </ClCompile>
-    <ClCompile Include="eurasia\codegen\pds\pds.c">
-      <Filter>Source Files\eurasia\codegen\pds</Filter>
-    </ClCompile>
-    <ClCompile Include="eurasia\codegen\usegen\usegen.c">
-      <Filter>Source Files\eurasia\codegen\usegen</Filter>
-    </ClCompile>
-    <ClCompile Include="eurasia\codegen\pixevent\pixevent.c">
-      <Filter>Source Files\eurasia\codegen\pixevent</Filter>
-    </ClCompile>
-    <ClCompile Include="eurasia\codegen\pixevent\pixeventpbesetup.c">
-      <Filter>Source Files\eurasia\codegen\pixevent</Filter>
-    </ClCompile>
-    <ClCompile Include="eurasia\codegen\pixfmts\sgxpixfmts.c">
-      <Filter>Source Files\eurasia\codegen\pixfmts</Filter>
-    </ClCompile>
     <ClCompile Include="eurasia\services4\srvclient\bridged\sgx\bridged_sgx_glue.c">
       <Filter>Source Files\eurasia\services4\srvclient\bridged\sgx</Filter>
     </ClCompile>
@@ -151,6 +121,12 @@
     </ClCompile>
     <ClCompile Include="eurasia\services4\srvclient\devices\sgx\sgxtransfer_queue.c">
       <Filter>Source Files\eurasia\services4\srvclient\devices\sgx</Filter>
+    </ClCompile>
+    <ClCompile Include="eurasia\services4\srvclient\env\playstation\common\pvr_metrics.c">
+      <Filter>Source Files\eurasia\services4\srvclient\env\playstation\common</Filter>
+    </ClCompile>
+    <ClCompile Include="eurasia\services4\srvclient\env\playstation\common\pvr_apphint.c">
+      <Filter>Source Files\eurasia\services4\srvclient\env\playstation\common</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

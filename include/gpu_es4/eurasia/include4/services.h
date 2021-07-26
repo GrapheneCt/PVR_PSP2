@@ -1031,7 +1031,7 @@ PVRSRV_ERROR IMG_CALLCONV PVRSRVAllocDeviceMem(IMG_CONST PVRSRV_DEV_DATA	*psDevD
 	IMG_UINT32		ui32Attribs,
 	IMG_SIZE_T		ui32Size,
 	IMG_SIZE_T		ui32Alignment,
-	IMG_SID			hShadowMemblockRef,
+	IMG_SID			hPerProcRef,
 	PVRSRV_CLIENT_MEM_INFO	**ppsMemInfo);
 #else
 IMG_IMPORT
@@ -1675,14 +1675,23 @@ typedef	struct  _PVRSRV_SEMAPHORE_OPAQUE_STRUCT_ *PVRSRV_SEMAPHORE_HANDLE;
 
 #if !defined(USE_CODE)
 
+#if defined(__psp2__)
+#include <kernel.h>
+#endif
+
 #ifdef INLINE_IS_PRAGMA
 #pragma inline(PVRSRVCreateSemaphore)
 #endif
 static INLINE PVRSRV_ERROR PVRSRVCreateSemaphore(PVRSRV_SEMAPHORE_HANDLE *phSemaphore, IMG_INT iInitialCount)
 {
+#if defined(__psp2__)
+	*phSemaphore = (PVRSRV_SEMAPHORE_HANDLE)sceKernelCreateSema("PVRSRVSemaphore", 0, iInitialCount, 100, SCE_NULL);
+	return PVRSRV_OK;
+#else
 	PVR_UNREFERENCED_PARAMETER(iInitialCount);
 	*phSemaphore = 0;
 	return PVRSRV_OK;
+#endif
 }
 
 #ifdef INLINE_IS_PRAGMA
@@ -1690,8 +1699,13 @@ static INLINE PVRSRV_ERROR PVRSRVCreateSemaphore(PVRSRV_SEMAPHORE_HANDLE *phSema
 #endif
 static INLINE PVRSRV_ERROR PVRSRVDestroySemaphore(PVRSRV_SEMAPHORE_HANDLE hSemaphore)
 {
+#if defined(__psp2__)
+	sceKernelDeleteSema((SceUID)hSemaphore);
+	return PVRSRV_OK;
+#else
 	PVR_UNREFERENCED_PARAMETER(hSemaphore);
 	return PVRSRV_OK;
+#endif
 }
 
 #ifdef INLINE_IS_PRAGMA
@@ -1699,9 +1713,20 @@ static INLINE PVRSRV_ERROR PVRSRVDestroySemaphore(PVRSRV_SEMAPHORE_HANDLE hSemap
 #endif
 static INLINE PVRSRV_ERROR PVRSRVWaitSemaphore(PVRSRV_SEMAPHORE_HANDLE hSemaphore, IMG_UINT64 ui64TimeoutMicroSeconds)
 {
+#if defined(__psp2__)
+	SceUInt32 timeout = ui64TimeoutMicroSeconds;
+	int ret = sceKernelWaitSema((SceUID)hSemaphore, 1, &timeout);
+	if (ret == SCE_OK)
+		return PVRSRV_OK;
+	else if (ret == SCE_KERNEL_ERROR_WAIT_TIMEOUT)
+		return PVRSRV_ERROR_TIMEOUT;
+	else
+		return PVRSRV_ERROR_INVALID_PARAMS;
+#else
 	PVR_UNREFERENCED_PARAMETER(hSemaphore);
 	PVR_UNREFERENCED_PARAMETER(ui64TimeoutMicroSeconds);
 	return PVRSRV_ERROR_INVALID_PARAMS;
+#endif
 }
 
 #ifdef INLINE_IS_PRAGMA
@@ -1709,8 +1734,12 @@ static INLINE PVRSRV_ERROR PVRSRVWaitSemaphore(PVRSRV_SEMAPHORE_HANDLE hSemaphor
 #endif
 static INLINE IMG_VOID PVRSRVPostSemaphore(PVRSRV_SEMAPHORE_HANDLE hSemaphore, IMG_INT iPostCount)
 {
+#if defined(__psp2__)
+	sceKernelSignalSema((SceUID)hSemaphore, iPostCount);
+#else
 	PVR_UNREFERENCED_PARAMETER(hSemaphore);
 	PVR_UNREFERENCED_PARAMETER(iPostCount);
+#endif
 }
 
 #endif /* !defined(USE_CODE) */

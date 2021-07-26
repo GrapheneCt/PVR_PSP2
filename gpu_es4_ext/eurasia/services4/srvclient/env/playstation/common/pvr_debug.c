@@ -137,3 +137,41 @@ IMG_EXPORT IMG_VOID PVRSRVDebugAssertFail(const IMG_CHAR *pszFile, IMG_UINT32 uL
 	PVRSRVDebugPrintf(DBGPRIV_FATAL, pszFile, uLine, "Debug assertion failed!");
 	abort();
 }
+
+#if defined(PVRSRV_NEED_PVR_TRACE)
+
+/*----------------------------------------------------------------------------
+<function>
+	FUNCTION   : PVRTrace
+	PURPOSE    : To output a debug message to the user
+	PARAMETERS : In : pszFormat - The message format string
+				 In : ... - Zero or more arguments for use by the format string
+	RETURNS    : None
+</function>
+------------------------------------------------------------------------------*/
+IMG_EXPORT IMG_VOID PVRSRVTrace(const IMG_CHAR *pszFormat, ...)
+{
+	IMG_CHAR szMessage[PVR_MAX_DEBUG_MESSAGE_LEN];
+	IMG_CHAR *szMessageEnd = szMessage;
+	IMG_CHAR *szMessageLimit = szMessage + sizeof(szMessage) - 1;
+	va_list ArgList;
+
+	/* The Limit - End pointer arithmetic we're doing in snprintf
+	   ensures that our buffer remains null terminated from this */
+	*szMessageLimit = '\0';
+
+	snprintf(szMessageEnd, szMessageLimit - szMessageEnd, "PVR: ");
+	szMessageEnd += strlen(szMessageEnd);
+
+	va_start(ArgList, pszFormat);
+	sceClibVsnprintf(szMessageEnd, szMessageLimit - szMessageEnd, pszFormat, ArgList);
+	va_end(ArgList);
+	szMessageEnd += strlen(szMessageEnd);
+
+	snprintf(szMessageEnd, szMessageLimit - szMessageEnd, "\n");
+	szMessageEnd += strlen(szMessageEnd);
+
+	sceClibPrintf(szMessage);
+}
+
+#endif /* defined(PVRSRV_NEED_PVR_TRACE) */

@@ -133,7 +133,7 @@ typedef struct _SGX_CREATERENDERCONTEXT_
 	IMG_UINT32				ui32PBSizeLimit;
 	IMG_UINT32				ui32VisTestResultBufferSize;
 	IMG_UINT32				ui32MaxSACount;
-	IMG_SID					hPbMem;
+	IMG_SID					hMemBlockProcRef;
 	IMG_BOOL				bPerContextPB;
 } SGX_CREATERENDERCONTEXT, *PSGX_CREATERENDERCONTEXT;
 #else
@@ -172,7 +172,7 @@ typedef enum _SGX_SCALING_
 typedef struct _SGX_ADDRENDTARG_
 {
 	IMG_UINT32				ui32Flags;
-	IMG_UINT32				ui32RendersPerFrame;	/* Maximum renders per frame before blocking behaviour, pass 0 for defaults */
+	IMG_UINT32				ui32RendersPerFrame;	/* Maximum renders per frame before blocking behaviour, must not be 0 */
 	IMG_UINT32				ui32RendersPerQueueSwap;
 	IMG_HANDLE				hRenderContext;
 	IMG_SID					hDevCookie;
@@ -189,7 +189,7 @@ typedef struct _SGX_ADDRENDTARG_
 	IMG_UINT8				ui8MacrotileCountY;
 	IMG_INT32				i32DataMemblockUID;
 	IMG_BOOL				bUseExternalUID;
-	IMG_SID					hDataMemory;
+	IMG_SID					hMemBlockProcRef;
 	IMG_UINT32				ui32MultisampleLocations;
 } SGX_ADDRENDTARG, *PSGX_ADDRENDTARG;
 
