@@ -26,4 +26,6 @@ Driver layer GPU libraries and tests for PSP2
 | Library  | Status |
 | ------------- | ------------- |
 | PVR2D | Completed  |
+| WSEGL | WIP  |
 | IMGEGL | WIP  |
+| OpenGLES1 | WIP  |
