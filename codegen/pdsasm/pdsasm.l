@@ -179,7 +179,7 @@ static IMG_PCHAR g_pcSavedInvalidInput = NULL;
 "0x"([0-9]|[A-F]|[a-f])+(("U"|"L")*)	{ yylval.uNumber = strtoul(yytext, NULL, 16); return NUMBER; }
 [[:alpha:]_][[:alnum:]_]*	{ 
 								yylval.sIdentifier.sLocation = g_sCurrentLocation;
-								yylval.sIdentifier.pszIdentifier = strdup(yytext);
+								yylval.sIdentifier.pszIdentifier = _strdup(yytext);
 								return IDENTIFIER; 
 							}
 

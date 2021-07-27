@@ -17,6 +17,7 @@
  * $Log: pds_aux_vtx.asm $
  *****************************************************************************/
 
+#include "psp2_pvr_desc.h"
 #include "sgxdefs.h"
 
 #if !defined(FIX_HW_BRN_25339) && !defined(FIX_HW_BRN_27330)

@@ -1,8 +1,7 @@
 /* Auto-generated file - don't edit. */
 
-#define PDS_AUXILIARYVERTEX_DATA_SEGMENT_SIZE	(96UL)
-static const IMG_UINT32 g_pui32PDSAuxiliaryVertex[35] = {
-0x00000000, 0x00000000, 0x00000000, 0x00000000,
+#define PDS_PROGRAM_DATA_SEGMENT_SIZE	(80UL)
+static const IMG_UINT32 g_pui32PDSProgram[30] = {
 0x00000000, 0x00000000, 0x00000000, 0x00000000,
 0x00000000, 0x00000000, 0x00000000, 0x00000000,
 0x00000000, 0x00000000, 0x00000000, 0x00000000,
@@ -10,107 +9,107 @@ static const IMG_UINT32 g_pui32PDSAuxiliaryVertex[35] = {
 0x00000000, 0x00000000, 0x00000000, 0x00000000,
 0x17000468, 0x1700066A, 0x1700086C, 0x17000A6E,
 0x17000C70, 0x17000E72, 0x17001074, 0x17001276,
-0x170014E0, 0x07030305, 0xAF000000,
+0x07000185, 0xAF000000,
 };
 
 
 
 #ifdef INLINE_IS_PRAGMA
-#pragma inline(PDSAuxiliaryVertexSetSTREAM0)
+#pragma inline(PDSProgramSetSTREAM0)
 #endif
-FORCE_INLINE IMG_VOID PDSAuxiliaryVertexSetSTREAM0 (IMG_PUINT32 pui32Program, IMG_UINT32 ui32Value)
+FORCE_INLINE IMG_VOID PDSProgramSetSTREAM0 (IMG_PUINT32 pui32Program, IMG_UINT32 ui32Value)
 {
 	pui32Program[4] = ui32Value;
 }
-#define PDS_AUXILIARYVERTEX_STREAM0_LOCATIONS	{16}
+#define PDS_PROGRAM_STREAM0_LOCATIONS	{16}
 
 #ifdef INLINE_IS_PRAGMA
-#pragma inline(PDSAuxiliaryVertexSetSTREAM1)
+#pragma inline(PDSProgramSetSTREAM1)
 #endif
-FORCE_INLINE IMG_VOID PDSAuxiliaryVertexSetSTREAM1 (IMG_PUINT32 pui32Program, IMG_UINT32 ui32Value)
+FORCE_INLINE IMG_VOID PDSProgramSetSTREAM1 (IMG_PUINT32 pui32Program, IMG_UINT32 ui32Value)
 {
 	pui32Program[5] = ui32Value;
 }
-#define PDS_AUXILIARYVERTEX_STREAM1_LOCATIONS	{20}
+#define PDS_PROGRAM_STREAM1_LOCATIONS	{20}
 
 #ifdef INLINE_IS_PRAGMA
-#pragma inline(PDSAuxiliaryVertexSetSTREAM2)
+#pragma inline(PDSProgramSetSTREAM2)
 #endif
-FORCE_INLINE IMG_VOID PDSAuxiliaryVertexSetSTREAM2 (IMG_PUINT32 pui32Program, IMG_UINT32 ui32Value)
+FORCE_INLINE IMG_VOID PDSProgramSetSTREAM2 (IMG_PUINT32 pui32Program, IMG_UINT32 ui32Value)
 {
 	pui32Program[8] = ui32Value;
 }
-#define PDS_AUXILIARYVERTEX_STREAM2_LOCATIONS	{32}
+#define PDS_PROGRAM_STREAM2_LOCATIONS	{32}
 
 #ifdef INLINE_IS_PRAGMA
-#pragma inline(PDSAuxiliaryVertexSetSTREAM3)
+#pragma inline(PDSProgramSetSTREAM3)
 #endif
-FORCE_INLINE IMG_VOID PDSAuxiliaryVertexSetSTREAM3 (IMG_PUINT32 pui32Program, IMG_UINT32 ui32Value)
+FORCE_INLINE IMG_VOID PDSProgramSetSTREAM3 (IMG_PUINT32 pui32Program, IMG_UINT32 ui32Value)
 {
 	pui32Program[9] = ui32Value;
 }
-#define PDS_AUXILIARYVERTEX_STREAM3_LOCATIONS	{36}
+#define PDS_PROGRAM_STREAM3_LOCATIONS	{36}
 
 #ifdef INLINE_IS_PRAGMA
-#pragma inline(PDSAuxiliaryVertexSetSTREAM4)
+#pragma inline(PDSProgramSetSTREAM4)
 #endif
-FORCE_INLINE IMG_VOID PDSAuxiliaryVertexSetSTREAM4 (IMG_PUINT32 pui32Program, IMG_UINT32 ui32Value)
+FORCE_INLINE IMG_VOID PDSProgramSetSTREAM4 (IMG_PUINT32 pui32Program, IMG_UINT32 ui32Value)
 {
 	pui32Program[12] = ui32Value;
 }
-#define PDS_AUXILIARYVERTEX_STREAM4_LOCATIONS	{48}
+#define PDS_PROGRAM_STREAM4_LOCATIONS	{48}
 
 #ifdef INLINE_IS_PRAGMA
-#pragma inline(PDSAuxiliaryVertexSetSTREAM5)
+#pragma inline(PDSProgramSetSTREAM5)
 #endif
-FORCE_INLINE IMG_VOID PDSAuxiliaryVertexSetSTREAM5 (IMG_PUINT32 pui32Program, IMG_UINT32 ui32Value)
+FORCE_INLINE IMG_VOID PDSProgramSetSTREAM5 (IMG_PUINT32 pui32Program, IMG_UINT32 ui32Value)
 {
 	pui32Program[13] = ui32Value;
 }
-#define PDS_AUXILIARYVERTEX_STREAM5_LOCATIONS	{52}
+#define PDS_PROGRAM_STREAM5_LOCATIONS	{52}
 
 #ifdef INLINE_IS_PRAGMA
-#pragma inline(PDSAuxiliaryVertexSetSTREAM6)
+#pragma inline(PDSProgramSetSTREAM6)
 #endif
-FORCE_INLINE IMG_VOID PDSAuxiliaryVertexSetSTREAM6 (IMG_PUINT32 pui32Program, IMG_UINT32 ui32Value)
+FORCE_INLINE IMG_VOID PDSProgramSetSTREAM6 (IMG_PUINT32 pui32Program, IMG_UINT32 ui32Value)
 {
 	pui32Program[16] = ui32Value;
 }
-#define PDS_AUXILIARYVERTEX_STREAM6_LOCATIONS	{64}
+#define PDS_PROGRAM_STREAM6_LOCATIONS	{64}
 
 #ifdef INLINE_IS_PRAGMA
-#pragma inline(PDSAuxiliaryVertexSetSTREAM7)
+#pragma inline(PDSProgramSetSTREAM7)
 #endif
-FORCE_INLINE IMG_VOID PDSAuxiliaryVertexSetSTREAM7 (IMG_PUINT32 pui32Program, IMG_UINT32 ui32Value)
+FORCE_INLINE IMG_VOID PDSProgramSetSTREAM7 (IMG_PUINT32 pui32Program, IMG_UINT32 ui32Value)
 {
 	pui32Program[17] = ui32Value;
 }
-#define PDS_AUXILIARYVERTEX_STREAM7_LOCATIONS	{68}
+#define PDS_PROGRAM_STREAM7_LOCATIONS	{68}
 
 #ifdef INLINE_IS_PRAGMA
-#pragma inline(PDSAuxiliaryVertexSetUSE0)
+#pragma inline(PDSProgramSetUSE0)
 #endif
-FORCE_INLINE IMG_VOID PDSAuxiliaryVertexSetUSE0 (IMG_PUINT32 pui32Program, IMG_UINT32 ui32Value)
+FORCE_INLINE IMG_VOID PDSProgramSetUSE0 (IMG_PUINT32 pui32Program, IMG_UINT32 ui32Value)
 {
 	pui32Program[0] = ui32Value;
 }
-#define PDS_AUXILIARYVERTEX_USE0_LOCATIONS	{0}
+#define PDS_PROGRAM_USE0_LOCATIONS	{0}
 
 #ifdef INLINE_IS_PRAGMA
-#pragma inline(PDSAuxiliaryVertexSetUSE1)
+#pragma inline(PDSProgramSetUSE1)
 #endif
-FORCE_INLINE IMG_VOID PDSAuxiliaryVertexSetUSE1 (IMG_PUINT32 pui32Program, IMG_UINT32 ui32Value)
+FORCE_INLINE IMG_VOID PDSProgramSetUSE1 (IMG_PUINT32 pui32Program, IMG_UINT32 ui32Value)
 {
 	pui32Program[1] = ui32Value;
 }
-#define PDS_AUXILIARYVERTEX_USE1_LOCATIONS	{4}
+#define PDS_PROGRAM_USE1_LOCATIONS	{4}
 
 #ifdef INLINE_IS_PRAGMA
-#pragma inline(PDSAuxiliaryVertexSetUSE2)
+#pragma inline(PDSProgramSetUSE2)
 #endif
-FORCE_INLINE IMG_VOID PDSAuxiliaryVertexSetUSE2 (IMG_PUINT32 pui32Program, IMG_UINT32 ui32Value)
+FORCE_INLINE IMG_VOID PDSProgramSetUSE2 (IMG_PUINT32 pui32Program, IMG_UINT32 ui32Value)
 {
-	pui32Program[20] = ui32Value;
+	pui32Program[2] = ui32Value;
 }
-#define PDS_AUXILIARYVERTEX_USE2_LOCATIONS	{80}
+#define PDS_PROGRAM_USE2_LOCATIONS	{8}
 

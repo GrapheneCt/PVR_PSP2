@@ -1,2 +1,2 @@
 /* Auto-generated file - don't edit. */
-#define PDS_MTESTATECOPY_SIZE	(92UL)
+#define PDS_PROGRAM_SIZE	(80UL)

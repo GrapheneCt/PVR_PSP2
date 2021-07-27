@@ -50,6 +50,10 @@ Module.symvers
 Mkfile.old
 dkms.conf
 
+# host
+Debug
+Release
+
 # VDS
 *.vs
 eboot.bin
