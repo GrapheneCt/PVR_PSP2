@@ -23,26 +23,26 @@
 
 
 #define EGL_COMPARE_AND_RETURN(func) \
-	if(!strcmp(procname, #func))	 \
+	if(!sceClibStrcmp(procname, #func))	 \
 	{                 				 \
 		return IMG_TRUE;		     \
 	}
 
 #define EGL_COMPARE_AND_RETURN_OPTION(func, func1) \
-	if(!strcmp(procname, #func) || !strcmp(procname, #func1))	\
+	if(!sceClibStrcmp(procname, #func) || !sceClibStrcmp(procname, #func1))	\
 	{                 				 							\
 		return IMG_TRUE;		     							\
 	}
 
 
 #define EGL_COMPARE_AND_RETURN_DUMMY(func)	\
-	if(!strcmp(procname, #func))	        \
+	if(!sceClibStrcmp(procname, #func))	        \
 	{                 				        \
 		return (IMG_GL_PROC)&Dummy##func;	\
 	}
 
 #define EGL_COMPARE_AND_RETURN_DUMMY_OPTION(string, string1, func)	\
-	if(!strcmp(procname, #string) || !strcmp(procname, #string1))   \
+	if(!sceClibStrcmp(procname, #string) || !sceClibStrcmp(procname, #string1))   \
 	{                 												\
 		return (IMG_GL_PROC)&Dummy##func;							\
 	}

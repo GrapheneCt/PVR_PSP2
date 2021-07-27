@@ -177,9 +177,10 @@ IMG_EXPORT IMG_VOID PVRSRVDeInitProfileOutput(IMG_VOID **ppvFileInfo)
 ************************************************************************************/
 IMG_EXPORT IMG_VOID PVRSRVProfileOutput(IMG_VOID *pvFileInfo, const IMG_CHAR *psString)
 {
-	IMG_CHAR newline[] = "\n";
+	IMG_CHAR newline[2];
 	IMG_UINT32 len;
 	SceUID fd = (SceUID)pvFileInfo;
+	sceClibStrncpy(newline, "\n", 2);
 
 	if(pvFileInfo > 0)
 	{

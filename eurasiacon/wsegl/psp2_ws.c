@@ -1,3 +1,5 @@
+#include <display.h>
+
 #include "drveglplatform.h"
 #include "wsegl.h"
 
@@ -344,6 +346,7 @@ static WSEGLError WSEGL_GetDrawableParameters(WSEGLDrawableHandle hDrawable,
 	Psp2DrawableType eType = *(Psp2DrawableType *)hDrawable;
 	NativeWindowType window;
 	NativePixmapType pixmap;
+	PVRSRV_CLIENT_MEM_INFO *bufMemInfo;
 
 	sceClibMemset(psSourceParams, 0, sizeof(WSEGLDrawableParams));
 	sceClibMemset(psRenderParams, 0, sizeof(WSEGLDrawableParams));
@@ -353,7 +356,7 @@ static WSEGLError WSEGL_GetDrawableParameters(WSEGLDrawableHandle hDrawable,
 	case PSP2_DRAWABLE_TYPE_WINDOW:
 		window = (NativeWindowType)hDrawable;
 
-		PVRSRV_CLIENT_MEM_INFO *bufMemInfo = (PVRSRV_CLIENT_MEM_INFO *)window->apsSwapBufferMemInfo[0];
+		bufMemInfo = (PVRSRV_CLIENT_MEM_INFO *)window->apsSwapBufferMemInfo[0];
 
 		psSourceParams->ePixelFormat = WSEGL_PIXELFORMAT_8888;
 		psSourceParams->pvLinearAddress = bufMemInfo->pvLinAddr;

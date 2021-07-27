@@ -197,7 +197,7 @@ IMG_EXPORT IMG_BOOL PVRSRVGetAppHint(IMG_VOID		*pvHintState,
 			}
 			case IMG_STRING_TYPE:
 			{
-				strcpy(uReturn.pcData, uDefault.pcData);
+				sceClibStrncpy(uReturn.pcData, uDefault.pcData, APPHINT_MAX_STRING_SIZE);
 
 				break;
 			}

@@ -499,7 +499,7 @@ IMG_INTERNAL IMG_BOOL _TlsInit(TLS psTls)
 
 		if (PVRSRVGetAppHint(pvHintState, "WindowSystem", IMG_STRING_TYPE, &szWsHintDefault, szWSHint))
 		{
-			strcpy(psGlobalData->sAppHints.szWindowSystem, szWSHint);
+			sceClibStrncpy(psGlobalData->sAppHints.szWindowSystem, szWSHint, 256);
 		}
 		else
 		{
@@ -2546,9 +2546,9 @@ IMG_EXPORT void (IMG_CALLCONV * IMGeglGetProcAddress(const char *procname))(void
 	   return the associated function pointer. */
 	for (uIndex=0; aProcedure[uIndex].pProcname!=0; uIndex++)
 	{
-		if (strncmp(aProcedure[uIndex].pProcname,
+		if (sceClibStrncmp(aProcedure[uIndex].pProcname,
 					procname,
-					strlen(aProcedure[uIndex].pProcname)+1) == 0)
+					sceClibStrnlen(aProcedure[uIndex].pProcname, 256)+1) == 0)
 		{
 			IMGEGL_TIME_STOP(IMGEGL_TIMER_IMGeglGetProcAddress);
 

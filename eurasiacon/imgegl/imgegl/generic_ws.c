@@ -219,13 +219,53 @@ IMG_INTERNAL IMG_BOOL UnloadModule(IMG_HANDLE hModule)
 				#error ("Unknown host operating system")
 #endif
 
-IMG_UINT8 *glGetString(int name);
+typedef struct SceKernelLibraryInfo { // size is 0x1C
+	SceSize size; //!< sizeof(SceKernelLibraryInfo)
+	uint16_t libver[2];
+	uint32_t libnid;
+	const char *libname;
+	uint16_t nfunc;
+	uint16_t nvar;
+	uint32_t *nid_table;
+	uint32_t *table_entry;
+} SceKernelLibraryInfo;
+
+#define PSP2_OGLES1_LIBNID			0xF675728E
+#define PSP2_OGLES1_GETSTRING_NID	0xF214B167
+
+#define PSP2_OGLES2_LIBNID			0
+#define PSP2_OGLES2_GETSTRING_NID	0
+
+int sceKernelGetLibraryInfoByNID(SceUID modid, SceUInt32 libnid, SceKernelLibraryInfo *pInfo);
+
+static IMG_UINT32 _getFuncByNID(SceUID modid, SceUInt32 libnid, SceUInt32 funcnid)
+{
+	IMG_INT32 i = 0;
+	IMG_INT32 ret;
+
+	SceKernelLibraryInfo libinfo;
+	sceClibMemset(&libinfo, 0, sizeof(SceKernelLibraryInfo));
+	libinfo.size = sizeof(SceKernelLibraryInfo);
+
+	ret = sceKernelGetLibraryInfoByNID(modid, libnid, &libinfo);
+	if (ret != SCE_OK)
+		return 0;
+
+	while (libinfo.nid_table[i] != funcnid) {
+		if (i > libinfo.nfunc)
+			return 0;
+		i++;
+	}
+
+	return libinfo.table_entry[i];
+}
 
 IMG_INTERNAL IMG_BOOL LoadOGLES1AndGetFunctions(EGLGlobal *psGlobalData)
 {
 	IMG_CHAR szAppHintPath[APPHINT_MAX_STRING_SIZE], szAppHintPathDefault[1];
 	IMG_HANDLE hOGLModule;
 	IMG_UINT8 *pszFunctionTable;
+	IMG_UINT8 * (IMG_CALLCONV *pfnglGetString)(int name);
 
 	szAppHintPathDefault[0] = '\0';
 
@@ -245,7 +285,15 @@ IMG_INTERNAL IMG_BOOL LoadOGLES1AndGetFunctions(EGLGlobal *psGlobalData)
 		goto Fail_OGLES1_Load;
 	}
 
-	//pszFunctionTable = glGetString(IMG_OGLES1_FUNCTION_TABLE);
+	pfnglGetString = _getFuncByNID((SceUID)hOGLModule, PSP2_OGLES1_LIBNID, PSP2_OGLES1_GETSTRING_NID);
+	if (!pfnglGetString)
+	{
+		PVR_DPF((PVR_DBG_ERROR, "LoadOGLES1AndGetFunctions: Couldn't get glGetString fptr"));
+
+		goto Fail_OGLES1_Load;
+	}
+
+	pszFunctionTable = pfnglGetString(IMG_OGLES1_FUNCTION_TABLE);
 
 	if (!pszFunctionTable)
 	{
@@ -309,6 +357,7 @@ IMG_INTERNAL IMG_BOOL LoadOGLES2AndGetFunctions(EGLGlobal *psGlobalData)
 	IMG_CHAR szAppHintPath[APPHINT_MAX_STRING_SIZE], szAppHintPathDefault[1];
 	IMG_HANDLE hOGLModule;
 	IMG_UINT8 *pszFunctionTable;
+	IMG_UINT8 * (IMG_CALLCONV *pfnglGetString)(int name);
 
 	szAppHintPathDefault[0] = '\0';
 
@@ -328,7 +377,15 @@ IMG_INTERNAL IMG_BOOL LoadOGLES2AndGetFunctions(EGLGlobal *psGlobalData)
 		goto Fail_OGLES2_Load;
 	}
 
-	//pszFunctionTable = glGetString(IMG_OGLES2_FUNCTION_TABLE);
+	pfnglGetString = _getFuncByNID((SceUID)hOGLModule, PSP2_OGLES2_LIBNID, PSP2_OGLES2_GETSTRING_NID);
+	if (!pfnglGetString)
+	{
+		PVR_DPF((PVR_DBG_ERROR, "LoadOGLES2AndGetFunctions: Couldn't get glGetString fptr"));
+
+		goto Fail_OGLES2_Load;
+	}
+
+	pszFunctionTable = pfnglGetString(IMG_OGLES2_FUNCTION_TABLE);
 
 	if (!pszFunctionTable)
 	{

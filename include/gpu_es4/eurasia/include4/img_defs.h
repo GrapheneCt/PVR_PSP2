@@ -127,7 +127,7 @@ typedef char				TCHAR, *PTCHAR, *PTSTR;
 
 // Use default definition if not overridden
 #ifndef IMG_ABORT
-	#define IMG_ABORT()	abort()
+	#define IMG_ABORT()	sceKernelExitProcess(-1)
 #endif
 
 #ifndef IMG_MALLOC

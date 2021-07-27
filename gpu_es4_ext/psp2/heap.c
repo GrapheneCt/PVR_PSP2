@@ -437,7 +437,7 @@ void *sceHeapReallocHeapMemoryWithOption(void *heap, void *ptr, unsigned int nby
 		sceKernelUnlockLwMutex(&head->lwmtx, 1);
 		return (SCE_NULL);
 	}
-	memcpy(newptr, ptr, uiSize);
+	sceClibMemcpy(newptr, ptr, uiSize);
 	res = sceHeapFreeHeapMemory(heap, ptr);
 
 	sceKernelUnlockLwMutex(&head->lwmtx, 1);

@@ -389,10 +389,10 @@ IMG_BOOL IsEGLContext(KEGL_DISPLAY *psDpy, KEGL_CONTEXT *psInputContext);
 #else /* defined(DEBUG) */
 
 #define IMGEGLALLOCDEVICEMEM(psDevData, hDevMemHeap, ui32Attribs, ui32Size, ui32Alignment, ppsMemInfo) \
-		 PVRSRVAllocDeviceMem(psDevData, hDevMemHeap, ui32Attribs, ui32Size, ui32Alignment, ppsMemInfo)
+		 KEGLAllocDeviceMemPsp2(psSysContext, psDevData, hDevMemHeap, ui32Attribs, ui32Size, ui32Alignment, ppsMemInfo)
 
 #define IMGEGLFREEDEVICEMEM(psDevData, psMemInfo) \
-		 PVRSRVFreeDeviceMem(psDevData, psMemInfo)
+		 KEGLFreeDeviceMemPsp2(psSysContext, psDevData, psMemInfo)
 
 #endif /* defined(DEBUG) */
 

@@ -138,7 +138,7 @@ UCH_UseCodeBlock *UCH_CodeHeapAllocateFunc(UCH_UseCodeHeap *psHeap, IMG_UINT32 u
 
 #else /* defined(DEBUG) || defined(PDUMP) */
 
-	#define UCH_CodeHeapAllocate(psHeap, ui32Size) UCH_CodeHeapAllocateFunc(psHeap, ui32Size)
+	#define UCH_CodeHeapAllocate(psHeap, ui32Size, hPerProcRef) UCH_CodeHeapAllocateFunc(psHeap, ui32Size, hPerProcRef)
 
 	#define UCH_CodeHeapFree(psBlockToFree) UCH_CodeHeapFreeFunc(psBlockToFree)
 

@@ -119,7 +119,7 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{75873915-C65E-4F1D-B719-C667EDE516BD}</ProjectGuid>
-    <ProjectName>libopengles1</ProjectName>
+    <ProjectName>libGLESv1_CM</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|PSVita'" Label="Configuration">
@@ -150,7 +150,7 @@
   <PropertyGroup />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|PSVita'">
     <ClCompile>
-      <PreprocessorDefinitions>_DEBUG;DEBUG;USER;PDS_BUILD_OPENGLES;USE_GCC__thread_KEYWORD;OGLES1_MODULE;SUPPORT_SGX;SUPPORT_OPENGLES1;SUPPORT_OPENGLES2;GLES1_EXTENSION_EGL_IMAGE_EXTERNAL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;DEBUG;OGLES_PSP2_PRX_EXPORT;USER;PDS_BUILD_OPENGLES;USE_GCC__thread_KEYWORD;OGLES1_MODULE;SUPPORT_SGX;SUPPORT_OPENGLES1;SUPPORT_OPENGLES2;GLES1_EXTENSION_EGL_IMAGE_EXTERNAL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <AdditionalIncludeDirectories>$(SCE_PSP2_SDK_DIR)\target\include\vdsuite\user;$(SCE_PSP2_SDK_DIR)\target\include\vdsuite\common;$(SolutionDir)include\gpu_es4;$(SolutionDir)include\gpu_es4\eurasia\include4;$(SolutionDir)include\gpu_es4\eurasia\hwdefs;$(SolutionDir)include\gpu_es4\eurasia\services4\include;$(SolutionDir)include\gpu_es4\eurasia\services4\system\psp2;$(SolutionDir)codegen\pds;$(SolutionDir)codegen\pixevent;$(SolutionDir)codegen\usegen;$(SolutionDir)eurasiacon\include;$(SolutionDir)eurasiacon\common;$(SolutionDir)common\tls;$(SolutionDir)common\dmscalc;$(SolutionDir)include\gpu_es4\eurasia\services4\srvclient\devices\sgx;$(SolutionDir)codegen\ffgen;$(SolutionDir)tools\intern\useasm;$(SolutionDir)codegen\pixfmts;$(SolutionDir)intermediates\pds_mte_state_copy;$(SolutionDir)intermediates\pds_aux_vtx;$(SolutionDir)intermediates\pixelevent;$(SolutionDir)intermediates\pixelevent_tilexy;$(SolutionDir)intermediates\sgxsupport;$(SolutionDir)intermediates\errata;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -163,7 +163,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|PSVita'">
     <ClCompile>
-      <PreprocessorDefinitions>NDEBUG;USER;PDS_BUILD_OPENGLES;USE_GCC__thread_KEYWORD;OGLES1_MODULE;SUPPORT_SGX;SUPPORT_OPENGLES1;SUPPORT_OPENGLES2;GLES1_EXTENSION_EGL_IMAGE_EXTERNAL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;OGLES_PSP2_PRX_EXPORT;USER;PDS_BUILD_OPENGLES;USE_GCC__thread_KEYWORD;OGLES1_MODULE;SUPPORT_SGX;SUPPORT_OPENGLES1;SUPPORT_OPENGLES2;GLES1_EXTENSION_EGL_IMAGE_EXTERNAL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <OptimizationLevel>Level2</OptimizationLevel>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <AdditionalIncludeDirectories>$(SCE_PSP2_SDK_DIR)\target\include\vdsuite\user;$(SCE_PSP2_SDK_DIR)\target\include\vdsuite\common;$(SolutionDir)include\gpu_es4;$(SolutionDir)include\gpu_es4\eurasia\include4;$(SolutionDir)include\gpu_es4\eurasia\hwdefs;$(SolutionDir)include\gpu_es4\eurasia\services4\include;$(SolutionDir)include\gpu_es4\eurasia\services4\system\psp2;$(SolutionDir)codegen\pds;$(SolutionDir)codegen\pixevent;$(SolutionDir)codegen\usegen;$(SolutionDir)eurasiacon\include;$(SolutionDir)eurasiacon\common;$(SolutionDir)common\tls;$(SolutionDir)common\dmscalc;$(SolutionDir)include\gpu_es4\eurasia\services4\srvclient\devices\sgx;$(SolutionDir)codegen\ffgen;$(SolutionDir)tools\intern\useasm;$(SolutionDir)codegen\pixfmts;$(SolutionDir)intermediates\pds_mte_state_copy;$(SolutionDir)intermediates\pds_aux_vtx;$(SolutionDir)intermediates\pixelevent;$(SolutionDir)intermediates\pixelevent_tilexy;$(SolutionDir)intermediates\sgxsupport;$(SolutionDir)intermediates\errata;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>

@@ -120,7 +120,10 @@
 #if defined(__linux__)
 #	define KHRONOS_APICALL __attribute__((visibility("default")))
 #	define KHRONOS_APIENTRY 
-#   else
+#   elif defined(__psp2__) && defined(OGLES_PSP2_PRX_EXPORT)
+#	define KHRONOS_APICALL __declspec(dllexport)
+#	define KHRONOS_APIENTRY 
+#	else
 #	define KHRONOS_APICALL
 #	define KHRONOS_APIENTRY 
 #   endif

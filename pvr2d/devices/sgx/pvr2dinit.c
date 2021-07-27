@@ -162,7 +162,7 @@ PVR2D_INT PVR2DEnumerateDevices (PVR2DDEVICEINFO *pDeviceInfo)
 				}
 
 				// Check for string overrun
-				if (strlen(sDisplayInfo.szDisplayName) >= PVR2D_MAX_DEVICE_NAME)
+				if (sceClibStrnlen(sDisplayInfo.szDisplayName, PVR2D_MAX_DEVICE_NAME + 1) >= PVR2D_MAX_DEVICE_NAME)
 				{
 					PVR2D_DPF((PVR_DBG_WARNING, "PVR2DEnumerateDevices: display device name too long, truncating"));
 				}

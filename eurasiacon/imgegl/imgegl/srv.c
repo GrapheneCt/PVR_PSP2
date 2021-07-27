@@ -585,6 +585,11 @@ IMG_EXPORT PVRSRV_ERROR IMG_CALLCONV KEGLFreeDeviceMemTrack(SrvSysContext *psSys
 	{
 		eError = PVRSRVFreeDeviceMem(psDevData, psMemInfo);
 
+		if (psMemInfo->psClientSyncInfo)
+		{
+			PVRSRVFreeSyncInfo(psDevData, psMemInfo->psClientSyncInfo);
+		}
+
 		/* Replace the freed pointer with the last pointer in the array of allocations */
 		psSysContext->psDevMemAllocations[ui32PointerPosition] = psSysContext->psDevMemAllocations[--psSysContext->ui32CurrentAllocations];
 	}
@@ -632,6 +637,65 @@ IMG_EXPORT PVRSRV_ERROR IMG_CALLCONV KEGLFreeDeviceMemTrack(SrvSysContext *psSys
 }	
 
 #endif /* !defined(__linux__) */
+
+/***********************************************************************************
+ Function Name      : KEGLAllocDeviceMemPsp2
+ Inputs             :
+ Outputs            :
+ Returns            :
+ Description        :
+************************************************************************************/
+IMG_EXPORT PVRSRV_ERROR IMG_CALLCONV KEGLAllocDeviceMemPsp2(SrvSysContext *psSysContext,
+	PVRSRV_DEV_DATA *psDevData, IMG_HANDLE hDevMemHeap, IMG_UINT32 ui32Attribs,
+	IMG_UINT32 ui32Size, IMG_UINT32 ui32Alignment, PVRSRV_CLIENT_MEM_INFO **ppsMemInfo)
+{
+	PVRSRV_ERROR eError;
+	PVRSRV_CLIENT_MEM_INFO *psMemInfo = *ppsMemInfo;
+
+	eError = PVRSRVAllocDeviceMem(psDevData, hDevMemHeap, ui32Attribs, ui32Size, ui32Alignment, psSysContext->hPerProcRef, ppsMemInfo);
+
+	if (eError == PVRSRV_OK)
+	{
+		if (!(ui32Attribs & PVRSRV_MEM_NO_SYNCOBJ))
+		{
+			eError = PVRSRVAllocSyncInfo(psDevData, &psMemInfo->psClientSyncInfo);
+			if (eError != PVRSRV_OK)
+			{
+				PVRSRVFreeDeviceMem(psDevData, psMemInfo);
+				ppsMemInfo = IMG_NULL;
+				return eError;
+			}
+		}
+		else
+		{
+			psMemInfo->psClientSyncInfo = IMG_NULL;
+		}
+	}
+
+	return eError;
+}
+
+/***********************************************************************************
+ Function Name      : KEGLFreeDeviceMemPsp2
+ Inputs             :
+ Outputs            :
+ Returns            :
+ Description        :
+************************************************************************************/
+IMG_EXPORT PVRSRV_ERROR IMG_CALLCONV KEGLFreeDeviceMemPsp2(SrvSysContext *psSysContext,
+	PVRSRV_DEV_DATA	*psDevData, PVRSRV_CLIENT_MEM_INFO *psMemInfo)
+{
+	PVRSRV_ERROR eError;
+
+	eError = PVRSRVFreeDeviceMem(psDevData, psMemInfo);
+
+	if (psMemInfo->psClientSyncInfo)
+	{
+		eError = PVRSRVFreeSyncInfo(psDevData, psMemInfo->psClientSyncInfo);
+	}
+
+	return eError;
+}
 
 #endif /* defined(DEBUG) */
 

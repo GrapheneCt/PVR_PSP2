@@ -24,6 +24,12 @@
     <Filter Include="Source Files\common\tls">
       <UniqueIdentifier>{c205b15b-bb6d-4414-a06c-578e9e9ec723}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\codegen">
+      <UniqueIdentifier>{23ee83a2-5b12-44e1-be78-62e57c80dad0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\codegen\usegen">
+      <UniqueIdentifier>{19d29df7-b44b-449b-adbf-baccc4ee638d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="imgegl\blobcache.c">
@@ -85,6 +91,9 @@
     </ClCompile>
     <ClCompile Include="imgegl\generic_ws.c">
       <Filter>Source Files\imgegl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\codegen\usegen\usegen.c">
+      <Filter>Source Files\codegen\usegen</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -582,10 +582,10 @@ IMG_EGLERROR GLESGetImageSource(EGLContextHandle hContext, IMG_UINT32 ui32Source
 #else /* defined(DEBUG) */
 
 #define GLES1ALLOCDEVICEMEM(psDevData, hDevMemHeap, ui32Attribs, ui32Size, ui32Alignment, ppsMemInfo) \
-         PVRSRVAllocDeviceMem(psDevData, hDevMemHeap, ui32Attribs, ui32Size, ui32Alignment, ppsMemInfo)
+         KEGLAllocDeviceMemPsp2(gc->psSysContext, psDevData, hDevMemHeap, ui32Attribs, ui32Size, ui32Alignment, ppsMemInfo)
 
 #define GLES1FREEDEVICEMEM(psDevData, psMemInfo) \
-         PVRSRVFreeDeviceMem(psDevData, psMemInfo)
+         KEGLFreeDeviceMemPsp2(gc->psSysContext, psDevData, psMemInfo)
 
 #endif /* defined(DEBUG) */
 

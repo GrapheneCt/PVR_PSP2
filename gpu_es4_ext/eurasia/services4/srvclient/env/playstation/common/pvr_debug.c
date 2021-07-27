@@ -135,7 +135,7 @@ IMG_EXPORT IMG_VOID PVRSRVDebugPrintf(IMG_UINT32 ui32DebugLevel,
 IMG_EXPORT IMG_VOID PVRSRVDebugAssertFail(const IMG_CHAR *pszFile, IMG_UINT32 uLine)
 {
 	PVRSRVDebugPrintf(DBGPRIV_FATAL, pszFile, uLine, "Debug assertion failed!");
-	abort();
+	sceKernelExitProcess(-1);
 }
 
 #if defined(PVRSRV_NEED_PVR_TRACE)
@@ -160,16 +160,16 @@ IMG_EXPORT IMG_VOID PVRSRVTrace(const IMG_CHAR *pszFormat, ...)
 	   ensures that our buffer remains null terminated from this */
 	*szMessageLimit = '\0';
 
-	snprintf(szMessageEnd, szMessageLimit - szMessageEnd, "PVR: ");
-	szMessageEnd += strlen(szMessageEnd);
+	sceClibSnprintf(szMessageEnd, szMessageLimit - szMessageEnd, "PVR: ");
+	szMessageEnd += sceClibStrnlen(szMessageEnd, PVR_MAX_DEBUG_MESSAGE_LEN + 1);
 
 	va_start(ArgList, pszFormat);
 	sceClibVsnprintf(szMessageEnd, szMessageLimit - szMessageEnd, pszFormat, ArgList);
 	va_end(ArgList);
-	szMessageEnd += strlen(szMessageEnd);
+	szMessageEnd += sceClibStrnlen(szMessageEnd, PVR_MAX_DEBUG_MESSAGE_LEN + 1);
 
-	snprintf(szMessageEnd, szMessageLimit - szMessageEnd, "\n");
-	szMessageEnd += strlen(szMessageEnd);
+	sceClibSnprintf(szMessageEnd, szMessageLimit - szMessageEnd, "\n");
+	szMessageEnd += sceClibStrnlen(szMessageEnd, PVR_MAX_DEBUG_MESSAGE_LEN + 1);
 
 	sceClibPrintf(szMessage);
 }
