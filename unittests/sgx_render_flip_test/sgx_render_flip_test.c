@@ -4213,15 +4213,6 @@ static IMG_VOID *srft_PerThread(IMG_VOID	*pvArg)
                                        hPbMem,
                                        &psIndexMemInfo);
         fnInfoFailIfError(eResult);
-
-        eResult = PVRSRVMapMemoryToGpu(psShared->psSGXDevData,
-                                       psShared->hDevMemContext,
-                                       psShared->hGeneralHeap,
-                                       ui32Size,
-                                       0,
-                                       psIndexMemInfo->pvLinAddr,
-                                       PVRSRV_MEM_READ | PVRSRV_MEM_USER_SUPPLIED_DEVVADDR,
-                                       IMG_NULL);
 #else
         eResult = PVRSRVAllocDeviceMem(psShared->psSGXDevData,
                                        psShared->hGeneralHeap,
@@ -4263,14 +4254,14 @@ static IMG_VOID *srft_PerThread(IMG_VOID	*pvArg)
                                        &psPixelShaderHeapReservedMemInfo);
         fnInfoFailIfError(eResult);
 
-        eResult = PVRSRVMapMemoryToGpu(psShared->psSGXDevData,
+        /*eResult = PVRSRVMapMemoryToGpu(psShared->psSGXDevData,
                                        psShared->hDevMemContext,
                                        psShared->hUSEFragmentHeap,
                                        pixelShaderAllocSize,
                                        1UL << SGX_USE_CODE_SEGMENT_RANGE_BITS,
                                        psPixelShaderHeapReservedMemInfo->pvLinAddr,
                                        PVRSRV_MEM_READ,
-                                       &psPixelShaderHeapReservedMemInfo->sDevVAddr.uiAddr);
+                                       &psPixelShaderHeapReservedMemInfo->sDevVAddr.uiAddr);*/
 #else
         fnInfo("Allocate %ukB pixel shader reserve memory\n",
             psConfig->ui32PixelShaderHeapReserve);
@@ -4308,15 +4299,6 @@ static IMG_VOID *srft_PerThread(IMG_VOID	*pvArg)
                                        hPbMem,
                                        &apsFragmentPDSMemInfo[ui32RenderIndex]);
         fnInfoFailIfError(eResult);
-
-        eResult = PVRSRVMapMemoryToGpu(psShared->psSGXDevData,
-                                       psShared->hDevMemContext,
-                                       psShared->hPDSFragmentHeap,
-                                       ui32Size,
-                                       0,
-                                       apsFragmentPDSMemInfo[ui32RenderIndex]->pvLinAddr,
-                                       PVRSRV_MEM_READ | PVRSRV_MEM_USER_SUPPLIED_DEVVADDR,
-                                       IMG_NULL);
 #else
         eResult = PVRSRVAllocDeviceMem(psShared->psSGXDevData,
                                        psShared->hPDSFragmentHeap,
@@ -4348,15 +4330,6 @@ static IMG_VOID *srft_PerThread(IMG_VOID	*pvArg)
                                        hPbMem,
                                        &apsVertexPDSMemInfo[ui32RenderIndex]);
         fnInfoFailIfError(eResult);
-
-        eResult = PVRSRVMapMemoryToGpu(psShared->psSGXDevData,
-                                       psShared->hDevMemContext,
-                                       psShared->hPDSVertexHeap,
-                                       ui32Size,
-                                       0,
-                                       apsVertexPDSMemInfo[ui32RenderIndex]->pvLinAddr,
-                                       PVRSRV_MEM_READ | PVRSRV_MEM_USER_SUPPLIED_DEVVADDR,
-                                       IMG_NULL);
 #else
         eResult = PVRSRVAllocDeviceMem(psShared->psSGXDevData,
                                        psShared->hPDSVertexHeap,
@@ -4386,15 +4359,6 @@ static IMG_VOID *srft_PerThread(IMG_VOID	*pvArg)
                                        hPbMem,
                                        &apsVertexDataMemInfo[ui32RenderIndex]);
         fnInfoFailIfError(eResult);
-
-        eResult = PVRSRVMapMemoryToGpu(psShared->psSGXDevData,
-                                       psShared->hDevMemContext,
-                                       psShared->hGeneralHeap,
-                                       ui32Size,
-                                       0,
-                                       apsVertexDataMemInfo[ui32RenderIndex]->pvLinAddr,
-                                       PVRSRV_MEM_READ | PVRSRV_MEM_USER_SUPPLIED_DEVVADDR,
-                                       IMG_NULL);
 #else
         eResult = PVRSRVAllocDeviceMem(psShared->psSGXDevData,
                                        psShared->hGeneralHeap,
@@ -4423,15 +4387,6 @@ static IMG_VOID *srft_PerThread(IMG_VOID	*pvArg)
                                        hPbMem,
                                        &apsVDMControlStreamMemInfo[ui32RenderIndex]);
         fnInfoFailIfError(eResult);
-
-        eResult = PVRSRVMapMemoryToGpu(psShared->psSGXDevData,
-                                       psShared->hDevMemContext,
-                                       psShared->hGeneralHeap,
-                                       ui32Size,
-                                       0,
-                                       apsVDMControlStreamMemInfo[ui32RenderIndex]->pvLinAddr,
-                                       PVRSRV_MEM_READ | PVRSRV_MEM_USER_SUPPLIED_DEVVADDR,
-                                       IMG_NULL);
 #else
         eResult = PVRSRVAllocDeviceMem(psShared->psSGXDevData,
                                        psShared->hGeneralHeap,
@@ -4463,14 +4418,14 @@ static IMG_VOID *srft_PerThread(IMG_VOID	*pvArg)
                                        &apsVertexUSSEMemInfo[ui32RenderIndex]);
         fnInfoFailIfError(eResult);
 
-        eResult = PVRSRVMapMemoryToGpu(psShared->psSGXDevData,
+        /*eResult = PVRSRVMapMemoryToGpu(psShared->psSGXDevData,
                                        psShared->hDevMemContext,
                                        psShared->hUSEVertexHeap,
                                        ui32Size,
                                        1UL << SGX_USE_CODE_SEGMENT_RANGE_BITS,
                                        apsVertexUSSEMemInfo[ui32RenderIndex]->pvLinAddr,
                                        PVRSRV_MEM_READ,
-                                       &apsVertexUSSEMemInfo[ui32RenderIndex]->sDevVAddr.uiAddr);
+                                       &apsVertexUSSEMemInfo[ui32RenderIndex]->sDevVAddr.uiAddr);*/
 #else
         eResult = PVRSRVAllocDeviceMem(psShared->psSGXDevData,
                                        psShared->hUSEVertexHeap,
@@ -4501,14 +4456,6 @@ static IMG_VOID *srft_PerThread(IMG_VOID	*pvArg)
                                        &apsFragmentUSSEMemInfo[ui32RenderIndex]);
         fnInfoFailIfError(eResult);
 
-        eResult = PVRSRVMapMemoryToGpu(psShared->psSGXDevData,
-                                       psShared->hDevMemContext,
-                                       psShared->hUSEFragmentHeap,
-                                       ui32Size,
-                                       0,
-                                       apsFragmentUSSEMemInfo[ui32RenderIndex]->pvLinAddr,
-                                       PVRSRV_MEM_READ | PVRSRV_MEM_USER_SUPPLIED_DEVVADDR,
-                                       IMG_NULL);
 #else
         eResult = PVRSRVAllocDeviceMem(psShared->psSGXDevData,
                                        psShared->hUSEFragmentHeap,
@@ -4538,15 +4485,6 @@ static IMG_VOID *srft_PerThread(IMG_VOID	*pvArg)
                                        hPbMem,
                                        &ps3DParamsHeapReservedMemInfo);
         fnInfoFailIfError(eResult);
-
-        eResult = PVRSRVMapMemoryToGpu(psShared->psSGXDevData,
-                                       psShared->hDevMemContext,
-                                       psShared->h3DParametersHeap,
-                                       psConfig->ui323DParamsHeapReserveFactor * 4 * psConfig->ui32PBSize,
-                                       0,
-                                       ps3DParamsHeapReservedMemInfo->pvLinAddr,
-                                       PVRSRV_MEM_READ | PVRSRV_MEM_USER_SUPPLIED_DEVVADDR,
-                                       IMG_NULL);
 #else
         eResult = PVRSRVAllocDeviceMem(psShared->psSGXDevData,
                                        psShared->h3DParametersHeap,
@@ -6611,7 +6549,7 @@ main(IMG_INT argc, IMG_CHAR **argv)
 
     pbMemUID = sceKernelAllocMemBlock("SGXParamBuffer", SCE_KERNEL_MEMBLOCK_TYPE_USER_CDRAM_RW, sConfig.ui32PBSize, NULL);
 
-    PVRSRVRegisterMemBlock(&sSGXDevData, pbMemUID, &hPbMem, IMG_TRUE);
+    PVRSRVRegisterMemBlock(&sSGXDevData, pbMemUID, &hPbMem, IMG_FALSE);
 
 #endif
 

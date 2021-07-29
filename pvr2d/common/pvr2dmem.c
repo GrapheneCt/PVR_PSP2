@@ -154,7 +154,7 @@ PVR2DERROR PVR2DMemAlloc (PVR2DCONTEXTHANDLE	hContext,
 	}
 
 	sceKernelGetMemBlockBase(psBuffer->sMemInfo.i32MemBlockUID, &psMemInfo->pvLinAddr);
-	psMemInfo->pvLinAddrKM = psMemInfo->pvLinAddr;
+	psMemInfo->psNext = IMG_NULL;
 	psMemInfo->sDevVAddr.uiAddr = psMemInfo->pvLinAddr;
 
 	i32Error = PVRSRVMapMemoryToGpu(&psContext->sDevData,
@@ -179,8 +179,7 @@ PVR2DERROR PVR2DMemAlloc (PVR2DCONTEXTHANDLE	hContext,
 	}
 
 	psMemInfo->uAllocSize = ulBytes;
-	psMemInfo->ui32ClientFlags = ui32Attribs;
-	psMemInfo->ui32Flags = psMemInfo->ui32ClientFlags;
+	psMemInfo->ui32Flags = ui32Attribs;
 
 	psBuffer->eType = PVR2D_MEMINFO_ALLOCATED;
 	PVR2DMEMINFO_INITIALISE(&psBuffer->sMemInfo, psMemInfo);
@@ -292,7 +291,7 @@ PVR2DERROR PVR2DMemWrap(PVR2DCONTEXTHANDLE hContext,
 	}
 
 	psMemInfo->pvLinAddr = pMem;
-	psMemInfo->pvLinAddrKM = psMemInfo->pvLinAddr;
+	psMemInfo->psNext = IMG_NULL;
 	psMemInfo->sDevVAddr.uiAddr = psMemInfo->pvLinAddr;
 
 	if (PVRSRVMapMemoryToGpu(&psContext->sDevData,
@@ -312,8 +311,7 @@ PVR2DERROR PVR2DMemWrap(PVR2DCONTEXTHANDLE hContext,
 	}
 
 	psMemInfo->uAllocSize = ulBytes;
-	psMemInfo->ui32ClientFlags = PVRSRV_MEM_READ | PVRSRV_MEM_WRITE | PVRSRV_MEM_USER_SUPPLIED_DEVVADDR;
-	psMemInfo->ui32Flags = psMemInfo->ui32ClientFlags;
+	psMemInfo->ui32Flags = PVRSRV_MEM_READ | PVRSRV_MEM_WRITE | PVRSRV_MEM_USER_SUPPLIED_DEVVADDR;
 
 	psBuffer->eType = PVR2D_MEMINFO_WRAPPED;
 	PVR2DMEMINFO_INITIALISE(&psBuffer->sMemInfo, psMemInfo);

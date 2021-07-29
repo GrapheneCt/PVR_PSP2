@@ -109,6 +109,38 @@ static IMG_CHAR *const IntSrcSelToString[] =
 	"down",				/*USEASM_INTSRCSEL_ROUNDDOWN */
 	"nearest",			/*USEASM_INTSRCSEL_ROUNDNEAREST */
 	"up",				/*USEASM_INTSRCSEL_ROUNDUP */
+
+	"pixel",
+	"sample",
+	"selective",
+	"pt",
+	"vcull",
+	"end",
+	"parallel",
+	"perinstance",
+	"srcneg",
+	"srcabs",
+	"incrementus",
+	"incrementgpi",
+	"incrementboth",
+	"incrementmoe",
+	"incrementall",
+	"increments1",
+	"increments2",
+	"increments1s2",
+	"f32",
+	"f16",
+	"or",
+	"xor",
+	"end",
+	"revsub",
+	"xchg",
+	"true",
+	"false",
+	"imin",
+	"imax",
+	"umin",
+	"umax"
 };
 /******************************************************************************
  * Function Name: PrintIndent

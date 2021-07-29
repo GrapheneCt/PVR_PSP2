@@ -152,6 +152,9 @@ IMG_INTERNAL IMG_BOOL SRV_SGXServicesInit(SrvSysContext *psSysContext, IMGEGLApp
 		goto ServInit_fail;
 	}
 
+	psSysContext->sHWInfo.uPDSExecBase.uiAddr = 0;
+	psSysContext->sHWInfo.uUSEExecBase.uiAddr = 0;
+
 #if defined(__linux__)
 #if (defined(TIMING) || defined(DEBUG))
 	/*
@@ -790,7 +793,7 @@ IMG_INTERNAL IMG_BOOL KEGL_SGXCreateRenderSurface(SrvSysContext *psSysContext,
 		psMemInfo = PVRSRVAllocUserModeMem(sizeof(PVRSRV_CLIENT_MEM_INFO));
 
 		sceKernelGetMemBlockBase(psSurface->hZSBufferMemBlockUID, &psMemInfo->pvLinAddr);
-		psMemInfo->pvLinAddrKM = psMemInfo->pvLinAddr;
+		psMemInfo->psNext = IMG_NULL;
 		psMemInfo->sDevVAddr.uiAddr = psMemInfo->pvLinAddr;
 
 		if (PVRSRVMapMemoryToGpu(&psSysContext->s3D,
@@ -1256,7 +1259,7 @@ IMG_INTERNAL IMG_BOOL KEGL_SGXResizeRenderSurface(SrvSysContext		*psSysContext,
 		psSurface->psZSBufferMemInfo = PVRSRVAllocUserModeMem(sizeof(PVRSRV_CLIENT_MEM_INFO));
 
 		sceKernelGetMemBlockBase(psSurface->hZSBufferMemBlockUID, &psSurface->psZSBufferMemInfo->pvLinAddr);
-		psSurface->psZSBufferMemInfo->pvLinAddrKM = psSurface->psZSBufferMemInfo->pvLinAddr;
+		psSurface->psZSBufferMemInfo->psNext = IMG_NULL;
 		psSurface->psZSBufferMemInfo->sDevVAddr.uiAddr = psSurface->psZSBufferMemInfo->pvLinAddr;
 
 		if (PVRSRVMapMemoryToGpu(&psSysContext->s3D,
@@ -1527,7 +1530,7 @@ IMG_INTERNAL IMG_BOOL KEGL_SGXAwakeRenderSurface(SrvSysContext		*psSysContext,
 		psSurface->psZSBufferMemInfo = PVRSRVAllocUserModeMem(sizeof(PVRSRV_CLIENT_MEM_INFO));
 
 		sceKernelGetMemBlockBase(psSurface->hZSBufferMemBlockUID, &psSurface->psZSBufferMemInfo->pvLinAddr);
-		psSurface->psZSBufferMemInfo->pvLinAddrKM = psSurface->psZSBufferMemInfo->pvLinAddr;
+		psSurface->psZSBufferMemInfo->psNext = IMG_NULL;
 		psSurface->psZSBufferMemInfo->sDevVAddr.uiAddr = psSurface->psZSBufferMemInfo->pvLinAddr;
 
 		if (PVRSRVMapMemoryToGpu(&psSysContext->s3D,
@@ -1603,7 +1606,7 @@ IMG_INTERNAL IMG_RESULT SGXAllocatePBufferDeviceMem(SrvSysContext		*psSysContext
 		&opt);
 
 	sceKernelGetMemBlockBase(psSurface->hPBufferMemBlockUID, &psSurface->u.pbuffer.psMemInfo->pvLinAddr);
-	psSurface->u.pbuffer.psMemInfo->pvLinAddrKM = psSurface->u.pbuffer.psMemInfo->pvLinAddr;
+	psSurface->u.pbuffer.psMemInfo->psNext = IMG_NULL;
 	psSurface->u.pbuffer.psMemInfo->sDevVAddr.uiAddr = psSurface->u.pbuffer.psMemInfo->pvLinAddr;
 
 	return PVRSRVMapMemoryToGpu(&psSysContext->s3D,

@@ -140,7 +140,7 @@ static void init(void)
 	static GLfloat texcoord[] = 
 		{0.0f,0.0f,  1.0f,0.0f,  1.0f,1.0f,  0.0f,0.0f, 1.0f,0.0f,  1.0f,1.0f};
 
-	glClearColor(0.0, 0.5, 0.0, 1.0); // R,G,B,A
+	glClearColor(0.0, 0.0, 0.0, 1.0); // R,G,B,A
 
 	glShadeModel(GL_SMOOTH);
 
@@ -185,22 +185,22 @@ static void display(void)
 
 	glRotatef(5.0f*(GLfloat)framecount,0,1,0);
 
-	glEnable(GL_TEXTURE_2D);
+	//glEnable(GL_TEXTURE_2D);
 
 	glDrawArrays (GL_TRIANGLES, 0, 3);
 
-	glDisable(GL_TEXTURE_2D);
+	//glDisable(GL_TEXTURE_2D);
 
 	/*
 	// Triangle 2
 	*/
-	glLoadIdentity();
+	/*glLoadIdentity();
 
-	glTranslatef(0.5,0,0);
+	glTranslatef(0.5,0,0);*/
 
-	glRotatef(-5.0f*(GLfloat)framecount*2,0,1,0); /* Twice the speed of triangle 1 */
+	//glRotatef(-5.0f*(GLfloat)framecount*2,0,1,0); /* Twice the speed of triangle 1 */
 
-	glDrawArrays (GL_TRIANGLES, 3, 3);
+	//glDrawArrays (GL_TRIANGLES, 3, 3);
 	framecount++;
 }
 
@@ -296,7 +296,7 @@ int EglMain(EGLNativeDisplayType eglDisplay, EGLNativeWindowType eglWindow)
 		handle_egl_error("eglMakeCurrent");		
 	}
   
-	eglSwapInterval(dpy, (EGLint)1);
+	eglSwapInterval(dpy, (EGLint)2);
 
 	init();
 
@@ -343,10 +343,12 @@ static int handle_events(void)
 
 int main(int argc, char *argv[])
 {
+	frameStop = (argc >= 2) ? atol(argv[1]) : 1;
+
 #if defined(__psp2__)
 
 	PVRSRV_PSP2_APPHINT hint;
-	
+
 	sceClibStrncpy(hint.szGLES1, "app0:libGLESv1_CM.suprx", 256);
 	sceClibStrncpy(hint.szWindowSystem, "app0:libpvrPSP2_WSEGL.suprx", 256);
 	hint.ui32DisableMetricsOutput = 0;
@@ -359,9 +361,10 @@ int main(int argc, char *argv[])
 	hint.ui32DriverMemorySize = 4 * 1024 * 1024;
 
 	PVRSRVCreateVirtualAppHint(&hint);
+
+	frameStop = 1000;
 #endif
 
-	frameStop = (argc >= 2) ? atol(argv[1]) : 1;
 	return EglMain(EGL_DEFAULT_DISPLAY, 0);
 }
 

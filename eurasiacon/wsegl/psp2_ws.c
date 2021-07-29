@@ -190,6 +190,7 @@ static WSEGLError WSEGL_CreateWindowDrawable(WSEGLDisplayHandle hDisplay,
 		}
 	}
 
+	hNativeWindow->currBufIdx = 0;
 	*phDrawable = (WSEGLDrawableHandle)hNativeWindow;
 	*eRotationAngle = WSEGL_ROTATE_0;
 
@@ -287,7 +288,7 @@ static WSEGLError WSEGL_SwapDrawable(WSEGLDrawableHandle hDrawable, unsigned lon
 		return WSEGL_BAD_DRAWABLE;
 	}
 
-	PVRSRVSwapToDCBuffer((IMG_HANDLE)window->psConnection,
+	int ret = PVRSRVSwapToDCBuffer((IMG_HANDLE)window->psConnection,
 		window->ahSwapChainBuffers[window->currBufIdx],
 		0,
 		IMG_NULL,
@@ -307,6 +308,8 @@ static WSEGLError WSEGL_SwapControlInterval(WSEGLDrawableHandle hDrawable, unsig
 	}
 
 	window->swapInterval = ulInterval;
+
+	return WSEGL_SUCCESS;
 }
 
 static WSEGLError WSEGL_WaitNative(WSEGLDrawableHandle hDrawable, unsigned long ui32Engine)

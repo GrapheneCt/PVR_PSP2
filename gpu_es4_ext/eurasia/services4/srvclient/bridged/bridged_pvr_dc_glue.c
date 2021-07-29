@@ -454,12 +454,11 @@ PVRSRV_ERROR IMG_CALLCONV PVRSRVCreateDCSwapChain(IMG_HANDLE	hDevice,
 
 		sceKernelGetMemBlockBase(psSwapChain->hDispMemUID[i], &psSwapChain->pDispBufVaddr[i]);
 
+		psSwapChain->sDispMemInfo[i].psNext = IMG_NULL;
 		psSwapChain->sDispMemInfo[i].pvLinAddr = psSwapChain->pDispBufVaddr[i];
-		psSwapChain->sDispMemInfo[i].pvLinAddrKM = psSwapChain->pDispBufVaddr[i];
 		psSwapChain->sDispMemInfo[i].sDevVAddr.uiAddr = psSwapChain->pDispBufVaddr[i];
 		psSwapChain->sDispMemInfo[i].uAllocSize = alignedSize;
 		psSwapChain->sDispMemInfo[i].ui32Flags = PVRSRV_MEM_READ | PVRSRV_MEM_WRITE | PVRSRV_MEM_USER_SUPPLIED_DEVVADDR;
-		psSwapChain->sDispMemInfo[i].ui32ClientFlags = PVRSRV_MEM_READ | PVRSRV_MEM_WRITE | PVRSRV_MEM_USER_SUPPLIED_DEVVADDR;
 
 		// memset the buffer to black
 		for (y = 0; y < psSwapChain->sDims.ui32Height; y++) {

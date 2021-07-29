@@ -114,11 +114,13 @@ PVRSRV_ERROR IMG_CALLCONV SGXQueue2DTransfer(IMG_HANDLE hTransferContext,
 	{
 		case SGXTQ_BLIT:
 		case SGXTQ_FILL:
+		case SGXTQ_TEXTURE_UPLOAD:
 		{
 			switch (psQueueTransfer->eType)
 			{
 				default:
 				case SGXTQ_BLIT:
+				case SGXTQ_TEXTURE_UPLOAD:
 				{
 					eError = GeneratePTLAControlStream(psQueueTransfer,
 														aui32ControlStream,

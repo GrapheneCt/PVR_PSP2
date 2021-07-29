@@ -1127,7 +1127,7 @@ IMG_INTERNAL IMG_VOID EncodeInstructionfn(FFGenCode			*psFFGenCode,
 														  IMG_NULL);
 	}
 
- HandleComment:
+HandleComment:
 
 	PrintInstruction(psFFGenCode,
 					 psInstruction,
@@ -1186,7 +1186,7 @@ IMG_INTERNAL IMG_VOID EncodeInstructionList(FFGenCode *psFFGenCode)
 	while (psInstructionEntry)
 	{
 		FFGenInstructionList *psCurrentEntry = psInstructionEntry;
-		
+
 		/* Encode the instruction */
 		EncodeInstructionfn(psFFGenCode, &(psCurrentEntry->sInstruction), psCurrentEntry->uLineNumber);
 
@@ -1203,7 +1203,6 @@ IMG_INTERNAL IMG_VOID EncodeInstructionList(FFGenCode *psFFGenCode)
 		FFGENFree(psFFGenCode->psFFGenContext, psCurrentEntry);
 	}
 
-	
 	psFFGenCode->psStoredInstructionList = IMG_NULL;
 }
 

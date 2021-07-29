@@ -2175,7 +2175,6 @@ GL_API void GL_APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
 	GLES1_TIME_START(GLES1_TIMES_glDrawArrays);
 	GLES1_TIME_START(GLES1_TIMER_ARRAY_POINTS_TIME+(mode & GLES1_TIMER_ARRAY_MODE_MASK));
 
-
 	/* Setup VAOMachine and VAO */
 	psVAOMachine = &(gc->sVAOMachine);
 	psVAO = psVAOMachine->psActiveVAO;
@@ -2217,7 +2216,6 @@ GL_API void GL_APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
 	}
 
 
-
 	/* All the checking referring to psVAO */
 	if((psVAO->ui32CurrentArrayEnables & VARRAY_PROVOKE) == 0)
 	{
@@ -2239,7 +2237,6 @@ GL_API void GL_APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
 			return;
 		}
 	}
-
 
 	if(GetFrameBufferCompleteness(gc) != GL_FRAMEBUFFER_COMPLETE_OES)
 	{
@@ -2316,7 +2313,6 @@ GL_API void GL_APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
 		return;
 	}
 #endif /* defined(GLES1_EXTENSION_MAP_BUFFER) */
-
 
 	/* Attach all used resources to the current surface */
 	AttachAllUsedResourcesToCurrentSurface(gc);

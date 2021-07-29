@@ -2779,7 +2779,7 @@ IMG_INTERNAL GLES1_MEMERROR SetupFFTNLShader(GLES1Context *gc)
 
 			return GLES1_HOST_MEM_ERROR;
 		}
-	
+
 		/* gets program code, constants and outputselects  */
 		if(SetupFFTNLShaderCode(gc, psVertexShader, (IMG_UINT32) tFFTNLHashValue, psFFTNLGenDesc) != GLES1_NO_ERROR)
 		{
@@ -2791,9 +2791,9 @@ IMG_INTERNAL GLES1_MEMERROR SetupFFTNLShader(GLES1Context *gc)
 
 			return GLES1_HOST_MEM_ERROR;
 		}
-	
+
 		SetupFFTNLShaderInputs(psVertexShader);	
-	
+
 		HashTableInsert(gc, 
 						&gc->sProgram.sFFTNLHashTable, tFFTNLHashValue, 
 						(IMG_UINT32 *)psFFTNLGenDesc, (sizeof(FFTNLGenDesc)/sizeof(IMG_UINT32)), 

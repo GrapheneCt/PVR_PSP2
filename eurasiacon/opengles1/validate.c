@@ -5219,7 +5219,6 @@ IMG_INTERNAL GLES1_MEMERROR ValidateState(GLES1Context *gc)
 		gc->ui32DirtyMask |= psVAO->ui32DirtyMask;
 	}
 
-
 	/* Setup texture state */
 	if(gc->ui32DirtyMask & GLES1_DIRTYFLAG_TEXTURE_STATE)
 	{
@@ -5232,7 +5231,6 @@ IMG_INTERNAL GLES1_MEMERROR ValidateState(GLES1Context *gc)
 
 		GLES1_TIME_STOP(GLES1_TIMER_SETUP_TEXTURESTATE_TIME);
 	}
-
 
 
 	/* Setup VAO Machine's streams & pointers: have to be after SetupTextureState(), 
@@ -5270,7 +5268,6 @@ IMG_INTERNAL GLES1_MEMERROR ValidateState(GLES1Context *gc)
 			
 		}
 	}
-
 
 	if( (gc->ui32DirtyMask & (GLES1_DIRTYFLAG_VAO_ATTRIB_STREAM    | 
 							  GLES1_DIRTYFLAG_VAO_BINDING      |

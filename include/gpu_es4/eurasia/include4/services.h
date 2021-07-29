@@ -453,8 +453,11 @@ typedef struct _PVRSRV_KERNEL_MEM_INFO_ *PPVRSRV_KERNEL_MEM_INFO;
 #if defined (__psp2__)
 typedef struct _PVRSRV_CLIENT_MEM_INFO_
 {
-	/* TODO - remove when sgxkick is moved into userspace */
-	IMG_PVOID				pvLinAddrKM;
+	/*
+		ptr to next mem info
+		FIXME: D3D uses psNext for mid-scene texture reload - really need it?
+	*/
+	struct _PVRSRV_CLIENT_MEM_INFO_		*psNext;
 
 	/* CPU Virtual Address */
 	IMG_PVOID				pvLinAddr;
@@ -465,57 +468,19 @@ typedef struct _PVRSRV_CLIENT_MEM_INFO_
 	/* allocation flags */
 	IMG_UINT32				ui32Flags;
 
-	/*
-		client allocation flags
-		FIXME: remove when drivers use their own structures.
-	*/
-	IMG_UINT32				ui32ClientFlags;
+	/* ptr to associated client sync info - NULL if no sync */
+	struct _PVRSRV_CLIENT_SYNC_INFO_	*psClientSyncInfo;
 
 	/* allocation size in bytes */
 	IMG_SIZE_T				uAllocSize;
 
-	/* ptr to associated client sync info - NULL if no sync */
-	struct _PVRSRV_CLIENT_SYNC_INFO_	*psClientSyncInfo;
-
 #if defined (SUPPORT_SID_INTERFACE)
-	/* handle to client mapping data (OS specific) */
-	IMG_SID								hMappingInfo;
-
 	/* handle to kernel mem info */
 	IMG_SID								hKernelMemInfo;
-
-	/* resman handle for UM mapping clean-up */
-	IMG_SID								hResItem;
 #else
-	/* handle to client mapping data (OS specific) */
-	IMG_HANDLE							hMappingInfo;
-
 	/* handle to kernel mem info */
 	IMG_HANDLE							hKernelMemInfo;
-
-	/* resman handle for UM mapping clean-up */
-	IMG_HANDLE							hResItem;
 #endif
-
-#if defined(SUPPORT_MEMINFO_IDS)
-#if !defined(USE_CODE)
-	/* Globally unique "stamp" for allocation (not re-used until wrap) */
-	IMG_UINT64							ui64Stamp;
-#else /* !defined(USE_CODE) */
-	IMG_UINT32							dummy1;
-	IMG_UINT32							dummy2;
-#endif /* !defined(USE_CODE) */
-#endif /* defined(SUPPORT_MEMINFO_IDS) */
-
-	IMG_UINT64 		uiSubSystem;
-	/*
-		ptr to next mem info
-		FIXME: D3D uses psNext for mid-scene texture reload - really need it?
-	*/
-	struct _PVRSRV_CLIENT_MEM_INFO_		*psNext;
-
-	/* Device Virtual Addresses for the YUV MM planes */
-	IMG_UINT32 planeOffsets[PVRSRV_MAX_NUMBER_OF_MM_BUFFER_PLANES];
 } PVRSRV_CLIENT_MEM_INFO, *PPVRSRV_CLIENT_MEM_INFO;
 #else
 typedef struct _PVRSRV_CLIENT_MEM_INFO_
