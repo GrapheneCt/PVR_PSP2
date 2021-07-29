@@ -13,6 +13,8 @@ Driver layer GPU libraries and tests for PSP2
 
 # Unittest status
 
+### Basic:
+
 | Test  | Status |
 | ------------- | ------------- |
 | services_test | Passed  |
@@ -20,6 +22,12 @@ Driver layer GPU libraries and tests for PSP2
 | sgx_flip_test | Passed  |
 | sgx_render_flip_test | Passed |
 
+### Libs:
+
+| Test  | Status |
+| ------------- | ------------- |
+| pvr2d_test | Passed  |
+| gles1test | WIP  |
 
 # Library port status
 
