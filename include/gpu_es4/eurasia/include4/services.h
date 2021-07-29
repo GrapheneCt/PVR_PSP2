@@ -42,6 +42,28 @@ extern "C" {
 #include "pdumpdefs.h"
 #include "img_list.h"
 
+#if defined(__psp2__)
+
+#include "psp2_pvr_desc.h"
+
+	typedef struct _PVRSRV_PSP2_APPHINT_
+	{
+		IMG_UINT32 ui32PDSFragBufferSize;
+		IMG_UINT32 ui32ParamBufferSize;
+		IMG_UINT32 ui32DriverMemorySize;
+		IMG_UINT32 ui32ExternalZBufferMode;
+		IMG_UINT32 ui32ExternalZBufferXSize;
+		IMG_UINT32 ui32ExternalZBufferYSize;
+		IMG_UINT32 ui32DumpProfileData;
+		IMG_UINT32 ui32ProfileStartFrame;
+		IMG_UINT32 ui32ProfileEndFrame;
+		IMG_UINT32 ui32DisableMetricsOutput;
+		IMG_CHAR szWindowSystem[256]; //path to libpvrPSP2_WSEGL module
+		IMG_CHAR szGLES1[256]; //path to libGLESv1_CM module
+		IMG_CHAR szGLES2[256]; //path to libGLESv2 module
+	} PVRSRV_PSP2_APPHINT;
+#endif
+
 
 /* The comment below is the front page for code-generated doxygen documentation */
 /*!
@@ -1638,6 +1660,10 @@ IMG_IMPORT IMG_BOOL IMG_CALLCONV PVRSRVGetAppHint(IMG_VOID			*pvHintState,
 												  IMG_DATA_TYPE		eDataType,
 												  const IMG_VOID	*pvDefault,
 												  IMG_VOID			*pvReturn);
+
+#if defined(__psp2__)
+IMG_IMPORT IMG_BOOL IMG_CALLCONV PVRSRVCreateVirtualAppHint(PVRSRV_PSP2_APPHINT *psAppHint);
+#endif
 
 /******************************************************************************
  * Memory API(s)

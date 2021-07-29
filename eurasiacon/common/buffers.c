@@ -935,6 +935,9 @@ IMG_INTERNAL CircularBuffer *CBUF_CreateBuffer(PVRSRV_DEV_DATA *ps3DDevData,
 		}
 	}
 
+	// PSP2: Add compulsory flags
+	ui32AllocFlags |= PVRSRV_MEM_NO_SYNCOBJ | PVRSRV_HAP_NO_GPU_VIRTUAL_ON_ALLOC;
+
 	if(PVRSRVAllocDeviceMem(ps3DDevData,
 							hHeapAllocator,
 							ui32AllocFlags,
@@ -948,19 +951,13 @@ IMG_INTERNAL CircularBuffer *CBUF_CreateBuffer(PVRSRV_DEV_DATA *ps3DDevData,
 		return IMG_NULL;
 	}
 
-	if (!(ui32AllocFlags & PVRSRV_MEM_NO_SYNCOBJ))
+
+	if (PVRSRVAllocSyncInfo(ps3DDevData, &psMemInfo->psClientSyncInfo))
 	{
-		if (PVRSRVAllocSyncInfo(ps3DDevData, &psMemInfo->psClientSyncInfo))
-		{
-			PVR_DPF((PVR_DBG_ERROR, "CBUF_CreateBuffer: PVRSRVAllocSyncInfo failed for buffer %d", ui32BufferType));
-			PVRSRVFreeDeviceMem(ps3DDevData, psMemInfo);
-			PVRSRVFreeUserModeMem(psBuffer);
-			return IMG_NULL;
-		}
-	}
-	else
-	{
-		psMemInfo->psClientSyncInfo = IMG_NULL;
+		PVR_DPF((PVR_DBG_ERROR, "CBUF_CreateBuffer: PVRSRVAllocSyncInfo failed for buffer %d", ui32BufferType));
+		PVRSRVFreeDeviceMem(ps3DDevData, psMemInfo);
+		PVRSRVFreeUserModeMem(psBuffer);
+		return IMG_NULL;
 	}
 	
 	psBuffer->psMemInfo							= psMemInfo;
@@ -991,7 +988,7 @@ IMG_INTERNAL CircularBuffer *CBUF_CreateBuffer(PVRSRV_DEV_DATA *ps3DDevData,
 	/* Allocate device memory for status update */
 	if(PVRSRVAllocDeviceMem(ps3DDevData,
 							hSyncInfoHeapAllocator, 
-							PVRSRV_MEM_READ | PVRSRV_MEM_WRITE | PVRSRV_MEM_NO_SYNCOBJ | PVRSRV_MEM_CACHE_CONSISTENT, 
+							PVRSRV_MEM_READ | PVRSRV_MEM_WRITE | PVRSRV_MEM_NO_SYNCOBJ | PVRSRV_MEM_CACHE_CONSISTENT | PVRSRV_HAP_NO_GPU_VIRTUAL_ON_ALLOC, 
 							4, 
 							4,
 							hPerProcRef,

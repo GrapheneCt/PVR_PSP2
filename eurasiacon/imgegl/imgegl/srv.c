@@ -213,7 +213,6 @@ IMG_INTERNAL IMG_BOOL SRV_CreateSurface(SrvSysContext *psSysContext, KEGL_SURFAC
 	
 #endif
 
-
 	bSuccess = KEGLCreateRenderSurface(psSysContext,
 										&sParams,
 										bMultiSample,
@@ -444,6 +443,7 @@ IMG_EXPORT PVRSRV_ERROR IMG_CALLCONV KEGLAllocDeviceMemTrack(SrvSysContext *psSy
 	DevMemAllocation *psAllocation;
 	IMG_UINT32 u32NewAllocations;
 	PVRSRV_ERROR eError, eError2;
+	IMG_BOOL bNeedSync = IMG_FALSE;
 	TLS psTls;
 	
 	psTls = IMGEGLGetTLSValue();
@@ -456,6 +456,14 @@ IMG_EXPORT PVRSRV_ERROR IMG_CALLCONV KEGLAllocDeviceMemTrack(SrvSysContext *psSy
 	}
 
 	*ppsMemInfo = IMG_NULL;
+
+	if (!(ui32Attribs & PVRSRV_MEM_NO_SYNCOBJ))
+	{
+		bNeedSync = IMG_TRUE;
+	}
+
+	// PSP2: Add compulsory flags
+	ui32Attribs |= PVRSRV_MEM_NO_SYNCOBJ | PVRSRV_HAP_NO_GPU_VIRTUAL_ON_ALLOC;
 
 	PVRSRVLockMutex(psTls->psGlobalData->hEGLMemTrackingResource);
 
@@ -486,10 +494,18 @@ IMG_EXPORT PVRSRV_ERROR IMG_CALLCONV KEGLAllocDeviceMemTrack(SrvSysContext *psSy
 		}
 	}
 
-	eError = PVRSRVAllocDeviceMem(psDevData, hDevMemHeap, ui32Attribs, ui32Size, ui32Alignment, psSysContext->hPerProcRef, ppsMemInfo);
+	if (ui32Size < 4)
+	{
+		PVR_DPF((PVR_DBG_VERBOSE, "KEGLAllocDeviceMemTrack: Allocation with illegal size %u", ui32Size));
+		return PVRSRV_ERROR_INVALID_PARAMS;
+	}
 
+	PVR_DPF((PVR_DBG_VERBOSE, "KEGLAllocDeviceMemTrack: Allocation at: %s, %u", pszFile, u32Line));
+	eError = PVRSRVAllocDeviceMem(psDevData, hDevMemHeap, ui32Attribs, ui32Size, ui32Alignment, psSysContext->hPerProcRef, ppsMemInfo);
 	if(eError == PVRSRV_OK)
 	{
+		PVR_DPF((PVR_DBG_VERBOSE, "KEGLAllocDeviceMemTrack: PVRSRVAllocDeviceMem\n\nHeap handle 0x%X\nAllocation size: 0x%X\nAllocation attrib: 0x%X\n\n", hDevMemHeap, ui32Size, ui32Attribs));
+
 		psAllocation = &psSysContext->psDevMemAllocations[psSysContext->ui32CurrentAllocations];
 
 		psAllocation->psMemInfo = *ppsMemInfo;
@@ -499,10 +515,14 @@ IMG_EXPORT PVRSRV_ERROR IMG_CALLCONV KEGLAllocDeviceMemTrack(SrvSysContext *psSy
 
 		psSysContext->ui32CurrentAllocations++;
 	}
+	else
+	{
+		PVR_DPF((PVR_DBG_ERROR, "KEGLAllocDeviceMemTrack: PVRSRVAllocDeviceMem failed\n\nReturn code: %d\nHeap handle 0x%X\nAllocation size: 0x%X\nAllocation attrib: 0x%X\n\n", eError, hDevMemHeap, ui32Size, ui32Attribs));
+	}
 
 	psMemInfo = *ppsMemInfo;
 
-	if (!(ui32Attribs & PVRSRV_MEM_NO_SYNCOBJ))
+	if (bNeedSync)
 	{
 		eError2 = PVRSRVAllocSyncInfo(psDevData, &psMemInfo->psClientSyncInfo);
 		if (eError2 != PVRSRV_OK)
@@ -651,12 +671,21 @@ IMG_EXPORT PVRSRV_ERROR IMG_CALLCONV KEGLAllocDeviceMemPsp2(SrvSysContext *psSys
 {
 	PVRSRV_ERROR eError;
 	PVRSRV_CLIENT_MEM_INFO *psMemInfo = *ppsMemInfo;
+	IMG_BOOL bNeedSync = IMG_FALSE;
+
+	if (!(ui32Attribs & PVRSRV_MEM_NO_SYNCOBJ))
+	{
+		bNeedSync = IMG_TRUE;
+	}
+
+	// PSP2: Add compulsory flags
+	ui32Attribs |= PVRSRV_MEM_NO_SYNCOBJ | PVRSRV_HAP_NO_GPU_VIRTUAL_ON_ALLOC;
 
 	eError = PVRSRVAllocDeviceMem(psDevData, hDevMemHeap, ui32Attribs, ui32Size, ui32Alignment, psSysContext->hPerProcRef, ppsMemInfo);
 
 	if (eError == PVRSRV_OK)
 	{
-		if (!(ui32Attribs & PVRSRV_MEM_NO_SYNCOBJ))
+		if (bNeedSync)
 		{
 			eError = PVRSRVAllocSyncInfo(psDevData, &psMemInfo->psClientSyncInfo);
 			if (eError != PVRSRV_OK)

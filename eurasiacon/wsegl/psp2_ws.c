@@ -81,9 +81,9 @@ static WSEGLError WSEGL_CreateWindowDrawable(WSEGLDisplayHandle hDisplay,
 	WSEGLConfig *psConfig,
 	WSEGLDrawableHandle *phDrawable,
 	NativeWindowType hNativeWindow,
-	WSEGLRotationAngle *eRotationAngle)
+	WSEGLRotationAngle *eRotationAngle,
+	PVRSRV_CONNECTION *psConnection)
 {
-	PVRSRV_CONNECTION *psConnection;
 	IMG_UINT32 ui32DispWith, ui32DispHeight, ui32BufNum;
 	IMG_BOOL bIsAllowedHd = IMG_FALSE;
 	DISPLAY_SURF_ATTRIBUTES sDispSurfAttrib;
@@ -145,13 +145,6 @@ static WSEGLError WSEGL_CreateWindowDrawable(WSEGLDisplayHandle hDisplay,
 	if (sDispSurfAttrib.sDims.ui32Width == 0)
 	{
 		return WSEGL_BAD_NATIVE_WINDOW;
-	}
-
-	/* Connect to services */
-	eSrvError = PVRSRVConnect(&psConnection, 0);
-	if (eSrvError != PVRSRV_OK)
-	{
-		return WSEGL_CANNOT_INITIALISE;
 	}
 
 	hNativeWindow->psConnection = psConnection;

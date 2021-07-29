@@ -130,6 +130,11 @@ IMG_EXPORT IMG_BOOL PVRSRVGetAppHint(IMG_VOID		*pvHintState,
 			*(IMG_UINT32 *)pvReturn = s_appHint.ui32ParamBufferSize;
 			bFound = IMG_TRUE;
 		}
+		else if (!sceClibStrncasecmp(pszHintName, "DriverMemorySize", 17))
+		{
+			*(IMG_UINT32 *)pvReturn = s_appHint.ui32DriverMemorySize;
+			bFound = IMG_TRUE;
+		}
 		else if (!sceClibStrncasecmp(pszHintName, "ExternalZBufferMode", 20))
 		{
 			*(IMG_UINT32 *)pvReturn = s_appHint.ui32ExternalZBufferMode;

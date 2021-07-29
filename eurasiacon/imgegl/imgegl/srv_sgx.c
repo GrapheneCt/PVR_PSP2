@@ -65,6 +65,7 @@ IMG_INTERNAL IMG_BOOL SRV_SGXServicesInit(SrvSysContext *psSysContext, IMGEGLApp
 	{
 		if(asDeviceID[i].eDeviceClass == PVRSRV_DEVICE_CLASS_3D)
 		{
+
 			if(PVRSRVAcquireDeviceData(	psSysContext->psConnection,
 										asDeviceID[i].ui32DeviceIndex,
 										&psSysContext->s3D,
@@ -163,7 +164,7 @@ IMG_INTERNAL IMG_BOOL SRV_SGXServicesInit(SrvSysContext *psSysContext, IMGEGLApp
 #endif
 #endif
 
-	psSysContext->hDriverMemUID = sceKernelAllocMemBlock("SGXDriver", SCE_KERNEL_MEMBLOCK_TYPE_USER_NC_RW, 0x100000, SCE_NULL);
+	psSysContext->hDriverMemUID = sceKernelAllocMemBlock("SGXDriver", SCE_KERNEL_MEMBLOCK_TYPE_USER_NC_RW, psAppHints->ui32DriverMemorySize, SCE_NULL);
 	if (psSysContext->hDriverMemUID <= 0)
 	{
 		PVR_DPF((PVR_DBG_ERROR, "Out of memory: driver memblock"));
@@ -813,7 +814,6 @@ IMG_INTERNAL IMG_BOOL KEGL_SGXCreateRenderSurface(SrvSysContext *psSysContext,
 
 	/* Set up ZLS registers */
 	SetupZLSRegs(psSurface, psParams->ui32Width, psParams->ui32Height, bMultiSample);
-
 
 	return IMG_TRUE;
 

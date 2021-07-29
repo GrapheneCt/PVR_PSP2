@@ -113,7 +113,6 @@ IMG_UINT32 TLS_PREFIX(_GetTLSID(IMG_VOID))
 	return (IMG_UINT32)sceKernelGetThreadId();
 }
 
-
 /***********************************************************************************
  Function Name      : ENV_GetTLSValue
  Inputs             : -
@@ -123,8 +122,16 @@ IMG_UINT32 TLS_PREFIX(_GetTLSID(IMG_VOID))
 ************************************************************************************/
 IMG_VOID* TLS_PREFIX(_GetTLSValue(IMG_VOID))
 {
+#if defined(IMGEGL_MODULE)
 	IMG_VOID *value = *(IMG_VOID **)sceKernelGetTLSAddr(0xFF);
-    return value; /* USE_GCC__thread_KEYWORD */
+#elif defined(OGLES1_MODULE)
+	IMG_VOID *value = *(IMG_VOID **)sceKernelGetTLSAddr(0xFE);
+#elif defined(OGLES2_MODULE)
+	IMG_VOID *value = *(IMG_VOID **)sceKernelGetTLSAddr(0xFD);
+#else
+	IMG_VOID *value = *(IMG_VOID **)sceKernelGetTLSAddr(0xFC);
+#endif
+	return value; /* USE_GCC__thread_KEYWORD */
 }
 
 
@@ -137,9 +144,20 @@ IMG_VOID* TLS_PREFIX(_GetTLSValue(IMG_VOID))
 ************************************************************************************/
 IMG_BOOL TLS_PREFIX(_SetTLSValue(IMG_VOID *pvA))
 {
-	IMG_VOID **addr = (IMG_VOID **)sceKernelGetTLSAddr(0xFF);
+	IMG_VOID **addr;
+
+#if defined(IMGEGL_MODULE)
+	addr = (IMG_VOID **)sceKernelGetTLSAddr(0xFF);
+#elif defined(OGLES1_MODULE)
+	addr = (IMG_VOID **)sceKernelGetTLSAddr(0xFE);
+#elif defined(OGLES2_MODULE)
+	addr = (IMG_VOID **)sceKernelGetTLSAddr(0xFD);
+#else
+	addr = (IMG_VOID **)sceKernelGetTLSAddr(0xFC);
+#endif
+
 	*addr = pvA;
-    
+
 	return IMG_TRUE;
 }
 

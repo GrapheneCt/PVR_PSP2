@@ -303,6 +303,7 @@ typedef struct IMGEGLAppHints_TAG
 {
 	IMG_UINT32	ui32PDSFragBufferSize;
 	IMG_UINT32	ui32ParamBufferSize;
+	IMG_UINT32	ui32DriverMemorySize;
 
 	IMG_UINT32	ui32ExternalZBufferMode;
 	IMG_UINT32	ui32DepthBufferXSize;

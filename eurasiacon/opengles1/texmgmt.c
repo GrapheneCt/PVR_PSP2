@@ -2395,7 +2395,7 @@ static IMG_BOOL CreateDummyTextures(GLES1Context *gc, GLES1TextureManager *psTex
 	if(GLES1ALLOCDEVICEMEM(gc->ps3DDevData,
 							gc->psSysContext->hGeneralHeap,
 							PVRSRV_MEM_READ | PVRSRV_MEM_NO_SYNCOBJ,
-							1,
+							4,
 							EURASIA_CACHE_LINE_SIZE,
 							&psTexMgr->psWhiteDummyTexture) != PVRSRV_OK)
 	{

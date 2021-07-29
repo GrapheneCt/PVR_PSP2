@@ -39,6 +39,50 @@
 
 #define MBX1_MINIMUM_RENDER_TARGET_ALIGNMENT	(4096)
 
+#define PSP2_WSEGL_LIBNID						0x2D4F46F1
+#define PSP2_WSEGL_GETFUNCTIONTABLEPOINTER_NID	0xB3B813C1
+
+#define PSP2_OGLES1_LIBNID						0xF675728E
+#define PSP2_OGLES1_GETSTRING_NID				0xF214B167
+
+#define PSP2_OGLES2_LIBNID						0
+#define PSP2_OGLES2_GETSTRING_NID				0
+
+typedef struct SceKernelLibraryInfo { // size is 0x1C
+	SceSize size; //!< sizeof(SceKernelLibraryInfo)
+	uint16_t libver[2];
+	uint32_t libnid;
+	const char *libname;
+	uint16_t nfunc;
+	uint16_t nvar;
+	uint32_t *nid_table;
+	uint32_t *table_entry;
+} SceKernelLibraryInfo;
+
+int sceKernelGetLibraryInfoByNID(SceUID modid, SceUInt32 libnid, SceKernelLibraryInfo *pInfo);
+
+static IMG_UINT32 _getFuncByNID(SceUID modid, SceUInt32 libnid, SceUInt32 funcnid)
+{
+	IMG_INT32 i = 0;
+	IMG_INT32 ret;
+
+	SceKernelLibraryInfo libinfo;
+	sceClibMemset(&libinfo, 0, sizeof(SceKernelLibraryInfo));
+	libinfo.size = sizeof(SceKernelLibraryInfo);
+
+	ret = sceKernelGetLibraryInfoByNID(modid, libnid, &libinfo);
+	if (ret != SCE_OK)
+		return 0;
+
+	while (libinfo.nid_table[i] != funcnid) {
+		if (i > libinfo.nfunc)
+			return 0;
+		i++;
+	}
+
+	return libinfo.table_entry[i];
+}
+
 
 /***********************************************************************************
  Function Name      : LoadNamedWSModule
@@ -50,6 +94,7 @@
 static IMG_HANDLE LoadNamedWSModule(KEGL_DISPLAY *pDisplay, char *pszWSModuleName, NativeDisplayType nativeDisplay)
 {
 	IMG_HANDLE hWSDrv;
+	WSEGL_FunctionTable *(*pfnWSEGL_GetFunctionTablePointer)(void);
 
 	/*
 	 * See if we can actually load the software module.
@@ -63,10 +108,18 @@ static IMG_HANDLE LoadNamedWSModule(KEGL_DISPLAY *pDisplay, char *pszWSModuleNam
 	}
 	else
 	{
+		pfnWSEGL_GetFunctionTablePointer = _getFuncByNID((SceUID)hWSDrv, PSP2_WSEGL_LIBNID, PSP2_WSEGL_GETFUNCTIONTABLEPOINTER_NID);
+		if (!pfnWSEGL_GetFunctionTablePointer)
+		{
+			PVR_DPF((PVR_DBG_ERROR, "LoadNamedWSModule: Couldn't get WSEGL_GetFunctionTablePointer fptr"));
+
+			goto Fail_WS_Load;
+		}
+
 		/*
 		 * Now call the function and actually get the table itself.
 		 */
-		pDisplay->pWSEGL_FT = WSEGL_GetFunctionTablePointer();
+		pDisplay->pWSEGL_FT = pfnWSEGL_GetFunctionTablePointer();
 
 		if (!pDisplay->pWSEGL_FT)
 		{
@@ -218,47 +271,6 @@ IMG_INTERNAL IMG_BOOL UnloadModule(IMG_HANDLE hModule)
 #else
 				#error ("Unknown host operating system")
 #endif
-
-typedef struct SceKernelLibraryInfo { // size is 0x1C
-	SceSize size; //!< sizeof(SceKernelLibraryInfo)
-	uint16_t libver[2];
-	uint32_t libnid;
-	const char *libname;
-	uint16_t nfunc;
-	uint16_t nvar;
-	uint32_t *nid_table;
-	uint32_t *table_entry;
-} SceKernelLibraryInfo;
-
-#define PSP2_OGLES1_LIBNID			0xF675728E
-#define PSP2_OGLES1_GETSTRING_NID	0xF214B167
-
-#define PSP2_OGLES2_LIBNID			0
-#define PSP2_OGLES2_GETSTRING_NID	0
-
-int sceKernelGetLibraryInfoByNID(SceUID modid, SceUInt32 libnid, SceKernelLibraryInfo *pInfo);
-
-static IMG_UINT32 _getFuncByNID(SceUID modid, SceUInt32 libnid, SceUInt32 funcnid)
-{
-	IMG_INT32 i = 0;
-	IMG_INT32 ret;
-
-	SceKernelLibraryInfo libinfo;
-	sceClibMemset(&libinfo, 0, sizeof(SceKernelLibraryInfo));
-	libinfo.size = sizeof(SceKernelLibraryInfo);
-
-	ret = sceKernelGetLibraryInfoByNID(modid, libnid, &libinfo);
-	if (ret != SCE_OK)
-		return 0;
-
-	while (libinfo.nid_table[i] != funcnid) {
-		if (i > libinfo.nfunc)
-			return 0;
-		i++;
-	}
-
-	return libinfo.table_entry[i];
-}
 
 IMG_INTERNAL IMG_BOOL LoadOGLES1AndGetFunctions(EGLGlobal *psGlobalData)
 {
@@ -734,6 +746,7 @@ static IMG_BOOL KEGLRecreateDrawable(KEGL_SURFACE *psSurface,
 	WSEGLError          eError;
 	TLS                 psTls;
 	KEGL_CONTEXT        *psContext;
+	SrvSysContext		*psSysContext;
 #if defined(API_MODULES_RUNTIME_CHECKED)
 	EGLGlobal           *psGlobalData = ENV_GetGlobalData();
 
@@ -748,6 +761,7 @@ static IMG_BOOL KEGLRecreateDrawable(KEGL_SURFACE *psSurface,
 
 	psDpy = psSurface->psDpy;
 	psContext = psTls->apsCurrentContext[psTls->ui32API];
+	psSysContext = &psTls->psGlobalData->sSysContext;
 
 	if(psContext)
 	{
@@ -855,7 +869,8 @@ static IMG_BOOL KEGLRecreateDrawable(KEGL_SURFACE *psSurface,
 			eError = psDpy->pWSEGL_FT->pfnWSEGL_CreateWindowDrawable(psDpy->hDisplay, &psSurface->u.window.sConfig,
 																	 &hNewDrawable,
 																	 psSurface->u.window.native,
-																	 &eNewRotation);
+																	 &eNewRotation,
+																	 psSysContext->psConnection);
 			if (eError!=WSEGL_SUCCESS)
 			{
 				PVR_DPF((PVR_DBG_ERROR,"KEGLRecreateDrawable: Couldn't create a drawable"));

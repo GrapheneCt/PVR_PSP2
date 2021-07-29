@@ -288,6 +288,7 @@ IMG_INTERNAL IMG_BOOL _TlsInit(TLS psTls)
 	if(!psGlobalData)
 	{
 		IMG_UINT32  ui32DefaultPDSFragBufferSize  = EGL_DEFAULT_PDS_FRAG_BUFFER_SIZE;
+		IMG_UINT32  ui32DefaultDriverMemorySize = 4 * 1024 * 1024;
 		IMG_UINT32  ui32DefaultParamBufferSize    = EGL_DEFAULT_PARAMETER_BUFFER_SIZE;
 		IMG_UINT32  ui32DefaultMaxParamBufferSize = EGL_DEFAULT_MAX_PARAMETER_BUFFER_SIZE;
 		IMG_UINT32  ui32Default;
@@ -456,6 +457,9 @@ IMG_INTERNAL IMG_BOOL _TlsInit(TLS psTls)
 
 		PVRSRVGetAppHint(pvHintState, "ParamBufferSize", IMG_UINT_TYPE,
 						&ui32DefaultParamBufferSize, &psGlobalData->sAppHints.ui32ParamBufferSize);
+
+		PVRSRVGetAppHint(pvHintState, "DriverMemorySizeSize", IMG_UINT_TYPE,
+			&ui32DefaultDriverMemorySize, &psGlobalData->sAppHints.ui32DriverMemorySize);
 
 		ui32Default = EXTERNAL_ZBUFFER_MODE_DEFAULT;
 
@@ -1172,6 +1176,7 @@ static void _SurfaceDelete(SrvSysContext *psSysContext, KEGL_SURFACE *psSurface)
 			EGLReleaseThreadLockWSEGL(psSurface->psDpy, psTls);
 
 			psSurface->psDpy->pWSEGL_FT->pfnWSEGL_DeleteDrawable(psSurface->u.window.hDrawable);
+			EGLFree(psSurface->u.window.native);
 
 			EGLReacquireThreadLockWSEGL(psSurface->psDpy, psTls);
 
@@ -3224,6 +3229,7 @@ IMG_EXPORT EGLSurface IMGeglCreateWindowSurface(EGLDisplay eglDpy,
 	PVRSRV_ALPHA_FORMAT			eAlphaFormat = PVRSRV_ALPHA_FORMAT_NONPRE; /* Default */
 	PVRSRV_COLOURSPACE_FORMAT	eColourSpaceFormat = PVRSRV_COLOURSPACE_FORMAT_NONLINEAR;
 	KEGL_CONFIG_INDEX configIndex= (KEGL_CONFIG_INDEX)eglCfg;
+	Psp2NativeWindow *psIntWindows;
 #if defined(EGL_EXTENSION_IMG_EGL_HIBERNATION)
 	SrvSysContext *psSysContext;
 #endif
@@ -3394,6 +3400,27 @@ bad_attrib:
 
 	psSurface = EGLCalloc(sizeof(KEGL_SURFACE));
 
+	// Default PSP2 config
+	if (window == IMG_NULL)
+	{
+		window = EGLCalloc(sizeof(Psp2NativeWindow));
+
+		window->type = PSP2_DRAWABLE_TYPE_WINDOW;
+		window->windowSize = PSP2_WINDOW_960X544;
+		window->numFlipBuffers = 2;
+		window->flipChainThrdAffinity = 0;
+	}
+	else
+	{
+		psIntWindows = EGLCalloc(sizeof(Psp2NativeWindow));
+		PVRSRVMemCopy(psIntWindows, window, sizeof(Psp2NativeWindow));
+		window = psIntWindows;
+	}
+
+	window->hDevMemContext = psSysContext->hDevMemContext;
+	window->psDevData = &psSysContext->s3D;
+	window->swapInterval = 1;
+
 	if (psSurface == 0)
 	{
 		psTls->lastError = EGL_BAD_ALLOC;
@@ -3463,7 +3490,7 @@ bad_attrib:
 	EGLThreadLockWSEGL(psDpy, psTls);
 
 	eError = psDpy->pWSEGL_FT->pfnWSEGL_CreateWindowDrawable(psDpy->hDisplay, &psSurface->u.window.sConfig,
-												 &psSurface->u.window.hDrawable, window, &psSurface->eRotationAngle);
+												 &psSurface->u.window.hDrawable, window, &psSurface->eRotationAngle, psSysContext->psConnection);
 
 	EGLThreadUnlockWSEGL(psDpy, psTls);
 
@@ -3473,6 +3500,7 @@ bad_attrib:
 		{
 			if(!SRV_CreateSurface(&psTls->psGlobalData->sSysContext, psSurface))
 			{
+
 				EGLThreadLockWSEGL(psDpy, psTls);
 
 				psSurface->psDpy->pWSEGL_FT->pfnWSEGL_DeleteDrawable(psSurface->u.window.hDrawable);

@@ -76,7 +76,7 @@ IMG_INTERNAL UCH_UseCodeHeap * UCH_CodeHeapCreate(PVRSRV_DEV_DATA*	ps3DDevData, 
 
 	if(PVRSRVAllocDeviceMem(ps3DDevData, 
 						    hHeapAllocator, 
-							PVRSRV_MEM_READ,
+							PVRSRV_MEM_READ | PVRSRV_MEM_NO_SYNCOBJ | PVRSRV_HAP_NO_GPU_VIRTUAL_ON_ALLOC,
 							CODEHEAP_SEGMENTSIZE,
 							CODEHEAP_SEGMENTSIZE,
 							hPerProcRef,
@@ -723,7 +723,7 @@ IMG_INTERNAL UCH_UseCodeBlock * UCH_CodeHeapAllocateFunc(UCH_UseCodeHeap	*psHeap
 		*/
 		if(PVRSRVAllocDeviceMem(psHeap->ps3DDevData,
 								psHeap->hHeapAllocator,
-								PVRSRV_MEM_READ,
+								PVRSRV_MEM_READ | PVRSRV_MEM_NO_SYNCOBJ | PVRSRV_HAP_NO_GPU_VIRTUAL_ON_ALLOC,
 								CODEHEAP_SEGMENTSIZE,
 								CODEHEAP_SEGMENTSIZE,
 								hPerProcRef,
