@@ -140,7 +140,7 @@ static void init(void)
 	static GLfloat texcoord[] = 
 		{0.0f,0.0f,  1.0f,0.0f,  1.0f,1.0f,  0.0f,0.0f, 1.0f,0.0f,  1.0f,1.0f};
 
-	glClearColor(0.0, 0.0, 0.0, 1.0); // R,G,B,A
+	glClearColor(1.0, 0.0, 0.0, 1.0); // R,G,B,A
 
 	glShadeModel(GL_SMOOTH);
 
@@ -172,14 +172,14 @@ static void display(void)
 {
 	static int framecount=0;
 
-	//glClear(GL_COLOR_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT);
 
 	glMatrixMode(GL_MODELVIEW);
 
 	/*
 	// Triangle 1
 	*/
-	glLoadIdentity();
+	/*glLoadIdentity();
 
 	glTranslatef(-0.5,0,0);
 
@@ -187,20 +187,20 @@ static void display(void)
 
 	//glEnable(GL_TEXTURE_2D);
 
-	glDrawArrays (GL_TRIANGLES, 0, 3);
+	glDrawArrays (GL_TRIANGLES, 0, 3);*/
 
 	//glDisable(GL_TEXTURE_2D);
 
 	/*
 	// Triangle 2
 	*/
-	glLoadIdentity();
+	/*glLoadIdentity();
 
-	glTranslatef(0.5,0,0);
+	glTranslatef(0.5,0,0);*/
 
-	glRotatef(-5.0f*(GLfloat)framecount*2,0,1,0); /* Twice the speed of triangle 1 */
-
-	glDrawArrays (GL_TRIANGLES, 3, 3);
+	//glRotatef(-5.0f*(GLfloat)framecount*2,0,1,0); /* Twice the speed of triangle 1 */
+	sceKernelDelayThread(100);
+	//glDrawArrays (GL_TRIANGLES, 3, 3);
 	framecount++;
 }
 
@@ -231,7 +231,7 @@ int EglMain(EGLNativeDisplayType eglDisplay, EGLNativeWindowType eglWindow)
 							EGL_RED_SIZE,       8,
 							EGL_GREEN_SIZE,     8,
 							EGL_BLUE_SIZE,      8,
-							EGL_DEPTH_SIZE,     8,
+							EGL_ALPHA_SIZE,		8,
 							EGL_NONE };
 #else
 	EGLint cfg_attribs[] = {EGL_BUFFER_SIZE,    EGL_DONT_CARE,

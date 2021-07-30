@@ -110,7 +110,7 @@ static IMG_VOID WaitForRender(GLES1Context *gc, PVRSRV_CLIENT_SYNC_INFO *psRende
 
 		if(sceGpuSignalWait(sceKernelGetTLSAddr(0x44), 100000) != SCE_OK)
 		{
-			PVR_DPF((PVR_DBG_MESSAGE, "WaitForRender: PVRSRVEventObjectWait failed"));
+			PVR_DPF((PVR_DBG_MESSAGE, "WaitForRender: sceGpuSignalWait failed"));
 			ui32TriesLeft--;
 		}
 	}

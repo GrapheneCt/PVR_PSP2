@@ -13,10 +13,9 @@
 
 static WSEGLCaps asWSCaps[] =
 {
-	{ WSEGL_CAP_WINDOWS_USE_HW_SYNC, 1 },
 	{ WSEGL_CAP_MIN_SWAP_INTERVAL, PSP2_SWAPCHAIN_MIN_INTERVAL },
 	{ WSEGL_CAP_MAX_SWAP_INTERVAL, PSP2_SWAPCHAIN_MAX_INTERVAL },
-	{ WSEGL_CAP_UNLOCKED, 1 },
+	{ WSEGL_CAP_WINDOWS_USE_HW_SYNC, 0 },
 	{ WSEGL_NO_CAPS, 0 }
 };
 
@@ -37,7 +36,7 @@ static WSEGLError WSEGL_InitialiseDisplay(NativeDisplayType hNativeDisplay,
 	WSEGL_UNREFERENCED_PARAMETER(hNativeDisplay);
 
 	asDispConfigs[0].ui32DrawableType = WSEGL_DRAWABLE_WINDOW;
-	asDispConfigs[0].ePixelFormat = WSEGL_PIXELFORMAT_8888;
+	asDispConfigs[0].ePixelFormat = WSEGL_PIXELFORMAT_ABGR8888;
 	asDispConfigs[0].ulNativeRenderable = WSEGL_FALSE;
 	asDispConfigs[0].ulFrameBufferLevel = 0;
 	asDispConfigs[0].ulNativeVisualID = 0;
@@ -46,7 +45,7 @@ static WSEGLError WSEGL_InitialiseDisplay(NativeDisplayType hNativeDisplay,
 	asDispConfigs[0].ulTransparentColor = 0;
 
 	asDispConfigs[1].ui32DrawableType = WSEGL_DRAWABLE_PIXMAP;
-	asDispConfigs[1].ePixelFormat = WSEGL_PIXELFORMAT_8888;
+	asDispConfigs[1].ePixelFormat = WSEGL_PIXELFORMAT_ABGR8888;
 	asDispConfigs[1].ulNativeRenderable = WSEGL_FALSE;
 	asDispConfigs[1].ulFrameBufferLevel = 0;
 	asDispConfigs[1].ulNativeVisualID = 0;
@@ -352,9 +351,9 @@ static WSEGLError WSEGL_GetDrawableParameters(WSEGLDrawableHandle hDrawable,
 	case PSP2_DRAWABLE_TYPE_WINDOW:
 		window = (NativeWindowType)hDrawable;
 
-		bufMemInfo = (PVRSRV_CLIENT_MEM_INFO *)window->apsSwapBufferMemInfo[0];
+		bufMemInfo = (PVRSRV_CLIENT_MEM_INFO *)window->apsSwapBufferMemInfo[window->currBufIdx];
 
-		psSourceParams->ePixelFormat = WSEGL_PIXELFORMAT_8888;
+		psSourceParams->ePixelFormat = WSEGL_PIXELFORMAT_ABGR8888;
 		psSourceParams->pvLinearAddress = bufMemInfo->pvLinAddr;
 		psSourceParams->ui32HWAddress = bufMemInfo->pvLinAddr;
 
