@@ -172,7 +172,7 @@ static void display(void)
 {
 	static int framecount=0;
 
-	glClear(GL_COLOR_BUFFER_BIT);
+	//glClear(GL_COLOR_BUFFER_BIT);
 
 	glMatrixMode(GL_MODELVIEW);
 
@@ -194,13 +194,13 @@ static void display(void)
 	/*
 	// Triangle 2
 	*/
-	/*glLoadIdentity();
+	glLoadIdentity();
 
-	glTranslatef(0.5,0,0);*/
+	glTranslatef(0.5,0,0);
 
-	//glRotatef(-5.0f*(GLfloat)framecount*2,0,1,0); /* Twice the speed of triangle 1 */
+	glRotatef(-5.0f*(GLfloat)framecount*2,0,1,0); /* Twice the speed of triangle 1 */
 
-	//glDrawArrays (GL_TRIANGLES, 3, 3);
+	glDrawArrays (GL_TRIANGLES, 3, 3);
 	framecount++;
 }
 

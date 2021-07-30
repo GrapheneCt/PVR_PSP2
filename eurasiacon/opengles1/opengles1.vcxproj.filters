@@ -254,6 +254,12 @@
     <ClCompile Include="..\..\common\dmscalc\dmscalc.c">
       <Filter>Source Files\common\dmscalc</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\tools\intern\useasm\specialregs.c">
+      <Filter>Source Files\tools\intern\useasm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\useasm\specialregs_vec.c">
+      <Filter>Source Files\tools\intern\useasm</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bufobj.h">

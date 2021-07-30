@@ -109,7 +109,7 @@
   <PropertyGroup />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|PSVita'">
     <ClCompile>
-      <PreprocessorDefinitions>_DEBUG;DEBUG;PVRSRV_NEED_PVR_DPF;IMG_PSP2_PRX_EXPORT_INTERNAL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;DEBUG;SUPPORT_SGX543;PVRSRV_NEED_PVR_DPF;IMG_PSP2_PRX_EXPORT_INTERNAL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <AdditionalIncludeDirectories>$(SCE_PSP2_SDK_DIR)\target\include\vdsuite\user;$(SCE_PSP2_SDK_DIR)\target\include\vdsuite\common;$(SolutionDir)include\gpu_es4;$(SolutionDir)include\gpu_es4\eurasia\include4;$(SolutionDir)include\gpu_es4\eurasia\hwdefs;$(SolutionDir)include\gpu_es4\eurasia\services4\include;$(SolutionDir)include\gpu_es4\eurasia\services4\system\psp2;$(SolutionDir)codegen\pds;$(SolutionDir)codegen\pixevent;$(SolutionDir)codegen\usegen;$(SolutionDir)codegen\pixfmts;$(SolutionDir)include\gpu_es4\eurasia\services4\srvclient\devices\sgx;$(SolutionDir)codegen\ffgen;$(SolutionDir)tools\intern\useasm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -125,7 +125,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|PSVita'">
     <ClCompile>
-      <PreprocessorDefinitions>NDEBUG;IMG_PSP2_PRX_EXPORT_INTERNAL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;SUPPORT_SGX543;IMG_PSP2_PRX_EXPORT_INTERNAL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <OptimizationLevel>Level3</OptimizationLevel>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <AdditionalIncludeDirectories>$(SCE_PSP2_SDK_DIR)\target\include\vdsuite\user;$(SCE_PSP2_SDK_DIR)\target\include\vdsuite\common;$(SolutionDir)include\gpu_es4;$(SolutionDir)include\gpu_es4\eurasia\include4;$(SolutionDir)include\gpu_es4\eurasia\hwdefs;$(SolutionDir)include\gpu_es4\eurasia\services4\include;$(SolutionDir)include\gpu_es4\eurasia\services4\system\psp2;$(SolutionDir)codegen\pds;$(SolutionDir)codegen\pixevent;$(SolutionDir)codegen\usegen;$(SolutionDir)codegen\pixfmts;$(SolutionDir)include\gpu_es4\eurasia\services4\srvclient\devices\sgx;$(SolutionDir)codegen\ffgen;$(SolutionDir)tools\intern\useasm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
