@@ -140,7 +140,7 @@ static void init(void)
 	static GLfloat texcoord[] = 
 		{0.0f,0.0f,  1.0f,0.0f,  1.0f,1.0f,  0.0f,0.0f, 1.0f,0.0f,  1.0f,1.0f};
 
-	glClearColor(1.0, 0.0, 0.0, 1.0); // R,G,B,A
+	glClearColor(0.0, 0.0, 0.0, 1.0); // R,G,B,A
 
 	glShadeModel(GL_SMOOTH);
 
@@ -199,7 +199,7 @@ static void display(void)
 	glTranslatef(0.5,0,0);*/
 
 	//glRotatef(-5.0f*(GLfloat)framecount*2,0,1,0); /* Twice the speed of triangle 1 */
-	sceKernelDelayThread(100);
+
 	//glDrawArrays (GL_TRIANGLES, 3, 3);
 	framecount++;
 }

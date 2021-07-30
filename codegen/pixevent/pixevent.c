@@ -21,7 +21,6 @@
 #include "pixevent.h"
 #include "usecodegen.h"
 
-#if !defined(__psp2__)
 /***********************************************************************************
  Function Name      : WritePTOffUSSECode
  Inputs             : pui32Buffer, pui32EmitWords, ui32SideBand
@@ -66,7 +65,6 @@ IMG_INTERNAL IMG_UINT32 * WritePTOffUSSECode(IMG_UINT32 *pui32BufferBase)
 
 	return pui32Buffer;
 }
-#endif
 
 /***********************************************************************************
  Function Name      : WriteEndOfRenderUSSECode
@@ -76,8 +74,6 @@ IMG_INTERNAL IMG_UINT32 * WritePTOffUSSECode(IMG_UINT32 *pui32BufferBase)
  Description        : Writes end of pass USSE code. 
 ************************************************************************************/
 #if defined(SGX_FEATURE_UNIFIED_STORE_64BITS)
-
-#if !defined(__psp2__)
 
 IMG_INTERNAL IMG_UINT32 * WriteEndOfRenderUSSECode(IMG_UINT32 *pui32BufferBase)
 {
@@ -135,7 +131,6 @@ IMG_INTERNAL IMG_UINT32 * WriteEndOfRenderUSSECode(IMG_UINT32 *pui32BufferBase)
 
 	return pui32Buffer;
 }
-#endif
 
 #else /* SGX_FEATURE_UNIFIED_STORE_64BITS */
 
@@ -896,7 +891,6 @@ IMG_INTERNAL IMG_UINT32 * WriteEndOfTileUSSECode2xMSAA(IMG_UINT32 *pui32BufferBa
 
 #endif /* FIX_HW_BRN_31982 */
 
-#if !defined(__psp2__)
 IMG_INTERNAL IMG_UINT32 * WriteEndOfTileUSSECode(IMG_UINT32 *pui32BufferBase,
 												 IMG_UINT32 *pui32EmitWords, 
 												 IMG_UINT32 ui32SideBand)
@@ -950,7 +944,6 @@ IMG_INTERNAL IMG_UINT32 * WriteEndOfTileUSSECode(IMG_UINT32 *pui32BufferBase,
 
 	return pui32Buffer;
 }
-#endif
 
 #else /* SGX_FEATURE_UNIFIED_STORE_64BITS */
 

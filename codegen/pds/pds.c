@@ -223,7 +223,6 @@ static IMG_UINT32 PDSGetTemps			  (IMG_UINT32 * pui32NextTemp, IMG_UINT32 ui32Nu
 #endif /* defined(SGX545) */
 #endif /* SGX_FEATURE_PDS_EXTENDED_SOURCES */
 
-#if !defined(__psp2__)
 /*****************************************************************************
  Function Name	: PDSGeneratePixelEventProgram
  Inputs			: psProgram		- pointer to the PDS pixel event program
@@ -382,7 +381,6 @@ PDS_CALLCONV IMG_UINT32 * PDSGeneratePixelEventProgram	(PPDS_PIXEL_EVENT_PROGRAM
 	
 	return pui32Buffer + (PDS_PIXEVENT_PROG_SIZE >> 2);
 }
-#endif
 
 /*****************************************************************************
  Function Name	: PDSGeneratePixelShaderSAProgram
@@ -3567,7 +3565,6 @@ PDS_CALLCONV IMG_UINT32 * PDSGenerateConstUploadProgram
 }
 
 #if defined(PDS_BUILD_OPENGLES) || defined(PDS_BUILD_D3DM)
-#if !defined(__psp2__)
 /*****************************************************************************
  Function Name	: PDSGenerateTerminateStateProgram
  Inputs			: psProgram		- pointer to the PDS terminate state program
@@ -3719,7 +3716,6 @@ PDS_CALLCONV IMG_UINT32 *PDSGenerateTerminateStateProgram (PDS_TERMINATE_STATE_P
 	
 	return pui32Instruction;
 }
-#endif
 
 /*****************************************************************************
  Function Name	: PDSPatchTerminateStateProgram

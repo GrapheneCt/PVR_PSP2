@@ -50,8 +50,8 @@ Library: SceGpuEs4User function: SGXWaitTransfer nidvalue: 0x7E965369
 Library: SceGpuEs4User function: SGXGetRenderTargetInfo nidvalue: 0x83D972DF
 Library: SceGpuEs4User function: SGXGetRenderTargetInfoExt nidvalue: 0xCCEE0336
 
-Library: SceGpuEs4User function: PDSGeneratePixelEventProgram nidvalue: 0xE98914E4
-Library: SceGpuEs4User function: PDSGenerateTerminateStateProgram nidvalue: 0xA5E331FA
-Library: SceGpuEs4User function: WriteEndOfTileUSSECode nidvalue: 0x53CACDAB
-Library: SceGpuEs4User function: WriteEndOfRenderUSSECode nidvalue: 0x86FC3202
-Library: SceGpuEs4User function: WritePTOffUSSECode nidvalue: 0x1A575DFD
+//Library: SceGpuEs4User function: PDSGeneratePixelEventProgram nidvalue: 0xE98914E4
+//Library: SceGpuEs4User function: PDSGenerateTerminateStateProgram nidvalue: 0xA5E331FA
+//Library: SceGpuEs4User function: WriteEndOfTileUSSECode nidvalue: 0x53CACDAB
+//Library: SceGpuEs4User function: WriteEndOfRenderUSSECode nidvalue: 0x86FC3202
+//Library: SceGpuEs4User function: WritePTOffUSSECode nidvalue: 0x1A575DFD
