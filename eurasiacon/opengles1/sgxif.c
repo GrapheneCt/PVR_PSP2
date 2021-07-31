@@ -1885,10 +1885,10 @@ static IMG_EGLERROR DoKickTA(GLES1Context *gc, EGLRenderSurface *psRenderSurface
 
 	psKickTA->sKickTACommon.ui32Frame = gc->ui32FrameNum;
 
-	psKickTA->sKickTACommon.ui32SceneWidth = 960;
-	psKickTA->sKickTACommon.ui32SceneHeight = 544;
-	psKickTA->sKickTACommon.ui32ValidRegionXMax = 960 - 1;
-	psKickTA->sKickTACommon.ui32ValidRegionYMax = 544 - 1;
+	psKickTA->sKickTACommon.ui32SceneWidth = psRenderSurface->ui32Width;
+	psKickTA->sKickTACommon.ui32SceneHeight = psRenderSurface->ui32Height;
+	psKickTA->sKickTACommon.ui32ValidRegionXMax = psRenderSurface->ui32Width - 1;
+	psKickTA->sKickTACommon.ui32ValidRegionYMax = psRenderSurface->ui32Height - 1;
 	psKickTA->sKickTACommon.ui16PrimitiveSplitThreshold = 1000;
 
 	GLES1_TIME_START(GLES1_TIMER_SGXKICKTA_TIME);

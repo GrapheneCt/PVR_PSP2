@@ -15,7 +15,7 @@ static WSEGLCaps asWSCaps[] =
 {
 	{ WSEGL_CAP_MIN_SWAP_INTERVAL, PSP2_SWAPCHAIN_MIN_INTERVAL },
 	{ WSEGL_CAP_MAX_SWAP_INTERVAL, PSP2_SWAPCHAIN_MAX_INTERVAL },
-	{ WSEGL_CAP_WINDOWS_USE_HW_SYNC, 0 },
+	{ WSEGL_CAP_WINDOWS_USE_HW_SYNC, 1 },
 	{ WSEGL_NO_CAPS, 0 }
 };
 
@@ -189,7 +189,14 @@ static WSEGLError WSEGL_CreateWindowDrawable(WSEGLDisplayHandle hDisplay,
 		}
 	}
 
-	hNativeWindow->currBufIdx = 0;
+	PVRSRVSwapToDCBuffer(psConnection,
+		hNativeWindow->ahSwapChainBuffers[0],
+		0,
+		IMG_NULL,
+		hNativeWindow->swapInterval,
+		0);
+
+	hNativeWindow->currBufIdx = 1;
 	*phDrawable = (WSEGLDrawableHandle)hNativeWindow;
 	*eRotationAngle = WSEGL_ROTATE_0;
 
@@ -287,7 +294,7 @@ static WSEGLError WSEGL_SwapDrawable(WSEGLDrawableHandle hDrawable, unsigned lon
 		return WSEGL_BAD_DRAWABLE;
 	}
 
-	int ret = PVRSRVSwapToDCBuffer((IMG_HANDLE)window->psConnection,
+	PVRSRVSwapToDCBuffer((IMG_HANDLE)window->psConnection,
 		window->ahSwapChainBuffers[window->currBufIdx],
 		0,
 		IMG_NULL,
@@ -351,11 +358,12 @@ static WSEGLError WSEGL_GetDrawableParameters(WSEGLDrawableHandle hDrawable,
 	case PSP2_DRAWABLE_TYPE_WINDOW:
 		window = (NativeWindowType)hDrawable;
 
-		bufMemInfo = (PVRSRV_CLIENT_MEM_INFO *)window->apsSwapBufferMemInfo[window->currBufIdx];
+		bufMemInfo = (PVRSRV_CLIENT_MEM_INFO *)window->apsSwapBufferMemInfo[(window->currBufIdx + window->numFlipBuffers - 1) % window->numFlipBuffers];
 
 		psSourceParams->ePixelFormat = WSEGL_PIXELFORMAT_ABGR8888;
 		psSourceParams->pvLinearAddress = bufMemInfo->pvLinAddr;
 		psSourceParams->ui32HWAddress = bufMemInfo->pvLinAddr;
+		psSourceParams->hPrivateData = bufMemInfo;
 
 		switch (window->windowSize)
 		{
@@ -391,6 +399,14 @@ static WSEGLError WSEGL_GetDrawableParameters(WSEGLDrawableHandle hDrawable,
 			break;
 		}
 
+		sceClibMemcpy(psRenderParams, psSourceParams, sizeof(WSEGLDrawableParams));
+
+		bufMemInfo = (PVRSRV_CLIENT_MEM_INFO *)window->apsSwapBufferMemInfo[window->currBufIdx];
+
+		psRenderParams->pvLinearAddress = bufMemInfo->pvLinAddr;
+		psRenderParams->ui32HWAddress = bufMemInfo->pvLinAddr;
+		psRenderParams->hPrivateData = bufMemInfo;
+
 		break;
 
 	case PSP2_DRAWABLE_TYPE_PIXMAP:
@@ -403,13 +419,13 @@ static WSEGLError WSEGL_GetDrawableParameters(WSEGLDrawableHandle hDrawable,
 		psSourceParams->pvLinearAddress = pixmap->memBase;
 		psSourceParams->ui32HWAddress = pixmap->memBase;
 
+		sceClibMemcpy(psRenderParams, psSourceParams, sizeof(WSEGLDrawableParams));
+
 		break;
 
 	default:
 		return WSEGL_BAD_DRAWABLE;
 	}
-
-	sceClibMemcpy(psRenderParams, psSourceParams, sizeof(WSEGLDrawableParams));
 
 	return WSEGL_SUCCESS;
 }
