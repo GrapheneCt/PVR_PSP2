@@ -361,11 +361,11 @@ int main(int argc, char *argv[])
 	hint.ui32PDSFragBufferSize = 50 * 1024;
 	hint.ui32DriverMemorySize = 4 * 1024 * 1024;
 
-	hint.bDisableHWTextureUpload = IMG_FALSE;
-	hint.bDisableHWTQBufferBlit = IMG_FALSE;
-	hint.bDisableHWTQMipGen = IMG_FALSE;
-	hint.bDisableHWTQNormalBlit = IMG_FALSE;
-	hint.bDisableHWTQTextureUpload = IMG_FALSE;
+	hint.bDisableHWTextureUpload = IMG_TRUE;
+	hint.bDisableHWTQBufferBlit = IMG_TRUE;
+	hint.bDisableHWTQMipGen = IMG_TRUE;
+	hint.bDisableHWTQNormalBlit = IMG_TRUE;
+	hint.bDisableHWTQTextureUpload = IMG_TRUE;
 	hint.bDisableStaticPDSPixelSAProgram = IMG_FALSE;
 	hint.bDisableUSEASMOPT = IMG_FALSE;
 	hint.bDumpShaders = IMG_FALSE;
@@ -386,7 +386,7 @@ int main(int argc, char *argv[])
 
 	PVRSRVCreateVirtualAppHint(&hint);
 
-	frameStop = 999999;
+	frameStop = 100;
 #endif
 
 	return EglMain(EGL_DEFAULT_DISPLAY, 0);

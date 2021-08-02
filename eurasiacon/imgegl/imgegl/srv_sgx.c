@@ -848,14 +848,14 @@ fail_statusval_alloc:
 fail_syncinfo_alloc:
 	if(bAllocTwoRT && psSurface->ahRenderTarget[EGL_RENDER_TARGET_NOAA_INDEX])
 	{
-		SGXGetRenderTargetDriverMemBlock(psSurface->ahRenderTarget[EGL_RENDER_TARGET_NOAA_INDEX], &hDrvMemBlockForFree, &bUnused);
+		SGXGetRenderTargetDriverMemBlock(&psSysContext->s3D, psSurface->ahRenderTarget[EGL_RENDER_TARGET_NOAA_INDEX], &hDrvMemBlockForFree, &bUnused);
 		SGXRemoveRenderTarget(&psSysContext->s3D, psSysContext->hRenderContext, psSurface->ahRenderTarget[EGL_RENDER_TARGET_NOAA_INDEX]);
 		PVRSRVUnregisterMemBlock(&psSysContext->s3D, hDrvMemBlockForFree);
 		sceKernelFreeMemBlock(hDrvMemBlockForFree);
 	}
 
 fail_add_rendertarget1:
-	SGXGetRenderTargetDriverMemBlock(psSurface->ahRenderTarget[ui32RTIndex], &hDrvMemBlockForFree, &bUnused);
+	SGXGetRenderTargetDriverMemBlock(&psSysContext->s3D, psSurface->ahRenderTarget[ui32RTIndex], &hDrvMemBlockForFree, &bUnused);
 	SGXRemoveRenderTarget(&psSysContext->s3D, psSysContext->hRenderContext, psSurface->ahRenderTarget[ui32RTIndex]);
 	PVRSRVUnregisterMemBlock(&psSysContext->s3D, hDrvMemBlockForFree);
 	sceKernelFreeMemBlock(hDrvMemBlockForFree);
@@ -964,7 +964,7 @@ IMG_INTERNAL IMG_BOOL KEGL_SGXDestroyRenderSurface(SrvSysContext *psSysContext, 
 
 	if(psSurface->ahRenderTarget[EGL_RENDER_TARGET_NOAA_INDEX])
 	{
-		SGXGetRenderTargetDriverMemBlock(psSurface->ahRenderTarget[EGL_RENDER_TARGET_NOAA_INDEX], &hDrvMemBlockForFree, &bUnused);
+		SGXGetRenderTargetDriverMemBlock(&psSysContext->s3D, psSurface->ahRenderTarget[EGL_RENDER_TARGET_NOAA_INDEX], &hDrvMemBlockForFree, &bUnused);
 
 		if(SGXRemoveRenderTarget (&psSysContext->s3D,
 								psSysContext->hRenderContext,
@@ -983,7 +983,7 @@ IMG_INTERNAL IMG_BOOL KEGL_SGXDestroyRenderSurface(SrvSysContext *psSysContext, 
 
 	if(psSurface->ahRenderTarget[EGL_RENDER_TARGET_AA_INDEX])
 	{
-		SGXGetRenderTargetDriverMemBlock(psSurface->ahRenderTarget[EGL_RENDER_TARGET_AA_INDEX], &hDrvMemBlockForFree, &bUnused);
+		SGXGetRenderTargetDriverMemBlock(&psSysContext->s3D, psSurface->ahRenderTarget[EGL_RENDER_TARGET_AA_INDEX], &hDrvMemBlockForFree, &bUnused);
 
 		if(SGXRemoveRenderTarget (&psSysContext->s3D,
 								psSysContext->hRenderContext,
@@ -1075,7 +1075,7 @@ IMG_INTERNAL IMG_BOOL KEGL_SGXResizeRenderSurface(SrvSysContext		*psSysContext,
 
 	if(psSurface->ahRenderTarget[EGL_RENDER_TARGET_NOAA_INDEX])
 	{
-		SGXGetRenderTargetDriverMemBlock(psSurface->ahRenderTarget[EGL_RENDER_TARGET_NOAA_INDEX], &hDrvMemBlockForFree, &bUnused);
+		SGXGetRenderTargetDriverMemBlock(&psSysContext->s3D, psSurface->ahRenderTarget[EGL_RENDER_TARGET_NOAA_INDEX], &hDrvMemBlockForFree, &bUnused);
 
 		if(SGXRemoveRenderTarget (&psSysContext->s3D,
 								psSysContext->hRenderContext,
@@ -1094,7 +1094,7 @@ IMG_INTERNAL IMG_BOOL KEGL_SGXResizeRenderSurface(SrvSysContext		*psSysContext,
 
 	if(psSurface->ahRenderTarget[EGL_RENDER_TARGET_AA_INDEX])
 	{
-		SGXGetRenderTargetDriverMemBlock(psSurface->ahRenderTarget[EGL_RENDER_TARGET_AA_INDEX], &hDrvMemBlockForFree, &bUnused);
+		SGXGetRenderTargetDriverMemBlock(&psSysContext->s3D, psSurface->ahRenderTarget[EGL_RENDER_TARGET_AA_INDEX], &hDrvMemBlockForFree, &bUnused);
 
 		if(SGXRemoveRenderTarget (&psSysContext->s3D,
 								psSysContext->hRenderContext,
@@ -1312,7 +1312,7 @@ IMG_INTERNAL IMG_BOOL KEGL_SGXHibernateRenderSurface(SrvSysContext		*psSysContex
 
 	if(psSurface->ahRenderTarget[EGL_RENDER_TARGET_NOAA_INDEX])
 	{
-		SGXGetRenderTargetDriverMemBlock(psSurface->ahRenderTarget[EGL_RENDER_TARGET_NOAA_INDEX], &hDrvMemBlockForFree, &bUnused);
+		SGXGetRenderTargetDriverMemBlock(&psSysContext->s3D, psSurface->ahRenderTarget[EGL_RENDER_TARGET_NOAA_INDEX], &hDrvMemBlockForFree, &bUnused);
 
 		if(SGXRemoveRenderTarget (&psSysContext->s3D,
 								psSysContext->hRenderContext,
@@ -1331,7 +1331,7 @@ IMG_INTERNAL IMG_BOOL KEGL_SGXHibernateRenderSurface(SrvSysContext		*psSysContex
 
 	if(psSurface->ahRenderTarget[EGL_RENDER_TARGET_AA_INDEX])
 	{
-		SGXGetRenderTargetDriverMemBlock(psSurface->ahRenderTarget[EGL_RENDER_TARGET_AA_INDEX], &hDrvMemBlockForFree, &bUnused);
+		SGXGetRenderTargetDriverMemBlock(&psSysContext->s3D, psSurface->ahRenderTarget[EGL_RENDER_TARGET_AA_INDEX], &hDrvMemBlockForFree, &bUnused);
 
 		if(SGXRemoveRenderTarget (&psSysContext->s3D,
 								psSysContext->hRenderContext,

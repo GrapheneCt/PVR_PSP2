@@ -206,9 +206,6 @@
     <ClCompile Include="..\..\codegen\pds\pds.c">
       <Filter>Source Files\codegen\pds</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\codegen\usegen\usegen.c">
-      <Filter>Source Files\codegen\usegen</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\codegen\pixevent\pixevent.c">
       <Filter>Source Files\codegen\pixevent</Filter>
     </ClCompile>
@@ -219,9 +216,6 @@
       <Filter>Source Files\codegen\pixfmts</Filter>
     </ClCompile>
     <ClCompile Include="..\..\tools\intern\useasm\useopt.c">
-      <Filter>Source Files\tools\intern\useasm</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\tools\intern\useasm\useasm.c">
       <Filter>Source Files\tools\intern\useasm</Filter>
     </ClCompile>
     <ClCompile Include="..\..\tools\intern\useasm\usedisasm.c">
@@ -276,9 +270,6 @@
       <Filter>Source Files\tools\intern\usc2</Filter>
     </ClCompile>
     <ClCompile Include="..\..\tools\intern\usc2\asm.c">
-      <Filter>Source Files\tools\intern\usc2</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\tools\intern\usc2\cdg.c">
       <Filter>Source Files\tools\intern\usc2</Filter>
     </ClCompile>
     <ClCompile Include="..\..\tools\intern\usc2\cfa.c">
@@ -371,9 +362,6 @@
     <ClCompile Include="..\..\tools\intern\usc2\reggroup.c">
       <Filter>Source Files\tools\intern\usc2</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\tools\intern\usc2\reorder.c">
-      <Filter>Source Files\tools\intern\usc2</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\tools\intern\usc2\usc_utils.c">
       <Filter>Source Files\tools\intern\usc2</Filter>
     </ClCompile>
@@ -384,6 +372,18 @@
       <Filter>Source Files\tools\intern\usc2</Filter>
     </ClCompile>
     <ClCompile Include="..\..\tools\intern\usc2\inst_usc.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\codegen\usegen\usegen.c">
+      <Filter>Source Files\codegen\usegen</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\useasm\useasm.c">
+      <Filter>Source Files\tools\intern\useasm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\cdg.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\reorder.c">
       <Filter>Source Files\tools\intern\usc2</Filter>
     </ClCompile>
   </ItemGroup>
@@ -496,13 +496,5 @@
     <ClInclude Include="pds_compiled\pds_mte_state_copy_sizeof.h">
       <Filter>Header Files\pds_compiled</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\tools\intern\usc2\uscgendata.c">
-      <Filter>Source Files\tools\intern\usc2</Filter>
-    </None>
-    <None Include="..\..\tools\intern\usc2\uspbin.c">
-      <Filter>Source Files\tools\intern\usc2</Filter>
-    </None>
   </ItemGroup>
 </Project>

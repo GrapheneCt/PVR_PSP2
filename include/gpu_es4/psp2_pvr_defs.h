@@ -134,11 +134,11 @@ PVRSRV_ERROR IMG_CALLCONV SGXTransferControlStream(
 	IMG_BOOL b3DSync, 
 	SGX_STATUS_UPDATE *psStatusUpdate);
 
-PVRSRV_ERROR IMG_CALLCONV SGXGetRenderTargetInfo(IMG_HANDLE hRTDataSet, SGX_RTINFO *psRTInfo);
+PVRSRV_ERROR IMG_CALLCONV SGXGetRenderTargetInfo(PVRSRV_DEV_DATA *psDevData, IMG_HANDLE hRTDataSet, SGX_RTINFO *psRTInfo);
 
-PVRSRV_ERROR IMG_CALLCONV SGXGetRenderTargetInfoExt(IMG_HANDLE hRTDataSet, SGX_RTINFO_EXT *psRTInfoExt);
+PVRSRV_ERROR IMG_CALLCONV SGXGetRenderTargetInfoExt(PVRSRV_DEV_DATA *psDevData, IMG_HANDLE hRTDataSet, SGX_RTINFO_EXT *psRTInfoExt);
 
-PVRSRV_ERROR IMG_CALLCONV SGXGetRenderTargetDriverMemBlock(IMG_HANDLE hRTDataSet, IMG_INT32 *pi32DriverMemBlockUID, IMG_BOOL *pbInternalUID);
+PVRSRV_ERROR IMG_CALLCONV SGXGetRenderTargetDriverMemBlock(PVRSRV_DEV_DATA *psDevData, IMG_HANDLE hRTDataSet, IMG_INT32 *pi32DriverMemBlockUID, IMG_BOOL *pbInternalUID);
 
 int sceGpuSignalWait(void *unkTLS, unsigned int timeout);
 

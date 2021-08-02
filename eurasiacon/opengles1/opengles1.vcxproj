@@ -63,10 +63,8 @@
     <ClCompile Include="..\..\tools\intern\usc2\reorder.c" />
     <ClCompile Include="..\..\tools\intern\usc2\ssa.c" />
     <ClCompile Include="..\..\tools\intern\usc2\usc.c" />
-    <None Include="..\..\tools\intern\usc2\uscgendata.c" />
     <ClCompile Include="..\..\tools\intern\usc2\usc_utils.c" />
     <ClCompile Include="..\..\tools\intern\usc2\usedef.c" />
-    <None Include="..\..\tools\intern\usc2\uspbin.c" />
     <ClCompile Include="..\..\tools\intern\usc2\vec34.c" />
     <ClCompile Include="..\..\tools\intern\useasm\specialregs.c" />
     <ClCompile Include="..\..\tools\intern\useasm\specialregs_vec.c" />
