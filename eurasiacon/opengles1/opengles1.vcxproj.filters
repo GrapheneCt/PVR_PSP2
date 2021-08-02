@@ -51,6 +51,9 @@
     <Filter Include="Source Files\common\dmscalc">
       <UniqueIdentifier>{8e277f17-4b89-4a14-ba90-0b44bea064e7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\tools\intern\usc2">
+      <UniqueIdentifier>{40ac7c55-a0e0-4210-907a-27db94f3ffa1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="accum.c">
@@ -260,6 +263,129 @@
     <ClCompile Include="..\..\tools\intern\useasm\specialregs_vec.c">
       <Filter>Source Files\tools\intern\useasm</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\usc.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\ssa.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\regpack.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\icvt_core.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\asm.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\cdg.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\cfa.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\data.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\dce.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\debug.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\dgraph.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\domcalc.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\dualissue.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\efo.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\execpred.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\f16opt.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\finalise.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\groupinst.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\hw.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\icvt_c10.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\icvt_f16.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\icvt_f16_vec.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\icvt_f32.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\icvt_f32_vec.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\icvt_i32.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\icvt_mem.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\indexreg.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\intcvt.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\iregalloc.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\iselect.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\layout.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\pconvert.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\precovr.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\pregalloc.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\regalloc.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\reggroup.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\reorder.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\usc_utils.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\usedef.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\vec34.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\inst_usc.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bufobj.h">
@@ -370,5 +496,13 @@
     <ClInclude Include="pds_compiled\pds_mte_state_copy_sizeof.h">
       <Filter>Header Files\pds_compiled</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\tools\intern\usc2\uscgendata.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </None>
+    <None Include="..\..\tools\intern\usc2\uspbin.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </None>
   </ItemGroup>
 </Project>

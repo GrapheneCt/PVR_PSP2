@@ -1,0 +1,2813 @@
+/******************************************************************************
+ * Name         : pconvert.c
+ * Title        : Tracking redundant precision conversion instructions.
+ * Created      : July 2006
+ *
+ * Copyright    : 2002-2008 by Imagination Technologies Limited. All rights reserved.
+ *              : No part of this software, either material or conceptual 
+ *              : may be copied or distributed, transmitted, transcribed,
+ *              : stored in a retrieval system or translated into any 
+ *              : human or computer language in any form by any means,
+ *              : electronic, mechanical, manual or other-wise, or 
+ *              : disclosed to third parties without the express written
+ *              : permission of Imagination Technologies Limited, Unit 8, HomePark
+ *              : Industrial Estate, King's Langley, Hertfordshire,
+ *              : WD4 8LZ, U.K.
+ *
+ * Modifications:-
+ * $Log: pconvert.c $
+**************************************************************************/
+
+#include "uscshrd.h"
+#include "bitops.h"
+
+#if defined(TRACK_REDUNDANT_PCONVERSION)
+
+#define USC_PATH_FLAG_APPEND_GROUP0(dest_flagset, flag) dest_flagset[0] |= (((IMG_UINT32)flag & 0x80000000U)? 0 : (IMG_UINT32)flag);
+#define USC_PATH_FLAG_APPEND_GROUP1(dest_flagset, flag) dest_flagset[1] |= (((IMG_UINT32)flag & 0x80000000U)? (IMG_UINT32)flag : 0);
+
+#define USC_PATH_FLAG_REMOVE_GROUP0(dest_flagset, flag) dest_flagset[0] &= (((IMG_UINT32)flag & 0x80000000U)? 0xFFFFFFFFU : ~(IMG_UINT32)flag);
+#define USC_PATH_FLAG_REMOVE_GROUP1(dest_flagset, flag) dest_flagset[1] &= (((IMG_UINT32)flag & 0x80000000U)? ~(IMG_UINT32)flag : 0xFFFFFFFFU);
+
+#define USC_PATH_FLAG_APPEND_SINGLE_FLAG(dest_flagset, flag)	\
+				USC_PATH_FLAG_APPEND_GROUP0(dest_flagset, flag); \
+				USC_PATH_FLAG_APPEND_GROUP1(dest_flagset, flag);
+											
+#define USC_PATH_FLAG_REMOVE_SINGLE_FLAG(dest_flagset, flag)	\
+				USC_PATH_FLAG_REMOVE_GROUP0(dest_flagset, flag); \
+				USC_PATH_FLAG_REMOVE_GROUP1(dest_flagset, flag);
+
+#define USC_PATH_FLAGSET_COPY(dest_flagset, flagset)	\
+				dest_flagset[0] = 0; dest_flagset[1] = 0; \
+				USC_PATH_FLAG_APPEND_GROUP0(dest_flagset, flagset[0]); \
+				USC_PATH_FLAG_APPEND_GROUP1(dest_flagset, flagset[1]);
+				
+#define USC_PATH_FLAGSET_APPEND(dest_flagset, flagset)	\
+				USC_PATH_FLAG_APPEND_GROUP0(dest_flagset, flagset[0]); \
+				USC_PATH_FLAG_APPEND_GROUP1(dest_flagset, flagset[1]);
+
+#define USE_CYCLE_COUNT_MAX_DEPTH			1024
+
+
+static IMG_VOID USCPathSetHint_C10ToF16(PINTERMEDIATE_STATE psState);
+static IMG_VOID USCPathSetHint_C10ToF32(PINTERMEDIATE_STATE psState);
+static IMG_VOID USCPathSetHint_F16ToF32(PINTERMEDIATE_STATE psState);
+static IMG_VOID USCPathSetHint_C10F16ToF32(PINTERMEDIATE_STATE psState);
+
+static
+IMG_UINT32 EstimateFunctionCycleCosting(PINTERMEDIATE_STATE psState, PFUNC psFunc);
+
+typedef IMG_VOID (*PCONVERT_FLAG_UPDATION_ROUTINE)(PINTERMEDIATE_STATE psState);
+typedef struct _USE_PATH_LOOKUP_ENTRY_
+{
+	IMG_UINT32						auConversionPaths1;
+	IMG_UINT32						auConversionPaths0;
+	PCONVERT_FLAG_UPDATION_ROUTINE	pfUpdateFlagRoutine;
+	
+	/* Enable/Disable temp registers uages test */
+	IMG_UINT32						uTestSettings;
+} USE_PATH_LOOKUP_ENTRY, *PUSE_PATH_LOOKUP_ENTRY;
+
+typedef enum _USE_PRECISION_CONV_PATH_TYPE_
+{
+#if defined(SUPPORT_SGX543) || defined(SUPPORT_SGX544) || defined(SUPPORT_SGX554)
+	// terminal nodes
+	// u8 -> u8, flt
+	USE_PATH_TYPE_IVPCKU8U8                                = (IMG_INT32)(0x00000001),
+	USE_PATH_TYPE_IVPCKFLTU8                               = (IMG_INT32)(0x00000002),
+	
+	// c10 -> c10, flt
+	USE_PATH_TYPE_IVPCKC10C10                              = (IMG_INT32)(0x00000004),
+	USE_PATH_TYPE_IVPCKFLTC10                              = (IMG_INT32)(0x00000008),
+	USE_PATH_TYPE_IVPCKFLTC10_VEC                          = (IMG_INT32)(0x00000010),
+	
+	USE_PATH_TYPE_ISOPWM_VEC                               = (IMG_INT32)(0x00000020),
+	USE_PATH_TYPE_ISOP3_VEC                                = (IMG_INT32)(0x00000040),
+	
+	// flt -> u8, c10, flt
+	USE_PATH_TYPE_IVPCKU8FLT                               = (IMG_INT32)(0x00000080),
+	USE_PATH_TYPE_IVPCKU8FLT_EXP                           = (IMG_INT32)(0x00000100),
+	USE_PATH_TYPE_IVPCKC10FLT                              = (IMG_INT32)(0x00000200),
+	USE_PATH_TYPE_IVPCKC10FLT_EXP                          = (IMG_INT32)(0x00000400),
+	USE_PATH_TYPE_IVPCKFLTFLT                              = (IMG_INT32)(0x00000800),
+	USE_PATH_TYPE_IVPCKFLTFLT_EXP                          = (IMG_INT32)(0x00001000),
+	
+	// u8 -> {u8, flt} -> {u8, c10, flt}
+	USE_PATH_TYPE_IVPCKU8U8_ANY_IVPCKU8U8_ANY              = (IMG_INT32)(0x00002000),
+	USE_PATH_TYPE_IVPCKU8U8_ANY_IVPCKFLTU8_ANY             = (IMG_INT32)(0x00004000),
+	USE_PATH_TYPE_IVPCKFLTU8_ANY_IVPCKU8FLT_ANY            = (IMG_INT32)(0x00008000),
+	USE_PATH_TYPE_IVPCKFLTU8_ANY_IVPCKU8FLT_EXP_ANY        = (IMG_INT32)(0x00010000),
+	USE_PATH_TYPE_IVPCKFLTU8_ANY_IVPCKC10FLT_ANY           = (IMG_INT32)(0x00020000),
+	USE_PATH_TYPE_IVPCKFLTU8_ANY_IVPCKC10FLT_EXP_ANY       = (IMG_INT32)(0x00040000),
+	USE_PATH_TYPE_IVPCKFLTU8_ANY_IVPCKFLTFLT_ANY           = (IMG_INT32)(0x00080000),
+	USE_PATH_TYPE_IVPCKFLTU8_ANY_IVPCKFLTFLT_EXP_ANY       = (IMG_INT32)(0x00100000),
+	
+	// c10 -> { c10, flt} -> c10, flt
+	USE_PATH_TYPE_IVPCKC10C10_ANY_IVPCKC10C10_ANY          = (IMG_INT32)(0x00200000),
+	USE_PATH_TYPE_IVPCKC10C10_ANY_IVPCKFLTC10_ANY          = (IMG_INT32)(0x00400000),
+	USE_PATH_TYPE_IVPCKC10C10_ANY_IVPCKFLTC10_VEC_ANY      = (IMG_INT32)(0x00800000),
+	USE_PATH_TYPE_IVPCKFLTC10_ANY_IVPCKU8FLT_ANY           = (IMG_INT32)(0x01000000),
+	USE_PATH_TYPE_IVPCKFLTC10_ANY_IVPCKU8FLT_EXP_ANY       = (IMG_INT32)(0x02000000),
+	USE_PATH_TYPE_IVPCKFLTC10_ANY_IVPCKC10FLT_ANY          = (IMG_INT32)(0x04000000),
+	USE_PATH_TYPE_IVPCKFLTC10_ANY_IVPCKC10FLT_EXP_ANY      = (IMG_INT32)(0x08000000),
+	USE_PATH_TYPE_IVPCKFLTC10_ANY_IVPCKFLTFLT_ANY          = (IMG_INT32)(0x10000000),
+	USE_PATH_TYPE_IVPCKFLTC10_ANY_IVPCKFLTFLT_EXP_ANY      = (IMG_INT32)(0x20000000),
+
+	USE_PATH_TYPE_IVPCKFLTC10_VEC_ANY_IVPCKU8FLT_ANY       = (IMG_INT32)(0x80200000),
+	USE_PATH_TYPE_IVPCKFLTC10_VEC_ANY_IVPCKU8FLT_EXP_ANY   = (IMG_INT32)(0x80400000),
+	USE_PATH_TYPE_IVPCKFLTC10_VEC_ANY_IVPCKC10FLT_ANY      = (IMG_INT32)(0x80800000),
+	USE_PATH_TYPE_IVPCKFLTC10_VEC_ANY_IVPCKC10FLT_EXP_ANY  = (IMG_INT32)(0x81000000),
+	USE_PATH_TYPE_IVPCKFLTC10_VEC_ANY_IVPCKFLTFLT_ANY      = (IMG_INT32)(0x82000000),
+	USE_PATH_TYPE_IVPCKFLTC10_VEC_ANY_IVPCKFLTFLT_EXP_ANY  = (IMG_INT32)(0x84000000),
+	
+	// flt -> {u8, c10, flt} -> {u8, c10, flt}
+	USE_PATH_TYPE_IVPCKU8FLT_ANY_IVPCKU8U8_ANY             = (IMG_INT32)(0x40000000),
+	USE_PATH_TYPE_IVPCKU8FLT_ANY_IVPCKFLTU8_ANY            = (IMG_INT32)(0x80000001),
+	USE_PATH_TYPE_IVPCKU8FLT_EXP_ANY_IVPCKU8U8_ANY         = (IMG_INT32)(0x80000002),
+	USE_PATH_TYPE_IVPCKU8FLT_EXP_ANY_IVPCKFLTU8_ANY        = (IMG_INT32)(0x80000004),
+	USE_PATH_TYPE_IVPCKC10FLT_ANY_IVPCKC10C10_ANY          = (IMG_INT32)(0x80000008),
+	USE_PATH_TYPE_IVPCKC10FLT_ANY_IVPCKFLTC10_ANY          = (IMG_INT32)(0x80000010),
+	USE_PATH_TYPE_IVPCKC10FLT_ANY_IVPCKFLTC10_VEC_ANY      = (IMG_INT32)(0x80000020),
+	USE_PATH_TYPE_IVPCKC10FLT_EXP_ANY_IVPCKC10C10_ANY      = (IMG_INT32)(0x80000040),
+	USE_PATH_TYPE_IVPCKC10FLT_EXP_ANY_IVPCKFLTC10_ANY      = (IMG_INT32)(0x80000080),
+	USE_PATH_TYPE_IVPCKC10FLT_EXP_ANY_IVPCKFLTC10_VEC_ANY  = (IMG_INT32)(0x80000100),
+	USE_PATH_TYPE_IVPCKFLTFLT_ANY_IVPCKU8FLT_ANY           = (IMG_INT32)(0x80000200),
+	USE_PATH_TYPE_IVPCKFLTFLT_ANY_IVPCKU8FLT_EXP_ANY       = (IMG_INT32)(0x80000400),
+	USE_PATH_TYPE_IVPCKFLTFLT_ANY_IVPCKC10FLT_ANY          = (IMG_INT32)(0x80000800),
+	USE_PATH_TYPE_IVPCKFLTFLT_ANY_IVPCKC10FLT_EXP_ANY      = (IMG_INT32)(0x80001000),
+	USE_PATH_TYPE_IVPCKFLTFLT_ANY_IVPCKFLTFLT_ANY          = (IMG_INT32)(0x80002000),
+	USE_PATH_TYPE_IVPCKFLTFLT_ANY_IVPCKFLTFLT_EXP_ANY      = (IMG_INT32)(0x80004000),
+	USE_PATH_TYPE_IVPCKFLTFLT_EXP_ANY_IVPCKU8FLT_ANY       = (IMG_INT32)(0x80008000),
+	USE_PATH_TYPE_IVPCKFLTFLT_EXP_ANY_IVPCKU8FLT_EXP_ANY   = (IMG_INT32)(0x80010000),
+	USE_PATH_TYPE_IVPCKFLTFLT_EXP_ANY_IVPCKC10FLT_ANY      = (IMG_INT32)(0x80020000),
+	USE_PATH_TYPE_IVPCKFLTFLT_EXP_ANY_IVPCKC10FLT_EXP_ANY  = (IMG_INT32)(0x80040000),
+	USE_PATH_TYPE_IVPCKFLTFLT_EXP_ANY_IVPCKFLTFLT_ANY      = (IMG_INT32)(0x80080000),
+	USE_PATH_TYPE_IVPCKFLTFLT_EXP_ANY_IVPCKFLTFLT_EXP_ANY  = (IMG_INT32)(0x80100000),
+#endif /* defined(SUPPORT_SGX543) || defined(SUPPORT_SGX544) || defined(SUPPORT_SGX554) */
+	USE_PATH_TYPE_ISOP3                                    = (IMG_INT32)(0x00000001),
+	USE_PATH_TYPE_ISOPWM                                   = (IMG_INT32)(0x00000002),
+	USE_PATH_TYPE_IPCKU8F16                                = (IMG_INT32)(0x00000004),
+	USE_PATH_TYPE_IPCKU8F32                                = (IMG_INT32)(0x00000400),
+	USE_PATH_TYPE_IUNPCKF32F16                             = (IMG_INT32)(0x00000008),
+	USE_PATH_TYPE_IUNPCKF32C10                             = (IMG_INT32)(0x00000010),
+	USE_PATH_TYPE_IUNPCKU8U8                               = (IMG_INT32)(0x00000020),
+	
+	// U8 -> { U8, F16, F32 } = 0x00000000,
+	USE_PATH_TYPE_IPCKU8U8_ANY_IPCKU8U8_ANY                = (IMG_INT32)(0x00000040),
+	USE_PATH_TYPE_IPCKU8U8_ANY_IUNPCKF16U8_ANY             = (IMG_INT32)(0x00000080),
+	USE_PATH_TYPE_IPCKU8U8_ANY_IUNPCKF32U8_ANY             = (IMG_INT32)(0x00000100),
+	
+	USE_PATH_TYPE_IUNPCKF16U8_ANY_IPCKU8F16_ANY            = (IMG_INT32)(0x00000200),
+	USE_PATH_TYPE_IUNPCKF16U8_ANY_IPCKC10F16_ANY           = (IMG_INT32)(0x00004000),
+	USE_PATH_TYPE_IUNPCKF16U8_ANY_IPCKF16F16_ANY           = (IMG_INT32)(0x00008000),
+	USE_PATH_TYPE_IUNPCKF16U8_ANY_IUNPCKF32F16_ANY         = (IMG_INT32)(0x00010000),
+	
+	// C10 -> { C10, F16, F32 } = 0x00000000,
+	USE_PATH_TYPE_IPCKC10C10_ANY_IPCKC10C10_ANY            = (IMG_INT32)(0x00020000),
+	USE_PATH_TYPE_IPCKC10C10_ANY_IUNPCKF16C10_ANY          = (IMG_INT32)(0x00040000),
+	USE_PATH_TYPE_IPCKC10C10_ANY_IUNPCKF32C10_ANY          = (IMG_INT32)(0x00080000),
+	
+	USE_PATH_TYPE_IUNPCKF16C10_ANY_IPCKU8F16_ANY           = (IMG_INT32)(0x00100000),
+	USE_PATH_TYPE_IUNPCKF16C10_ANY_IPCKC10F16_ANY          = (IMG_INT32)(0x00200000),
+	USE_PATH_TYPE_IUNPCKF16C10_ANY_IPCKF16F16_ANY          = (IMG_INT32)(0x00400000),
+	USE_PATH_TYPE_IUNPCKF16C10_ANY_IUNPCKF32F16_ANY        = (IMG_INT32)(0x00800000),
+	
+	USE_PATH_TYPE_IUNPCKF32C10_ANY_IPCKU8F32_ANY           = (IMG_INT32)(0x01000000),
+	USE_PATH_TYPE_IUNPCKF32C10_ANY_IPCKC10F32_ANY          = (IMG_INT32)(0x02000000),
+	USE_PATH_TYPE_IUNPCKF32C10_ANY_IPCKF16F32_ANY          = (IMG_INT32)(0x04000000),
+	
+	// F16 -> { U8, C10, F16, F32 } = 0x00000000,
+	USE_PATH_TYPE_IPCKU8F16_ANY_IPCKU8U8_ANY               = (IMG_INT32)(0x00800000),
+	USE_PATH_TYPE_IPCKU8F16_ANY_IUNPCKF16U8_ANY            = (IMG_INT32)(0x01000000),
+	USE_PATH_TYPE_IPCKU8F16_ANY_IUNPCKF32U8_ANY            = (IMG_INT32)(0x02000000),
+	
+	USE_PATH_TYPE_IPCKC10F16_ANY_IPCKC10C10_ANY            = (IMG_INT32)(0x04000000),
+	USE_PATH_TYPE_IPCKC10F16_ANY_IUNPCKF16C10_ANY          = (IMG_INT32)(0x08000000),
+	USE_PATH_TYPE_IPCKC10F16_ANY_IUNPCKF32C10_ANY          = (IMG_INT32)(0x10000000),
+	
+	USE_PATH_TYPE_IPCKF16F16_ANY_IPCKU8F16_ANY             = (IMG_INT32)(0x20000000),
+	USE_PATH_TYPE_IPCKF16F16_ANY_IPCKC10F16_ANY            = (IMG_INT32)(0x40000000),
+	USE_PATH_TYPE_IPCKF16F16_ANY_IPCKF16F16_ANY            = (IMG_INT32)(0x80000001),
+	USE_PATH_TYPE_IPCKF16F16_ANY_IUNPCKF32F16_ANY          = (IMG_INT32)(0x80000002),
+
+	USE_PATH_TYPE_IUNPCKF32F16_ANY_IPCKU8F32_ANY           = (IMG_INT32)(0x80000004),
+	USE_PATH_TYPE_IUNPCKF32F16_ANY_IPCKC10F32_ANY          = (IMG_INT32)(0x80000008),
+	USE_PATH_TYPE_IUNPCKF32F16_ANY_IPCKF16F32_ANY          = (IMG_INT32)(0x80000010),
+
+	// F32 -> { U8, C10, F16 } = 0x00000000,
+	USE_PATH_TYPE_IPCKU8F32_ANY_IPCKU8U8_ANY               = (IMG_INT32)(0x80000020),
+	USE_PATH_TYPE_IPCKU8F32_ANY_IUNPCKF16U8_ANY            = (IMG_INT32)(0x80000040),
+	USE_PATH_TYPE_IPCKU8F32_ANY_IUNPCKF32U8_ANY            = (IMG_INT32)(0x80000080),
+	
+	USE_PATH_TYPE_IPCKC10F32_ANY_IPCKC10C10_ANY            = (IMG_INT32)(0x80000100),
+	USE_PATH_TYPE_IPCKC10F32_ANY_IUNPCKF16C10_ANY          = (IMG_INT32)(0x80000200),
+	USE_PATH_TYPE_IPCKC10F32_ANY_IUNPCKF32C10_ANY          = (IMG_INT32)(0x80000400),
+	
+	USE_PATH_TYPE_IPCKF16F32_ANY_IPCKU8F16_ANY             = (IMG_INT32)(0x80000800),
+	USE_PATH_TYPE_IPCKF16F32_ANY_IPCKC10F16_ANY            = (IMG_INT32)(0x80001000),
+	USE_PATH_TYPE_IPCKF16F32_ANY_IPCKF16F16_ANY            = (IMG_INT32)(0x80002000),
+	USE_PATH_TYPE_IPCKF16F32_ANY_IUNPCKF32F16_ANY          = (IMG_INT32)(0x80004000),
+
+	USE_PATH_TYPE_ANY                                      = (IMG_INT32)(0xFFFFFFFF)
+}USE_PRECISION_CONV_PATH_TYPE;
+
+/*
+	Path hash lookup table for all cores
+*/
+static const USE_PATH_LOOKUP_ENTRY gasUSCPathLookupTable_sgx535_nonusp[] =
+{
+/**!sgx535_nonusp*//* f30ac56e0d67f5bb21d6d01813f8aa01 */
+/**!sgx535_nonusp*/{0x00000000, 0x00000001, USCPathSetHint_F16ToF32, 0},
+/**!sgx535_nonusp*/{0x00000000, 0x00000004, USCPathSetHint_F16ToF32, 0},
+/**!sgx535_nonusp*/{0x00000000, 0x00000008, USCPathSetHint_F16ToF32, 0},
+/**!sgx535_nonusp*/{0x00000000, 0x00000024, USCPathSetHint_F16ToF32, 0},
+/**!sgx535_nonusp*/{0x00000000, 0x00000026, USCPathSetHint_F16ToF32, 0},
+/**!sgx535_nonusp*/{0x00000000, 0x00000060, USCPathSetHint_F16ToF32, 0},
+/**!sgx535_nonusp*/{0x00000000, 0x00000062, USCPathSetHint_F16ToF32, 0},
+/**!sgx535_nonusp*/{0x00000000, 0x00000205, USCPathSetHint_F16ToF32, 0},
+/**!sgx535_nonusp*/{0x00000000, 0x00000402, USCPathSetHint_F16ToF32, USC_DISABLE_TEMPREG_TEST},
+/**!sgx535_nonusp*/{0x00000000, 0x00000404, USCPathSetHint_F16ToF32, 0},
+/**!sgx535_nonusp*/{0x00000000, 0x00000408, USCPathSetHint_F16ToF32, 0},
+/**!sgx535_nonusp*/{0x00000000, 0x00000468, USCPathSetHint_F16ToF32, 0},
+/**!sgx535_nonusp*/{0x00000000, 0x00000500, USCPathSetHint_F16ToF32, 0},
+/**!sgx535_nonusp*/{0x00000000, 0x00000601, USCPathSetHint_F16ToF32, 0},
+/**!sgx535_nonusp*/{0x00000000, 0x01080412, USCPathSetHint_F16ToF32, 0},
+/**!sgx535_nonusp*/{0x80000002, 0x00010408, USCPathSetHint_F16ToF32, 0},
+/**!sgx535_nonusp*/{0x80000004, 0x00000400, USCPathSetHint_F16ToF32, 0},
+/**!sgx535_nonusp*/{0x80000004, 0x00000402, USCPathSetHint_F16ToF32, 0},
+/**!sgx535_nonusp*/{0x80000004, 0x00000408, USCPathSetHint_F16ToF32, 0},
+/**!sgx535_nonusp*/{0x80000004, 0x0000040A, USCPathSetHint_F16ToF32, 0},
+/**!sgx535_nonusp*/{0x80000004, 0x01000400, USCPathSetHint_F16ToF32, 0},
+/**!sgx535_nonusp*/{0x80000004, 0x01010400, USCPathSetHint_F16ToF32, 0},
+/**!sgx535_nonusp*/{0x80000006, 0x00000400, USCPathSetHint_F16ToF32, 0},
+/**!sgx535_nonusp*/{0x80002000, 0x00000420, USCPathSetHint_F16ToF32, 0},
+/**!sgx535_nonusp*/{0x00000000, 0x00000003, USCPathSetHint_C10ToF32, 0},
+/**!sgx535_nonusp*/{0x00000000, 0x00000010, USCPathSetHint_C10ToF32, 0},
+/**!sgx535_nonusp*/{0x00000000, 0x00000022, USCPathSetHint_C10ToF32, 0},
+/**!sgx535_nonusp*/{0x00000000, 0x00040002, USCPathSetHint_C10ToF32, 0},
+/**!sgx535_nonusp*/{0x00000000, 0x00060002, USCPathSetHint_C10ToF32, 0},
+/**!sgx535_nonusp*/{0x00000000, 0x01000400, USCPathSetHint_C10ToF32, 0},
+/**!sgx535_nonusp*/{0x00000000, 0x01000402, USCPathSetHint_C10ToF32, 0},
+/**!sgx535_nonusp*/{0x00000000, 0x01000420, USCPathSetHint_C10ToF32, 0},
+/**!sgx535_nonusp*/{0x00000000, 0x010C0400, USCPathSetHint_C10ToF32, 0},
+/**!sgx535_nonusp*/{0x00000000, 0x010C04E0, USCPathSetHint_C10ToF32, 0},
+/**!sgx535_nonusp*/{0x00000000, 0x02000000, USCPathSetHint_C10ToF32, 0},
+/**!sgx535_nonusp*/{0x00000000, 0x11080400, USCPathSetHint_C10ToF32, 0},
+/**!sgx535_nonusp*/{0x00000000, 0x20000204, USCPathSetHint_C10ToF32, 0},
+/**!sgx535_nonusp*/{0x80000100, 0x00020002, USCPathSetHint_C10ToF32, 0},
+/**!sgx535_nonusp*/{0x80000100, 0x02000002, USCPathSetHint_C10ToF32, 0},
+/**!sgx535_nonusp*/{0x80000200, 0x00000012, USCPathSetHint_C10ToF32, 0},
+/**!sgx535_nonusp*/{0x80000200, 0x00000400, USCPathSetHint_C10ToF32, 0},
+/**!sgx535_nonusp*/{0x80000400, 0x02080009, USCPathSetHint_C10ToF32, 0},
+/**!sgx535_nonusp*/{0x80000500, 0x000A0000, USCPathSetHint_C10ToF32, 0},
+/**!sgx535_nonusp*/{0x80000500, 0x000A0032, USCPathSetHint_C10ToF32, 0},
+/**!sgx535_nonusp*/{0x80000500, 0x000A0060, USCPathSetHint_C10ToF32, 0},
+/**!sgx535_nonusp*/{0x80000600, 0x03000400, USCPathSetHint_C10ToF32, 0},
+/**!sgx535_nonusp*/{0x00000000, 0x00000018, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_nonusp*/{0x00000000, 0x00000410, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_nonusp*/{0x00000000, 0x00020000, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_nonusp*/{0x00000000, 0x00020002, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_nonusp*/{0x00000000, 0x00020003, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_nonusp*/{0x00000000, 0x00020062, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_nonusp*/{0x00000000, 0x00020063, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_nonusp*/{0x00000000, 0x00040000, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_nonusp*/{0x00000000, 0x00040010, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_nonusp*/{0x00000000, 0x00040400, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_nonusp*/{0x00000000, 0x00060010, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_nonusp*/{0x00000000, 0x00080000, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_nonusp*/{0x00000000, 0x00080002, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_nonusp*/{0x00000000, 0x00080010, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_nonusp*/{0x00000000, 0x000A0010, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_nonusp*/{0x00000000, 0x01000000, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_nonusp*/{0x00000000, 0x01000410, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_nonusp*/{0x00000000, 0x01080400, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_nonusp*/{0x00000000, 0x01080410, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_nonusp*/{0x00000000, 0x02000001, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_nonusp*/{0x00000000, 0x020E0000, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_nonusp*/{0x80000004, 0x01000480, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_nonusp*/{0x80000100, 0x00000002, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_nonusp*/{0x80000100, 0x0000040A, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_nonusp*/{0x80000100, 0x00080010, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_nonusp*/{0x80000100, 0x02020002, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_nonusp*/{0x80000100, 0x020A0002, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_nonusp*/{0x80000100, 0x020A0003, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_nonusp*/{0x80000200, 0x00000002, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_nonusp*/{0x80000200, 0x00040400, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_nonusp*/{0x80000200, 0x01000402, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_nonusp*/{0x80000200, 0x03000402, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_nonusp*/{0x80000200, 0x03040400, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_nonusp*/{0x80000400, 0x00000000, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_nonusp*/{0x80000400, 0x00000012, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_nonusp*/{0x80000400, 0x00000402, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_nonusp*/{0x80000400, 0x00080000, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_nonusp*/{0x80000400, 0x01000400, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_nonusp*/{0x80000400, 0x01080400, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_nonusp*/{0x80000400, 0x02000001, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_nonusp*/{0x80000400, 0x02000010, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_nonusp*/{0x80000400, 0x02080402, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_nonusp*/{0x80000400, 0x03000400, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_nonusp*/{0x80000400, 0x03080400, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_nonusp*/{0x80000500, 0x00080010, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_nonusp*/{0x80000500, 0x000A0002, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_nonusp*/{0x80000500, 0x020A0002, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_nonusp*/{0x80000500, 0x020A0022, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_nonusp*/{0x80000600, 0x00000012, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_nonusp*/{0x80000600, 0x010C0400, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_nonusp*/{0x80000600, 0x030C0400, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_nonusp*/{0x80000700, 0x102C0010, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_nonusp*/{0x00000000, 0x00000000, USCPathSetHint_C10F16ToF32, USC_DISABLE_TEMPREG_TEST},
+/**!sgx535_nonusp*/{0x00000000, 0x00000002, USCPathSetHint_C10F16ToF32, 0},
+/**!sgx535_nonusp*/{0x00000000, 0x00000020, USCPathSetHint_C10F16ToF32, 0},
+/**!sgx535_nonusp*/{0x00000000, 0x00000400, USCPathSetHint_C10F16ToF32, USC_DISABLE_TEMPREG_TEST},
+/**!sgx535_nonusp*/{0x00000000, 0x00000420, USCPathSetHint_C10F16ToF32, USC_DISABLE_TEMPREG_TEST},
+/**!sgx535_nonusp*/{0x80000400, 0x00000010, USCPathSetHint_C10F16ToF32, USC_DISABLE_TEMPREG_TEST},
+};
+
+static const USE_PATH_LOOKUP_ENTRY gasUSCPathLookupTable_sgx535_usp[] =
+{
+/**!sgx535_usp*//* 54336b6a919f6351eaeb76f2ba279367 */
+/**!sgx535_usp*/{0x00000000, 0x00000000, USCPathSetHint_F16ToF32, USC_DISABLE_TEMPREG_TEST},
+/**!sgx535_usp*/{0x00000000, 0x00000001, USCPathSetHint_F16ToF32, 0},
+/**!sgx535_usp*/{0x00000000, 0x00000004, USCPathSetHint_F16ToF32, USC_DISABLE_INSTCYCLE_TEST},
+/**!sgx535_usp*/{0x00000000, 0x00000008, USCPathSetHint_F16ToF32, 0},
+/**!sgx535_usp*/{0x00000000, 0x00000020, USCPathSetHint_F16ToF32, 0},
+/**!sgx535_usp*/{0x00000000, 0x00000060, USCPathSetHint_F16ToF32, 0},
+/**!sgx535_usp*/{0x00000000, 0x00000062, USCPathSetHint_F16ToF32, 0},
+/**!sgx535_usp*/{0x00000000, 0x00000205, USCPathSetHint_F16ToF32, 0},
+/**!sgx535_usp*/{0x00000000, 0x00000402, USCPathSetHint_F16ToF32, USC_DISABLE_TEMPREG_TEST},
+/**!sgx535_usp*/{0x00000000, 0x00000404, USCPathSetHint_F16ToF32, 0},
+/**!sgx535_usp*/{0x00000000, 0x00000408, USCPathSetHint_F16ToF32, 0},
+/**!sgx535_usp*/{0x00000000, 0x00000468, USCPathSetHint_F16ToF32, 0},
+/**!sgx535_usp*/{0x00000000, 0x00000500, USCPathSetHint_F16ToF32, 0},
+/**!sgx535_usp*/{0x00000000, 0x00000601, USCPathSetHint_F16ToF32, 0},
+/**!sgx535_usp*/{0x00000000, 0x00020001, USCPathSetHint_F16ToF32, 0},
+/**!sgx535_usp*/{0x00000000, 0x0008041A, USCPathSetHint_F16ToF32, 0},
+/**!sgx535_usp*/{0x00000000, 0x01000402, USCPathSetHint_F16ToF32, 0},
+/**!sgx535_usp*/{0x80000004, 0x00000402, USCPathSetHint_F16ToF32, 0},
+/**!sgx535_usp*/{0x80000004, 0x0000040A, USCPathSetHint_F16ToF32, 0},
+/**!sgx535_usp*/{0x80000004, 0x01000400, USCPathSetHint_F16ToF32, 0},
+/**!sgx535_usp*/{0x80002000, 0x00000420, USCPathSetHint_F16ToF32, 0},
+/**!sgx535_usp*/{0x80002000, 0x01000400, USCPathSetHint_F16ToF32, 0},
+/**!sgx535_usp*/{0x00000000, 0x00000002, USCPathSetHint_C10ToF32, 0},
+/**!sgx535_usp*/{0x00000000, 0x00000003, USCPathSetHint_C10ToF32, 0},
+/**!sgx535_usp*/{0x00000000, 0x00000010, USCPathSetHint_C10ToF32, 0},
+/**!sgx535_usp*/{0x00000000, 0x00040002, USCPathSetHint_C10ToF32, 0},
+/**!sgx535_usp*/{0x00000000, 0x00060002, USCPathSetHint_C10ToF32, 0},
+/**!sgx535_usp*/{0x00000000, 0x010C0400, USCPathSetHint_C10ToF32, 0},
+/**!sgx535_usp*/{0x80000004, 0x01000428, USCPathSetHint_C10ToF32, 0},
+/**!sgx535_usp*/{0x80000100, 0x02000002, USCPathSetHint_C10ToF32, 0},
+/**!sgx535_usp*/{0x80000200, 0x00000012, USCPathSetHint_C10ToF32, 0},
+/**!sgx535_usp*/{0x80000200, 0x00000400, USCPathSetHint_C10ToF32, 0},
+/**!sgx535_usp*/{0x80000400, 0x02000001, USCPathSetHint_C10ToF32, 0},
+/**!sgx535_usp*/{0x80000400, 0x02080009, USCPathSetHint_C10ToF32, 0},
+/**!sgx535_usp*/{0x00000000, 0x00000018, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_usp*/{0x00000000, 0x00000204, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_usp*/{0x00000000, 0x00000410, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_usp*/{0x00000000, 0x00020000, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_usp*/{0x00000000, 0x00020003, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_usp*/{0x00000000, 0x00020062, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_usp*/{0x00000000, 0x00040000, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_usp*/{0x00000000, 0x00040010, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_usp*/{0x00000000, 0x00040400, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_usp*/{0x00000000, 0x00060010, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_usp*/{0x00000000, 0x00080000, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_usp*/{0x00000000, 0x00080002, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_usp*/{0x00000000, 0x00080400, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_usp*/{0x00000000, 0x01000400, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_usp*/{0x00000000, 0x01080400, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_usp*/{0x00000000, 0x01080410, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_usp*/{0x00000000, 0x11080400, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_usp*/{0x80000004, 0x01000420, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_usp*/{0x80000100, 0x0000040A, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_usp*/{0x80000100, 0x00020002, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_usp*/{0x80000200, 0x00000000, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_usp*/{0x80000200, 0x00000002, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_usp*/{0x80000200, 0x00040400, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_usp*/{0x80000200, 0x02040400, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_usp*/{0x80000200, 0x03000402, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_usp*/{0x80000200, 0x03040400, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_usp*/{0x80000400, 0x00000000, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_usp*/{0x80000400, 0x00000012, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_usp*/{0x80000400, 0x00000402, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_usp*/{0x80000400, 0x01000400, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_usp*/{0x80000400, 0x01080400, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_usp*/{0x80000400, 0x02000010, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_usp*/{0x80000400, 0x02080402, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_usp*/{0x80000400, 0x03000400, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_usp*/{0x80000400, 0x03080400, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_usp*/{0x80000500, 0x00080012, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_usp*/{0x80000500, 0x000A0060, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_usp*/{0x80000600, 0x00000012, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_usp*/{0x80000600, 0x010C0400, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_usp*/{0x80000600, 0x030C0400, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_usp*/{0x80000700, 0x102C0010, USCPathSetHint_C10ToF16, 0},
+/**!sgx535_usp*/{0x00000000, 0x00000400, USCPathSetHint_C10F16ToF32, USC_DISABLE_TEMPREG_TEST},
+/**!sgx535_usp*/{0x00000000, 0x00000420, USCPathSetHint_C10F16ToF32, USC_DISABLE_TEMPREG_TEST},
+/**!sgx535_usp*/{0x80000004, 0x00000400, USCPathSetHint_C10F16ToF32, 0},
+/**!sgx535_usp*/{0x80000004, 0x00000408, USCPathSetHint_C10F16ToF32, 0},
+/**!sgx535_usp*/{0x80000400, 0x00000010, USCPathSetHint_C10F16ToF32, USC_DISABLE_TEMPREG_TEST},
+};
+
+static const USE_PATH_LOOKUP_ENTRY gasUSCPathLookupTable_sgx540_nonusp[] =
+{
+/**!sgx540_nonusp*//* 76b2555ccec0f45e5a566e0977eae0d1 */
+/**!sgx540_nonusp*/{0x00000000, 0x00000001, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_nonusp*/{0x00000000, 0x00000004, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_nonusp*/{0x00000000, 0x00000008, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_nonusp*/{0x00000000, 0x00000024, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_nonusp*/{0x00000000, 0x00000026, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_nonusp*/{0x00000000, 0x00000060, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_nonusp*/{0x00000000, 0x00000062, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_nonusp*/{0x00000000, 0x00000205, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_nonusp*/{0x00000000, 0x00000402, USCPathSetHint_F16ToF32, USC_DISABLE_TEMPREG_TEST},
+/**!sgx540_nonusp*/{0x00000000, 0x00000404, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_nonusp*/{0x00000000, 0x00000408, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_nonusp*/{0x00000000, 0x00000420, USCPathSetHint_F16ToF32, USC_DISABLE_TEMPREG_TEST},
+/**!sgx540_nonusp*/{0x00000000, 0x00000468, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_nonusp*/{0x00000000, 0x00000500, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_nonusp*/{0x00000000, 0x00000601, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_nonusp*/{0x00000000, 0x00000604, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_nonusp*/{0x00000000, 0x01080412, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_nonusp*/{0x80000002, 0x00010408, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_nonusp*/{0x80000004, 0x00000400, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_nonusp*/{0x80000004, 0x00000402, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_nonusp*/{0x80000004, 0x00000408, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_nonusp*/{0x80000004, 0x0000040A, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_nonusp*/{0x80000004, 0x01000400, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_nonusp*/{0x80000004, 0x01010400, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_nonusp*/{0x80000006, 0x00000400, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_nonusp*/{0x80000008, 0x00000000, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_nonusp*/{0x80002000, 0x00000420, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_nonusp*/{0x00000000, 0x00000003, USCPathSetHint_C10ToF32, 0},
+/**!sgx540_nonusp*/{0x00000000, 0x00000010, USCPathSetHint_C10ToF32, 0},
+/**!sgx540_nonusp*/{0x00000000, 0x00000022, USCPathSetHint_C10ToF32, 0},
+/**!sgx540_nonusp*/{0x00000000, 0x00040002, USCPathSetHint_C10ToF32, 0},
+/**!sgx540_nonusp*/{0x00000000, 0x00060002, USCPathSetHint_C10ToF32, 0},
+/**!sgx540_nonusp*/{0x00000000, 0x01000402, USCPathSetHint_C10ToF32, 0},
+/**!sgx540_nonusp*/{0x00000000, 0x01000420, USCPathSetHint_C10ToF32, 0},
+/**!sgx540_nonusp*/{0x00000000, 0x010C0400, USCPathSetHint_C10ToF32, 0},
+/**!sgx540_nonusp*/{0x00000000, 0x02000000, USCPathSetHint_C10ToF32, 0},
+/**!sgx540_nonusp*/{0x00000000, 0x11080400, USCPathSetHint_C10ToF32, 0},
+/**!sgx540_nonusp*/{0x00000000, 0x20000204, USCPathSetHint_C10ToF32, 0},
+/**!sgx540_nonusp*/{0x80000100, 0x00020002, USCPathSetHint_C10ToF32, 0},
+/**!sgx540_nonusp*/{0x80000100, 0x02000002, USCPathSetHint_C10ToF32, 0},
+/**!sgx540_nonusp*/{0x80000200, 0x00000400, USCPathSetHint_C10ToF32, 0},
+/**!sgx540_nonusp*/{0x80000200, 0x03000400, USCPathSetHint_C10ToF32, 0},
+/**!sgx540_nonusp*/{0x80000400, 0x02080009, USCPathSetHint_C10ToF32, 0},
+/**!sgx540_nonusp*/{0x80000500, 0x000A0032, USCPathSetHint_C10ToF32, 0},
+/**!sgx540_nonusp*/{0x80000500, 0x000A0060, USCPathSetHint_C10ToF32, 0},
+/**!sgx540_nonusp*/{0x80000700, 0x142E0000, USCPathSetHint_C10ToF32, 0},
+/**!sgx540_nonusp*/{0x80002000, 0x01000400, USCPathSetHint_C10ToF32, 0},
+/**!sgx540_nonusp*/{0x00000000, 0x00000018, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_nonusp*/{0x00000000, 0x00000410, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_nonusp*/{0x00000000, 0x00020000, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_nonusp*/{0x00000000, 0x00020002, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_nonusp*/{0x00000000, 0x00020003, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_nonusp*/{0x00000000, 0x00020062, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_nonusp*/{0x00000000, 0x00020063, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_nonusp*/{0x00000000, 0x00040000, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_nonusp*/{0x00000000, 0x00040010, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_nonusp*/{0x00000000, 0x00040400, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_nonusp*/{0x00000000, 0x00060010, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_nonusp*/{0x00000000, 0x00080000, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_nonusp*/{0x00000000, 0x00080002, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_nonusp*/{0x00000000, 0x00080010, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_nonusp*/{0x00000000, 0x000A0010, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_nonusp*/{0x00000000, 0x01000000, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_nonusp*/{0x00000000, 0x01000410, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_nonusp*/{0x00000000, 0x01080400, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_nonusp*/{0x00000000, 0x01080410, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_nonusp*/{0x00000000, 0x02000001, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_nonusp*/{0x00000000, 0x020E0000, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_nonusp*/{0x80000004, 0x01000480, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_nonusp*/{0x80000004, 0x018004E0, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_nonusp*/{0x80000100, 0x00000002, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_nonusp*/{0x80000100, 0x0000040A, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_nonusp*/{0x80000100, 0x00080010, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_nonusp*/{0x80000100, 0x02020002, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_nonusp*/{0x80000100, 0x020A0002, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_nonusp*/{0x80000100, 0x020A0003, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_nonusp*/{0x80000200, 0x00000002, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_nonusp*/{0x80000200, 0x00040400, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_nonusp*/{0x80000200, 0x01000402, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_nonusp*/{0x80000200, 0x03000402, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_nonusp*/{0x80000200, 0x03040400, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_nonusp*/{0x80000400, 0x00000000, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_nonusp*/{0x80000400, 0x00000010, USCPathSetHint_C10ToF16, USC_DISABLE_TEMPREG_TEST},
+/**!sgx540_nonusp*/{0x80000400, 0x00000012, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_nonusp*/{0x80000400, 0x00000402, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_nonusp*/{0x80000400, 0x00080000, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_nonusp*/{0x80000400, 0x01000400, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_nonusp*/{0x80000400, 0x01080400, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_nonusp*/{0x80000400, 0x02000001, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_nonusp*/{0x80000400, 0x02000010, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_nonusp*/{0x80000400, 0x03000400, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_nonusp*/{0x80000400, 0x03080400, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_nonusp*/{0x80000400, 0x12280402, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_nonusp*/{0x80000500, 0x00080010, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_nonusp*/{0x80000500, 0x000A0002, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_nonusp*/{0x80000500, 0x020A0002, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_nonusp*/{0x80000500, 0x020A0023, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_nonusp*/{0x80000600, 0x00000012, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_nonusp*/{0x80000600, 0x010C0400, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_nonusp*/{0x80000600, 0x030C0400, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_nonusp*/{0x80000700, 0x102C0010, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_nonusp*/{0x00000000, 0x00000000, USCPathSetHint_C10F16ToF32, USC_DISABLE_TEMPREG_TEST},
+/**!sgx540_nonusp*/{0x00000000, 0x00000002, USCPathSetHint_C10F16ToF32, 0},
+/**!sgx540_nonusp*/{0x00000000, 0x00000020, USCPathSetHint_C10F16ToF32, 0},
+/**!sgx540_nonusp*/{0x00000000, 0x00000400, USCPathSetHint_C10F16ToF32, USC_DISABLE_TEMPREG_TEST},
+/**!sgx540_nonusp*/{0x00000000, 0x01000400, USCPathSetHint_C10F16ToF32, 0},
+};
+
+static const USE_PATH_LOOKUP_ENTRY gasUSCPathLookupTable_sgx540_usp_genvec16[] =
+{
+/**!sgx540_usp_genvec16 *//* e0cb00454c115e3d6baeb08c6cb53b16 */
+/**!sgx540_usp_genvec16 */{0x00000000, 0x00000001, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x00000000, 0x00000004, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x00000000, 0x00000006, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x00000000, 0x00000008, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x00000000, 0x00000060, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x00000000, 0x00000062, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x00000000, 0x00000402, USCPathSetHint_F16ToF32, USC_DISABLE_TEMPREG_TEST},
+/**!sgx540_usp_genvec16 */{0x00000000, 0x00000420, USCPathSetHint_F16ToF32, USC_DISABLE_TEMPREG_TEST},
+/**!sgx540_usp_genvec16 */{0x00000000, 0x00000424, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x00000000, 0x00020001, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x00000000, 0x20000000, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x00000000, 0x20000006, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x00000000, 0x20000024, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x00000000, 0x20000204, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x00000000, 0x20000205, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x00000000, 0x20000206, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x00000000, 0x20000404, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x00000000, 0x20008205, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x00000000, 0x20100004, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x00000000, 0x2200060C, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x00000000, 0x40000002, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x00000000, 0x4000C001, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x00000000, 0x40200000, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000001, 0x00000000, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000001, 0x00000004, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000001, 0x0000000C, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000001, 0x0000000E, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000001, 0x00000060, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000001, 0x00000402, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000001, 0x04000002, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000001, 0x20000004, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000001, 0x20000006, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000001, 0x20000204, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000001, 0x20000404, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000001, 0x20008204, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000001, 0x58000002, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000001, 0x58000012, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000002, 0x00000002, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000002, 0x00000008, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000002, 0x20000004, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000002, 0x20000006, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000003, 0x00000008, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000003, 0x20000004, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000003, 0x20000006, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000004, 0x00000000, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000004, 0x00000402, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000006, 0x00000400, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000006, 0x00000402, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000012, 0x00000008, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000012, 0x20000004, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000013, 0x00000008, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000013, 0x20000004, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000020, 0x00000422, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x800000E0, 0x20008285, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000100, 0x00200003, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000100, 0x00260003, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000800, 0x00000000, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000800, 0x00000004, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000800, 0x00000006, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000800, 0x00000404, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000800, 0x00000406, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000800, 0x20000004, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000800, 0x20000006, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000800, 0x20000084, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000800, 0x20000224, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000800, 0x20000404, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000800, 0x20000604, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000800, 0x20100404, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000800, 0x20100604, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000800, 0x20140004, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000801, 0x20000004, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000801, 0x20000064, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000801, 0x20000204, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000801, 0x20000404, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000801, 0x20000406, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000801, 0x20008604, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000801, 0x20100204, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000801, 0x20100224, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000810, 0x00000006, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000810, 0x20000004, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000811, 0x20000004, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000812, 0x20000006, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000812, 0x20000404, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000813, 0x20000004, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000813, 0x20000006, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000813, 0x20000404, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000816, 0x20000404, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000817, 0x20000404, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000840, 0x00000285, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80001000, 0x00000002, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80001000, 0x40000000, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80001801, 0x68300006, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80002000, 0x00000000, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80002000, 0x00000424, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80002000, 0x00400020, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80002001, 0x00000000, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80002001, 0x00000001, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80002001, 0x00000424, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80002001, 0x20000004, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80002001, 0x20000006, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80002013, 0x00000004, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80002013, 0x00000006, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80002800, 0x20000004, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80002800, 0x20000204, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80002801, 0x20000004, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80002801, 0x20000006, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80002801, 0x20000204, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80002801, 0x20000604, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80002801, 0x20008204, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80002801, 0x20100404, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80002801, 0x20500004, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80002801, 0x20508204, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80002813, 0x20000004, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80002813, 0x20000006, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80004000, 0x00000000, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80004000, 0x00000008, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80004001, 0x00000008, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80004002, 0x00000000, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80004002, 0x00000002, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80004002, 0x00000010, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80004006, 0x00000400, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80004006, 0x00000402, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80004012, 0x00000000, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80004012, 0x20000004, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80004012, 0x20000006, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80004013, 0x00000002, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80004026, 0x00000420, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80004800, 0x00000000, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80004802, 0x2000000E, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80004812, 0x20000004, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80004812, 0x20000006, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80006000, 0x00000008, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80006002, 0x00000008, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80006803, 0x20000004, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80006813, 0x00000006, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80006813, 0x20000004, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80006813, 0x20000006, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x00000000, 0x00000002, USCPathSetHint_C10ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x00000000, 0x00000010, USCPathSetHint_C10ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x00000000, 0x00000018, USCPathSetHint_C10ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x00000000, 0x00020000, USCPathSetHint_C10ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x00000000, 0x00020002, USCPathSetHint_C10ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x00000000, 0x00020003, USCPathSetHint_C10ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x00000000, 0x00040002, USCPathSetHint_C10ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x00000000, 0x00040010, USCPathSetHint_C10ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x00000000, 0x00060002, USCPathSetHint_C10ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x00000000, 0x00060010, USCPathSetHint_C10ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x00000000, 0x000A0010, USCPathSetHint_C10ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x00000000, 0x20000004, USCPathSetHint_C10ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x00000000, 0x201C0004, USCPathSetHint_C10ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000002, 0x00000010, USCPathSetHint_C10ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000004, 0x01000400, USCPathSetHint_C10ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000100, 0x00020002, USCPathSetHint_C10ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000100, 0x02000002, USCPathSetHint_C10ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000200, 0x00000010, USCPathSetHint_C10ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000200, 0x20000004, USCPathSetHint_C10ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000200, 0x20040004, USCPathSetHint_C10ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x8000020A, 0x00000002, USCPathSetHint_C10ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x8000020A, 0x00000010, USCPathSetHint_C10ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000400, 0x00000010, USCPathSetHint_C10ToF32, USC_DISABLE_TEMPREG_TEST},
+/**!sgx540_usp_genvec16 */{0x80000400, 0x02000001, USCPathSetHint_C10ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000400, 0x06000001, USCPathSetHint_C10ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000400, 0x20000004, USCPathSetHint_C10ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000500, 0x000A0060, USCPathSetHint_C10ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000600, 0x02000001, USCPathSetHint_C10ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000600, 0x06000001, USCPathSetHint_C10ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000600, 0x200C0004, USCPathSetHint_C10ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000600, 0x201C0004, USCPathSetHint_C10ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000600, 0x220C0004, USCPathSetHint_C10ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000801, 0x20000604, USCPathSetHint_C10ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000801, 0x20500004, USCPathSetHint_C10ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80000810, 0x00000004, USCPathSetHint_C10ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80004013, 0x00000010, USCPathSetHint_C10ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x80004600, 0x00800008, USCPathSetHint_C10ToF32, 0},
+/**!sgx540_usp_genvec16 */{0x00000000, 0x00000003, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp_genvec16 */{0x00000000, 0x00000204, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp_genvec16 */{0x00000000, 0x00020062, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp_genvec16 */{0x00000000, 0x00040000, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp_genvec16 */{0x00000000, 0x00080000, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp_genvec16 */{0x00000000, 0x010C0400, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp_genvec16 */{0x00000000, 0x01880408, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp_genvec16 */{0x00000000, 0x02080012, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp_genvec16 */{0x00000000, 0x08000000, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp_genvec16 */{0x00000000, 0x20040004, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp_genvec16 */{0x00000000, 0x20080004, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp_genvec16 */{0x00000000, 0x200C0004, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp_genvec16 */{0x00000000, 0x20500004, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp_genvec16 */{0x80000001, 0x28000006, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp_genvec16 */{0x80000003, 0x00000002, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp_genvec16 */{0x80000003, 0x00000010, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp_genvec16 */{0x80000004, 0x00000400, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp_genvec16 */{0x80000200, 0x00000000, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp_genvec16 */{0x80000200, 0x00000002, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp_genvec16 */{0x80000200, 0x22040004, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp_genvec16 */{0x80000400, 0x00000012, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp_genvec16 */{0x80000400, 0x01000400, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp_genvec16 */{0x80000400, 0x02000010, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp_genvec16 */{0x80000400, 0x04000000, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp_genvec16 */{0x80000400, 0x20080004, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp_genvec16 */{0x80000400, 0x22000004, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp_genvec16 */{0x80000400, 0x22080004, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp_genvec16 */{0x80000400, 0x4608C001, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp_genvec16 */{0x80000500, 0x00080012, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp_genvec16 */{0x80000800, 0x20000204, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp_genvec16 */{0x80000800, 0x20040004, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp_genvec16 */{0x80000811, 0x20500004, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp_genvec16 */{0x80000814, 0x05900684, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp_genvec16 */{0x80001400, 0x00000010, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp_genvec16 */{0x80001A00, 0x60700204, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp_genvec16 */{0x80002000, 0x00000400, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp_genvec16 */{0x80002401, 0x00000010, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp_genvec16 */{0x80003001, 0x50000010, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp_genvec16 */{0x80003801, 0x68700006, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp_genvec16 */{0x80004000, 0x00000002, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp_genvec16 */{0x80004000, 0x00000010, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp_genvec16 */{0x80004408, 0x00000010, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp_genvec16 */{0x80005008, 0x00000000, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp_genvec16 */{0x80005700, 0x10AC0018, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp_genvec16 */{0x00000000, 0x00000000, USCPathSetHint_C10F16ToF32, USC_DISABLE_TEMPREG_TEST},
+/**!sgx540_usp_genvec16 */{0x00000000, 0x00000400, USCPathSetHint_C10F16ToF32, USC_DISABLE_TEMPREG_TEST},
+/**!sgx540_usp_genvec16 */{0x00000000, 0x20140004, USCPathSetHint_C10F16ToF32, 0}
+};
+
+static const USE_PATH_LOOKUP_ENTRY gasUSCPathLookupTable_sgx540_usp[] =
+{
+/**!sgx540_usp*//* 8de8a0e845a8cb8e94c7bb58b43c642b */
+/**!sgx540_usp*/{0x00000000, 0x00000000, USCPathSetHint_F16ToF32, USC_DISABLE_TEMPREG_TEST},
+/**!sgx540_usp*/{0x00000000, 0x00000001, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp*/{0x00000000, 0x00000004, USCPathSetHint_F16ToF32, USC_DISABLE_INSTCYCLE_TEST},
+/**!sgx540_usp*/{0x00000000, 0x00000008, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp*/{0x00000000, 0x00000020, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp*/{0x00000000, 0x00000062, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp*/{0x00000000, 0x00000205, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp*/{0x00000000, 0x00000402, USCPathSetHint_F16ToF32, USC_DISABLE_TEMPREG_TEST},
+/**!sgx540_usp*/{0x00000000, 0x00000404, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp*/{0x00000000, 0x00000408, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp*/{0x00000000, 0x00000420, USCPathSetHint_F16ToF32, USC_DISABLE_TEMPREG_TEST},
+/**!sgx540_usp*/{0x00000000, 0x00000468, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp*/{0x00000000, 0x00000500, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp*/{0x00000000, 0x00000601, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp*/{0x00000000, 0x00020001, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp*/{0x00000000, 0x0008041A, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp*/{0x00000000, 0x01000402, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp*/{0x00000000, 0x20000004, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp*/{0x80000004, 0x00000402, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp*/{0x80000004, 0x0000040A, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp*/{0x80000004, 0x01000400, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp*/{0x80002000, 0x00000000, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp*/{0x80002000, 0x00000420, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp*/{0x80002000, 0x01000400, USCPathSetHint_F16ToF32, 0},
+/**!sgx540_usp*/{0x00000000, 0x00000002, USCPathSetHint_C10ToF32, 0},
+/**!sgx540_usp*/{0x00000000, 0x00000003, USCPathSetHint_C10ToF32, 0},
+/**!sgx540_usp*/{0x00000000, 0x00000010, USCPathSetHint_C10ToF32, 0},
+/**!sgx540_usp*/{0x00000000, 0x00040002, USCPathSetHint_C10ToF32, 0},
+/**!sgx540_usp*/{0x00000000, 0x00060002, USCPathSetHint_C10ToF32, 0},
+/**!sgx540_usp*/{0x80000004, 0x01000428, USCPathSetHint_C10ToF32, 0},
+/**!sgx540_usp*/{0x80000100, 0x02000002, USCPathSetHint_C10ToF32, 0},
+/**!sgx540_usp*/{0x80000200, 0x00000400, USCPathSetHint_C10ToF32, 0},
+/**!sgx540_usp*/{0x80000400, 0x02000001, USCPathSetHint_C10ToF32, 0},
+/**!sgx540_usp*/{0x80000400, 0x02080009, USCPathSetHint_C10ToF32, 0},
+/**!sgx540_usp*/{0x00000000, 0x00000018, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp*/{0x00000000, 0x00000204, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp*/{0x00000000, 0x00000410, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp*/{0x00000000, 0x00020000, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp*/{0x00000000, 0x00020002, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp*/{0x00000000, 0x00020003, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp*/{0x00000000, 0x00020062, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp*/{0x00000000, 0x00040000, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp*/{0x00000000, 0x00040010, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp*/{0x00000000, 0x00040400, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp*/{0x00000000, 0x00060010, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp*/{0x00000000, 0x00080000, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp*/{0x00000000, 0x00080002, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp*/{0x00000000, 0x00080400, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp*/{0x00000000, 0x000A0010, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp*/{0x00000000, 0x01000400, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp*/{0x00000000, 0x01080400, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp*/{0x00000000, 0x01080410, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp*/{0x00000000, 0x11080400, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp*/{0x80000004, 0x01000420, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp*/{0x80000004, 0x01800480, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp*/{0x80000008, 0x00000000, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp*/{0x80000100, 0x0000040A, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp*/{0x80000100, 0x00020002, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp*/{0x80000200, 0x00000000, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp*/{0x80000200, 0x00000002, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp*/{0x80000200, 0x00040400, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp*/{0x80000200, 0x02040400, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp*/{0x80000200, 0x03000402, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp*/{0x80000200, 0x03040400, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp*/{0x80000400, 0x00000000, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp*/{0x80000400, 0x00000010, USCPathSetHint_C10ToF16, USC_DISABLE_TEMPREG_TEST},
+/**!sgx540_usp*/{0x80000400, 0x00000012, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp*/{0x80000400, 0x00000402, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp*/{0x80000400, 0x01000400, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp*/{0x80000400, 0x01080400, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp*/{0x80000400, 0x02000010, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp*/{0x80000400, 0x03000400, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp*/{0x80000400, 0x03080400, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp*/{0x80000400, 0x12280412, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp*/{0x80000500, 0x00080012, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp*/{0x80000500, 0x000A0060, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp*/{0x80000600, 0x00000012, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp*/{0x80000600, 0x010C0400, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp*/{0x80000600, 0x030C0400, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp*/{0x80000700, 0x102C0010, USCPathSetHint_C10ToF16, 0},
+/**!sgx540_usp*/{0x00000000, 0x00000060, USCPathSetHint_C10F16ToF32, 0},
+/**!sgx540_usp*/{0x00000000, 0x00000400, USCPathSetHint_C10F16ToF32, USC_DISABLE_TEMPREG_TEST},
+/**!sgx540_usp*/{0x00000000, 0x010C0400, USCPathSetHint_C10F16ToF32, 0},
+/**!sgx540_usp*/{0x80000004, 0x00000400, USCPathSetHint_C10F16ToF32, 0},
+/**!sgx540_usp*/{0x80000004, 0x00000408, USCPathSetHint_C10F16ToF32, 0},
+};
+
+static const USE_PATH_LOOKUP_ENTRY gasUSCPathLookupTable_sgx543_nonusp[] =
+{
+/**!sgx543_nonusp*//* 1134fdfebb0909b6ba9486588658ced3 */
+/**!sgx543_nonusp*/{0x00000000, 0x000000A0, USCPathSetHint_F16ToF32, USC_DISABLE_TEMPREG_TEST},
+/**!sgx543_nonusp*/{0x00000000, 0x000000A1, USCPathSetHint_F16ToF32, USC_DISABLE_TEMPREG_TEST},
+/**!sgx543_nonusp*/{0x00000000, 0x00000800, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00000801, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00000810, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00000820, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00000821, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00000880, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00000881, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x000008A0, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00001000, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00001800, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00002081, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00004041, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00080000, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x40000001, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_nonusp*/{0x80000100, 0x00000430, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_nonusp*/{0x80000100, 0x00000800, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_nonusp*/{0x80000200, 0x00000080, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_nonusp*/{0x80000200, 0x00000081, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_nonusp*/{0x80000200, 0x000000A0, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_nonusp*/{0x80000200, 0x00000880, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_nonusp*/{0x80000200, 0x00000881, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_nonusp*/{0x80000200, 0x000008A0, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_nonusp*/{0x80000200, 0x00008080, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_nonusp*/{0x80000200, 0x0000C041, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_nonusp*/{0x80000200, 0x40000081, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_nonusp*/{0x80000201, 0x00008084, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_nonusp*/{0x80002000, 0x00000800, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_nonusp*/{0x80002000, 0x00000801, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_nonusp*/{0x80002000, 0x00000881, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_nonusp*/{0x80002200, 0x00000081, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_nonusp*/{0x80002200, 0x000000A0, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_nonusp*/{0x80002200, 0x00000880, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_nonusp*/{0x80002200, 0x00000881, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_nonusp*/{0x80002200, 0x000008A0, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_nonusp*/{0x80008000, 0x00000081, USCPathSetHint_F16ToF32, USC_DISABLE_TEMPREG_TEST},
+/**!sgx543_nonusp*/{0x80008000, 0x00001080, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_nonusp*/{0x80008200, 0x0000C041, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_nonusp*/{0x8000A000, 0x00000880, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_nonusp*/{0x8000A200, 0x00000880, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_nonusp*/{0x8000C200, 0x00000081, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_nonusp*/{0x80080000, 0x00000800, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_nonusp*/{0x80088200, 0x00000881, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_nonusp*/{0x8008A200, 0x00000881, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_nonusp*/{0x8008E200, 0x00000881, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_nonusp*/{0x80100000, 0x00000000, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_nonusp*/{0x80100000, 0x00000800, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_nonusp*/{0x80100000, 0x00001000, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_nonusp*/{0x80100000, 0x00001800, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_nonusp*/{0x80180000, 0x00000800, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_nonusp*/{0x80184000, 0x00000800, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00000004, USCPathSetHint_C10ToF32, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00000011, USCPathSetHint_C10ToF32, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00000024, USCPathSetHint_C10ToF32, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00000044, USCPathSetHint_C10ToF32, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00000080, USCPathSetHint_C10ToF32, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00000830, USCPathSetHint_C10ToF32, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00004080, USCPathSetHint_C10ToF32, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00008081, USCPathSetHint_C10ToF32, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00080080, USCPathSetHint_C10ToF32, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00200004, USCPathSetHint_C10ToF32, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00200024, USCPathSetHint_C10ToF32, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00800084, USCPathSetHint_C10ToF32, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00800214, USCPathSetHint_C10ToF32, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00A00010, USCPathSetHint_C10ToF32, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00A00014, USCPathSetHint_C10ToF32, 0},
+/**!sgx543_nonusp*/{0x80000020, 0x00000A10, USCPathSetHint_C10ToF32, 0},
+/**!sgx543_nonusp*/{0x80000020, 0x00800214, USCPathSetHint_C10ToF32, 0},
+/**!sgx543_nonusp*/{0x80000040, 0x00800214, USCPathSetHint_C10ToF32, 0},
+/**!sgx543_nonusp*/{0x80000060, 0x00800214, USCPathSetHint_C10ToF32, 0},
+/**!sgx543_nonusp*/{0x80020000, 0x00000000, USCPathSetHint_C10ToF32, 0},
+/**!sgx543_nonusp*/{0x80200000, 0x00000081, USCPathSetHint_C10ToF32, 0},
+/**!sgx543_nonusp*/{0x80200000, 0x0000C081, USCPathSetHint_C10ToF32, 0},
+/**!sgx543_nonusp*/{0x80200000, 0x008000A0, USCPathSetHint_C10ToF32, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00000001, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00000010, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00000014, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00000020, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00000030, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00000041, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00000060, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00000061, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00000065, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00000071, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00000083, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00000084, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00000090, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00000091, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x000000A3, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x000000B1, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x000000D1, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00000A90, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00001812, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00002001, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00002021, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00002041, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00002061, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00002090, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00004001, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00004083, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00004103, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00004882, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00006001, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x000080A1, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x0000C080, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x0000C081, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x0000C083, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x0000C0A1, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x0000C881, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x0000E081, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00020041, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00024001, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00024041, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00084080, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00200006, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00200041, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00200066, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00200201, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00800000, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00800001, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00800010, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00800014, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00800080, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00802041, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00A00020, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00A00034, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00A00080, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00A00084, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00A000A0, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80000008, 0x00000005, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80000008, 0x00000020, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80000008, 0x000002A4, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80000008, 0x00200024, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80000008, 0x00202025, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80000008, 0x00800024, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80000020, 0x00000000, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80000020, 0x00000001, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80000020, 0x00000010, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80000020, 0x00000210, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80000020, 0x00000880, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80000028, 0x00800034, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80000028, 0x00A02075, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80000040, 0x00200005, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80000100, 0x00000010, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80000200, 0x0000C081, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80000200, 0x0000C083, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80000200, 0x0008C881, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80000800, 0x00024041, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80002200, 0x0008C081, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80008000, 0x0000C081, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80020000, 0x00000001, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80020000, 0x00000210, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80020008, 0x00000014, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80020008, 0x00A00004, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80020020, 0x00000010, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80020020, 0x00000020, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80020020, 0x00000234, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80020128, 0x00804A17, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80080000, 0x00000020, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80082000, 0x00000A30, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80100020, 0x00001010, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x801A0000, 0x00001A10, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80200000, 0x00000000, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80200000, 0x00000080, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80200000, 0x000000A0, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80200000, 0x000000A1, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80200000, 0x000002A1, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80200000, 0x00000881, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80200000, 0x00002080, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80200000, 0x00002081, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80200000, 0x00008080, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80200000, 0x00008085, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80200000, 0x0000A080, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80200000, 0x0000C0A1, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80200000, 0x0000C0C1, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80200000, 0x002000A5, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80200000, 0x00800080, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80200000, 0x00800081, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80200000, 0x00800084, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80200000, 0x00800085, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80200000, 0x00800090, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80200000, 0x00802081, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80200000, 0x0080C081, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80200020, 0x00000091, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80200020, 0x0002C081, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80200200, 0x00002880, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80200200, 0x0000A080, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80200200, 0x0000C083, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80200200, 0x00200080, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80200220, 0x00800081, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80200A20, 0x00000081, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80208000, 0x00000080, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80208000, 0x00000081, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80208200, 0x0000C0C1, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80228020, 0x00000081, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80800000, 0x00000001, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80800000, 0x00000003, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80800000, 0x00000020, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80800000, 0x00000041, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80800000, 0x00800001, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80800008, 0x00000020, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80800008, 0x00A00066, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80800008, 0x00A20034, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80800020, 0x00000010, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80800020, 0x00000051, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80800020, 0x00020841, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80800020, 0x00800080, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80800020, 0x008000A0, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80800020, 0x00A000A0, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80800020, 0x00A000A4, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80800028, 0x00800010, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80800028, 0x00800080, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80800028, 0x00A000A0, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80820000, 0x00000041, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80820000, 0x00000221, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80820020, 0x00020051, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80820800, 0x00000041, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80A00000, 0x0000E081, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80A00000, 0x0002E0A1, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x80A00020, 0x00000080, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x82000000, 0x00800080, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x82000000, 0x00800084, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x82000000, 0x00A00084, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x82200200, 0x0008E081, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x82800800, 0x00000001, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x82800808, 0x00000020, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x84000000, 0x00000030, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x84000020, 0x00000000, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/{0x84308000, 0x0010C0A1, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_nonusp*/ /* {0x00000000, 0x00000000, USCPathSetHint_C10F16ToF32, USC_DISABLE_TEMPREG_TEST}, */
+/**!sgx543_nonusp*/{0x00000000, 0x00000021, USCPathSetHint_C10F16ToF32, 0},
+/**!sgx543_nonusp*/{0x00000000, 0x00000081, USCPathSetHint_C10F16ToF32, USC_DISABLE_TEMPREG_TEST},
+/**!sgx543_nonusp*/{0x80008000, 0x00000080, USCPathSetHint_C10F16ToF32, 0},
+};
+
+static const USE_PATH_LOOKUP_ENTRY gasUSCPathLookupTable_sgx543_usp[] =
+{
+/**!sgx543_usp*//* 1bff17ccb20c95ca4fdd986c5fccc53c */
+/**!sgx543_usp*/{0x00000000, 0x00000080, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_usp*/{0x00000000, 0x00000081, USCPathSetHint_F16ToF32, USC_DISABLE_TEMPREG_TEST},
+/**!sgx543_usp*/{0x00000000, 0x000000A0, USCPathSetHint_F16ToF32, USC_DISABLE_TEMPREG_TEST},
+/**!sgx543_usp*/{0x00000000, 0x000000A1, USCPathSetHint_F16ToF32, USC_DISABLE_TEMPREG_TEST},
+/**!sgx543_usp*/{0x00000000, 0x000002B0, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_usp*/{0x00000000, 0x00000800, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_usp*/{0x00000000, 0x00000810, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_usp*/{0x00000000, 0x00000820, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_usp*/{0x00000000, 0x00000821, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_usp*/{0x00000000, 0x00000880, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_usp*/{0x00000000, 0x00000881, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_usp*/{0x00000000, 0x000008A0, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_usp*/{0x00000000, 0x00001000, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_usp*/{0x00000000, 0x00001800, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_usp*/{0x00000000, 0x00002081, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_usp*/{0x00000000, 0x0000C040, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_usp*/{0x00000000, 0x00080000, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_usp*/{0x00000000, 0x40000001, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_usp*/{0x00000000, 0x40000021, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_usp*/{0x00000000, 0x40000881, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_usp*/{0x80000100, 0x00000430, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_usp*/{0x80000200, 0x00000080, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_usp*/{0x80000200, 0x00000081, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_usp*/{0x80000200, 0x000000A0, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_usp*/{0x80000200, 0x00000880, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_usp*/{0x80000200, 0x00008040, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_usp*/{0x80000200, 0x40000881, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_usp*/{0x80000201, 0x00008084, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_usp*/{0x80002000, 0x00000800, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_usp*/{0x80002000, 0x00000880, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_usp*/{0x80002000, 0x000008A0, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_usp*/{0x80002200, 0x00000081, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_usp*/{0x80002200, 0x00000880, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_usp*/{0x80002200, 0x00000881, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_usp*/{0x80002200, 0x000008A0, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_usp*/{0x80004000, 0x00000000, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_usp*/{0x80008000, 0x00000081, USCPathSetHint_F16ToF32, USC_DISABLE_TEMPREG_TEST},
+/**!sgx543_usp*/{0x80008000, 0x00001080, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_usp*/{0x8000C200, 0x00000081, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_usp*/{0x80080000, 0x00000800, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_usp*/{0x80088200, 0x00000881, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_usp*/{0x8008A200, 0x00000881, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_usp*/{0x8008E200, 0x00000881, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_usp*/{0x80100000, 0x00000000, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_usp*/{0x80100000, 0x00000800, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_usp*/{0x80100000, 0x00001000, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_usp*/{0x80100000, 0x00001800, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_usp*/{0x80180000, 0x00000800, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_usp*/{0x80184000, 0x00000800, USCPathSetHint_F16ToF32, 0},
+/**!sgx543_usp*/{0x00000000, 0x00008000, USCPathSetHint_C10ToF32, 0},
+/**!sgx543_usp*/{0x80020000, 0x00000000, USCPathSetHint_C10ToF32, 0},
+/**!sgx543_usp*/{0x80108000, 0x00000080, USCPathSetHint_C10ToF32, 0},
+/**!sgx543_usp*/{0x00000000, 0x00000001, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x00000000, 0x00000010, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x00000000, 0x00000020, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x00000000, 0x00000024, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x00000000, 0x00000030, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x00000000, 0x00000040, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x00000000, 0x00000044, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x00000000, 0x00000060, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x00000000, 0x00000084, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x00000000, 0x00000090, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x00000000, 0x000000A2, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x00000000, 0x00000801, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x00000000, 0x00000830, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x00000000, 0x00000A90, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x00000000, 0x00001812, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x00000000, 0x00002001, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x00000000, 0x00020040, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x00000000, 0x00020840, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x00000000, 0x00200020, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x00000000, 0x00200024, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x00000000, 0x00200201, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x00000000, 0x00800000, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x00000000, 0x00800010, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x00000000, 0x00800014, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x00000000, 0x00800040, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x00000000, 0x00800081, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x00000000, 0x008000B0, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x00000000, 0x008000D0, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x00000000, 0x008008B0, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x00000000, 0x00A00034, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80000008, 0x00000084, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80000008, 0x000002A4, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80000008, 0x00200026, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80000020, 0x00000000, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80000020, 0x00000010, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80000020, 0x00000080, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80000020, 0x00000210, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80000020, 0x00000891, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80000028, 0x00800024, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80000028, 0x00800034, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80000100, 0x00000010, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80000200, 0x00000881, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80000800, 0x00020040, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80001120, 0x00800214, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80002000, 0x00000895, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80008000, 0x00000080, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80008000, 0x000000A0, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80020000, 0x00000001, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80020000, 0x00000020, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80020000, 0x00000210, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80020008, 0x00000014, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80020008, 0x00A00004, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80020020, 0x00000010, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80020020, 0x00000234, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80020028, 0x00800010, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80082000, 0x00000A30, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80100020, 0x00001010, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x801A0000, 0x00001A10, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80200000, 0x00000080, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80200000, 0x00000081, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80200000, 0x00000084, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80200000, 0x00000090, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80200000, 0x00000091, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80200000, 0x000000A0, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80200000, 0x000000C0, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80200000, 0x00000880, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80200000, 0x00000881, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80200000, 0x000080A1, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80200000, 0x00800080, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80200000, 0x00800081, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80200000, 0x00800084, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80200000, 0x00A000A4, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80200020, 0x00000090, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80200020, 0x00800080, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80200200, 0x00000081, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80200200, 0x00000880, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80200200, 0x00200080, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80208000, 0x00000080, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80208000, 0x00000081, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80208000, 0x000000A0, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80208000, 0x00800080, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80208000, 0x00A000A4, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80208020, 0x00000080, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80228020, 0x00000081, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80800000, 0x00000040, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80800000, 0x00800001, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80800008, 0x00000060, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80800008, 0x00A00060, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80800020, 0x00000050, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80800020, 0x00000080, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80800020, 0x000000A0, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80800020, 0x00020850, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80800020, 0x00800080, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80800028, 0x00800080, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80800028, 0x008000A0, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80800120, 0x00000810, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80800800, 0x00000040, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80820000, 0x00000221, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80820020, 0x00000050, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80A00000, 0x00000080, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80A00000, 0x000000A1, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80A00000, 0x000000C1, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80A00020, 0x000000A0, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80A00020, 0x00A000A0, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80A00028, 0x00800084, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x80A00028, 0x008000A0, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x82200200, 0x00000080, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x82200200, 0x00800080, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x82200200, 0x00A000A4, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x84000000, 0x00000030, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x84000020, 0x00000000, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x84208000, 0x00000080, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x84920000, 0x00000040, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/{0x86208200, 0x00000881, USCPathSetHint_C10ToF16, 0},
+/**!sgx543_usp*/ /* {0x00000000, 0x00000000, USCPathSetHint_C10F16ToF32, USC_DISABLE_TEMPREG_TEST}, */
+/**!sgx543_usp*/{0x00000000, 0x00000021, USCPathSetHint_C10F16ToF32, 0},
+};
+
+static const USE_PATH_LOOKUP_ENTRY gasUSCPathLookupTable_sgx545_nonusp[] =
+{
+/**!sgx545_nonusp*//* c3de6a208a17285a11d7845224fd7a84 */
+/**!sgx545_nonusp*/{0x00000000, 0x00000006, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x00000000, 0x00000008, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x00000000, 0x0000000C, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x00000000, 0x0000000E, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x00000000, 0x00000024, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x00000000, 0x00000026, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x00000000, 0x00000060, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x00000000, 0x00000062, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x00000000, 0x00000084, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x00000000, 0x00000205, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x00000000, 0x00000402, USCPathSetHint_F16ToF32, USC_DISABLE_TEMPREG_TEST},
+/**!sgx545_nonusp*/{0x00000000, 0x0000040A, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x00000000, 0x00000420, USCPathSetHint_F16ToF32, USC_DISABLE_TEMPREG_TEST},
+/**!sgx545_nonusp*/{0x00000000, 0x00800026, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x00000000, 0x20000004, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x00000000, 0x20000006, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x00000000, 0x20000024, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x00000000, 0x20100204, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x00000000, 0x20500004, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x80000001, 0x00000000, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x80000001, 0x00000004, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x80000001, 0x00000006, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x80000001, 0x00000008, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x80000001, 0x00000064, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x80000001, 0x20000004, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x80000001, 0x20000006, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x80000001, 0x58000002, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x80000002, 0x00000008, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x80000002, 0x20000004, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x80000002, 0x20000006, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x80000003, 0x00000008, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x80000004, 0x00000000, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x80000004, 0x00000400, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x80000004, 0x00000402, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x80000010, 0x00000000, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x80000012, 0x00000004, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x80000012, 0x00000006, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x80000013, 0x00000008, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x80000013, 0x20000004, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x80000800, 0x00000004, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x80000800, 0x00000006, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x80000800, 0x20000004, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x80000800, 0x20000404, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x80000810, 0x00000004, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x80000810, 0x00000006, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x80000812, 0x20000004, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x80000812, 0x20000006, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x80000813, 0x20000004, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x80000813, 0x20000006, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x80000840, 0x00000285, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x80001000, 0x50000010, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x80002000, 0x00000000, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x80002000, 0x00000001, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x80002000, 0x00000004, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x80002000, 0x00000006, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x80002000, 0x00000024, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x80002001, 0x00000000, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x80002001, 0x00000400, USCPathSetHint_F16ToF32, USC_DISABLE_TEMPREG_TEST},
+/**!sgx545_nonusp*/{0x80002001, 0x00000402, USCPathSetHint_F16ToF32, USC_DISABLE_TEMPREG_TEST},
+/**!sgx545_nonusp*/{0x80002001, 0x00000420, USCPathSetHint_F16ToF32, USC_DISABLE_TEMPREG_TEST},
+/**!sgx545_nonusp*/{0x80002013, 0x00000004, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x80002800, 0x20000004, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x80002800, 0x20000006, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x80002800, 0x20000024, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x80002810, 0x20000004, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x80002810, 0x2000000C, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x80003000, 0x40000002, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x80004000, 0x00000000, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x80004000, 0x00000008, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x80004004, 0x00000400, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x80004004, 0x00000402, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x80004010, 0x00000000, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x80004012, 0x00000004, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x80004012, 0x00000006, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x80004024, 0x00000420, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x80004800, 0x00000000, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x80004800, 0x0000000E, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x80004810, 0x00000004, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x80004810, 0x00000006, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x80004813, 0x00000006, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x80004813, 0x20000004, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x80006000, 0x00000000, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x80006000, 0x00000008, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x80006013, 0x00000004, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x80006013, 0x00000006, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x80006813, 0x20000004, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_nonusp*/{0x00000000, 0x00000003, USCPathSetHint_C10ToF32, 0},
+/**!sgx545_nonusp*/{0x00000000, 0x00000010, USCPathSetHint_C10ToF32, 0},
+/**!sgx545_nonusp*/{0x00000000, 0x00000020, USCPathSetHint_C10ToF32, 0},
+/**!sgx545_nonusp*/{0x00000000, 0x00004001, USCPathSetHint_C10ToF32, 0},
+/**!sgx545_nonusp*/{0x00000000, 0x00020002, USCPathSetHint_C10ToF32, 0},
+/**!sgx545_nonusp*/{0x00000000, 0x00020003, USCPathSetHint_C10ToF32, 0},
+/**!sgx545_nonusp*/{0x00000000, 0x00060002, USCPathSetHint_C10ToF32, 0},
+/**!sgx545_nonusp*/{0x00000000, 0x00060010, USCPathSetHint_C10ToF32, 0},
+/**!sgx545_nonusp*/{0x00000000, 0x000C0004, USCPathSetHint_C10ToF32, 0},
+/**!sgx545_nonusp*/{0x00000000, 0x00140004, USCPathSetHint_C10ToF32, 0},
+/**!sgx545_nonusp*/{0x00000000, 0x001C0004, USCPathSetHint_C10ToF32, 0},
+/**!sgx545_nonusp*/{0x00000000, 0x01000402, USCPathSetHint_C10ToF32, 0},
+/**!sgx545_nonusp*/{0x00000000, 0x02000000, USCPathSetHint_C10ToF32, 0},
+/**!sgx545_nonusp*/{0x80000100, 0x02000002, USCPathSetHint_C10ToF32, 0},
+/**!sgx545_nonusp*/{0x80000100, 0x020A0003, USCPathSetHint_C10ToF32, 0},
+/**!sgx545_nonusp*/{0x80000200, 0x00100004, USCPathSetHint_C10ToF32, 0},
+/**!sgx545_nonusp*/{0x80000200, 0x02140004, USCPathSetHint_C10ToF32, 0},
+/**!sgx545_nonusp*/{0x80000208, 0x00800012, USCPathSetHint_C10ToF32, 0},
+/**!sgx545_nonusp*/{0x80000400, 0x00100004, USCPathSetHint_C10ToF32, 0},
+/**!sgx545_nonusp*/{0x80000600, 0x000C0004, USCPathSetHint_C10ToF32, 0},
+/**!sgx545_nonusp*/{0x80000600, 0x001C0004, USCPathSetHint_C10ToF32, 0},
+/**!sgx545_nonusp*/{0x80000600, 0x020C0004, USCPathSetHint_C10ToF32, 0},
+/**!sgx545_nonusp*/{0x80004000, 0x00000010, USCPathSetHint_C10ToF32, 0},
+/**!sgx545_nonusp*/{0x00000000, 0x00000004, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x00000000, 0x00000018, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x00000000, 0x00000204, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x00000000, 0x00000418, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x00000000, 0x00000606, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x00000000, 0x00020000, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x00000000, 0x00020062, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x00000000, 0x00040000, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x00000000, 0x00040001, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x00000000, 0x00040002, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x00000000, 0x00040010, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x00000000, 0x00040400, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x00000000, 0x00080000, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x00000000, 0x00080002, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x00000000, 0x00080004, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x00000000, 0x00080010, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x00000000, 0x000A0002, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x00000000, 0x000A0010, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x00000000, 0x00100004, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x00000000, 0x00100204, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x00000000, 0x00100224, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x00000000, 0x00140206, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x00000000, 0x01000000, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x00000000, 0x01080418, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x00000000, 0x010C0400, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x00000000, 0x02000001, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x00000000, 0x04000002, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x00000000, 0x08000000, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x00000000, 0x08000006, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x00000000, 0x20000404, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x00000000, 0x20100004, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x00000000, 0x28100206, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x00000000, 0x40000000, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x80000001, 0x20008204, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x80000001, 0x58000012, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x80000008, 0x00000000, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x80000100, 0x00000002, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x80000100, 0x00020002, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x80000100, 0x00080010, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x80000101, 0x00000006, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x80000200, 0x00000000, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x80000200, 0x00000002, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x80000200, 0x00140004, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x80000200, 0x03000400, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x80000400, 0x00000000, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x80000400, 0x00000010, USCPathSetHint_C10ToF16, USC_DISABLE_TEMPREG_TEST},
+/**!sgx545_nonusp*/{0x80000400, 0x00000012, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x80000400, 0x00080000, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x80000400, 0x00180004, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x80000400, 0x02000001, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x80000400, 0x02000004, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x80000400, 0x02000010, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x80000400, 0x02080004, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x80000400, 0x10000010, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x80000500, 0x00080012, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x80000500, 0x000A0032, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x80000500, 0x000A0060, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x80000610, 0x00000000, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x80000800, 0x00000204, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x80000800, 0x040C02E4, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x80000800, 0x20100004, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x80000800, 0x20108224, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x80000800, 0x2810C204, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x80000800, 0x34180004, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x80000801, 0x20100224, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x8000080C, 0x00100404, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x80000810, 0x20100004, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x80001000, 0x00240001, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x80001700, 0x102C0010, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x80002400, 0x06084001, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x80002800, 0x20000204, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x80003001, 0x48300006, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x80004013, 0x00000002, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x80004013, 0x00000010, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x80004408, 0x00000010, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x8000641B, 0x0000001A, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_nonusp*/{0x00000000, 0x00000000, USCPathSetHint_C10F16ToF32, USC_DISABLE_TEMPREG_TEST},
+/**!sgx545_nonusp*/{0x00000000, 0x00000001, USCPathSetHint_C10F16ToF32, 0},
+/**!sgx545_nonusp*/{0x00000000, 0x00000002, USCPathSetHint_C10F16ToF32, 0},
+/**!sgx545_nonusp*/{0x00000000, 0x00000022, USCPathSetHint_C10F16ToF32, 0},
+/**!sgx545_nonusp*/{0x00000000, 0x00000400, USCPathSetHint_C10F16ToF32, USC_DISABLE_TEMPREG_TEST},
+/**!sgx545_nonusp*/{0x00000000, 0x01000400, USCPathSetHint_C10F16ToF32, 0},
+/**!sgx545_nonusp*/{0x00000000, 0x20000204, USCPathSetHint_C10F16ToF32, 0},
+/**!sgx545_nonusp*/{0x80001000, 0x00200001, USCPathSetHint_C10F16ToF32, 0},
+};
+
+static const USE_PATH_LOOKUP_ENTRY gasUSCPathLookupTable_sgx545_usp[] =
+{
+/**!sgx545_usp*//* 02c6e70a756f2d27655b2581e18df770 */
+/**!sgx545_usp*/{0x00000000, 0x00000001, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x00000000, 0x00000008, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x00000000, 0x0000000C, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x00000000, 0x0000000E, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x00000000, 0x00000062, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x00000000, 0x00000084, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x00000000, 0x00000205, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x00000000, 0x00000402, USCPathSetHint_F16ToF32, USC_DISABLE_TEMPREG_TEST},
+/**!sgx545_usp*/{0x00000000, 0x0000040A, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x00000000, 0x00000420, USCPathSetHint_F16ToF32, USC_DISABLE_TEMPREG_TEST},
+/**!sgx545_usp*/{0x00000000, 0x00000606, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x00000000, 0x00800026, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x00000000, 0x04000002, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x00000000, 0x20000004, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x00000000, 0x20000006, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x00000000, 0x20000024, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x00000000, 0x20000204, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x00000000, 0x20000404, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x00000000, 0x20500004, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x00000000, 0x40000000, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x80000001, 0x00000000, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x80000001, 0x00000004, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x80000001, 0x00000006, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x80000001, 0x00000008, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x80000001, 0x00000064, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x80000001, 0x20000004, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x80000001, 0x20000006, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x80000001, 0x20008204, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x80000001, 0x58000002, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x80000002, 0x00000008, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x80000002, 0x20000004, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x80000002, 0x20000006, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x80000003, 0x00000008, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x80000004, 0x00000000, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x80000004, 0x00000402, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x80000010, 0x00000000, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x80000012, 0x00000004, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x80000012, 0x00000006, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x80000013, 0x00000008, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x80000013, 0x20000004, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x80000800, 0x00000004, USCPathSetHint_F16ToF32, USC_DISABLE_INSTCYCLE_TEST},
+/**!sgx545_usp*/{0x80000800, 0x00000006, USCPathSetHint_F16ToF32, USC_DISABLE_INSTCYCLE_TEST},
+/**!sgx545_usp*/{0x80000801, 0x00100004, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x80000810, 0x00000004, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x80000810, 0x00000006, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x80000810, 0x20000004, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x80000812, 0x20000004, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x80000812, 0x20000006, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x80000813, 0x20000004, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x80000813, 0x20000006, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x80000840, 0x00000285, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x80001000, 0x00200003, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x80001000, 0x00240003, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x80001000, 0x50000010, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x80002000, 0x00000000, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x80002000, 0x00000001, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x80002000, 0x00000004, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x80002000, 0x00000006, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x80002000, 0x00000024, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x80002001, 0x00000000, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x80002001, 0x00000400, USCPathSetHint_F16ToF32, USC_DISABLE_TEMPREG_TEST},
+/**!sgx545_usp*/{0x80002001, 0x00000402, USCPathSetHint_F16ToF32, USC_DISABLE_TEMPREG_TEST},
+/**!sgx545_usp*/{0x80002001, 0x00000420, USCPathSetHint_F16ToF32, USC_DISABLE_TEMPREG_TEST},
+/**!sgx545_usp*/{0x80002003, 0x00000000, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x80002013, 0x00000004, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x80002800, 0x20000004, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x80002800, 0x20000006, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x80002800, 0x20000024, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x80002800, 0x20100004, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x80002801, 0x20108204, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x80002810, 0x2000000C, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x80003000, 0x40000002, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x80004000, 0x00000000, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x80004000, 0x00000008, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x80004004, 0x00000400, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x80004004, 0x00000402, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x80004010, 0x00000000, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x80004012, 0x00000004, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x80004012, 0x00000006, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x80004024, 0x00000420, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x80004800, 0x0000000E, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x80004810, 0x00000004, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x80004810, 0x00000006, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x80004813, 0x00000006, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x80004813, 0x20000004, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x80006000, 0x00000000, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x80006000, 0x00000008, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x80006013, 0x00000004, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x80006013, 0x00000006, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x80006803, 0x20000004, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x80006813, 0x20000004, USCPathSetHint_F16ToF32, 0},
+/**!sgx545_usp*/{0x00000000, 0x00000003, USCPathSetHint_C10ToF32, 0},
+/**!sgx545_usp*/{0x00000000, 0x00000004, USCPathSetHint_C10ToF32, 0},
+/**!sgx545_usp*/{0x00000000, 0x00000010, USCPathSetHint_C10ToF32, 0},
+/**!sgx545_usp*/{0x00000000, 0x00060002, USCPathSetHint_C10ToF32, 0},
+/**!sgx545_usp*/{0x00000000, 0x00060010, USCPathSetHint_C10ToF32, 0},
+/**!sgx545_usp*/{0x00000000, 0x001C0004, USCPathSetHint_C10ToF32, 0},
+/**!sgx545_usp*/{0x00000000, 0x02000000, USCPathSetHint_C10ToF32, 0},
+/**!sgx545_usp*/{0x80000100, 0x02000002, USCPathSetHint_C10ToF32, 0},
+/**!sgx545_usp*/{0x80000200, 0x00000004, USCPathSetHint_C10ToF32, 0},
+/**!sgx545_usp*/{0x80000200, 0x00040004, USCPathSetHint_C10ToF32, 0},
+/**!sgx545_usp*/{0x80000200, 0x00100004, USCPathSetHint_C10ToF32, 0},
+/**!sgx545_usp*/{0x80000200, 0x00140004, USCPathSetHint_C10ToF32, 0},
+/**!sgx545_usp*/{0x80000208, 0x00800012, USCPathSetHint_C10ToF32, 0},
+/**!sgx545_usp*/{0x80000400, 0x00100004, USCPathSetHint_C10ToF32, 0},
+/**!sgx545_usp*/{0x80000600, 0x000C0004, USCPathSetHint_C10ToF32, 0},
+/**!sgx545_usp*/{0x80000600, 0x001C0004, USCPathSetHint_C10ToF32, 0},
+/**!sgx545_usp*/{0x80000600, 0x020C0004, USCPathSetHint_C10ToF32, 0},
+/**!sgx545_usp*/{0x80000600, 0x021C0004, USCPathSetHint_C10ToF32, 0},
+/**!sgx545_usp*/{0x80004000, 0x00000010, USCPathSetHint_C10ToF32, 0},
+/**!sgx545_usp*/{0x00000000, 0x00000018, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_usp*/{0x00000000, 0x00000204, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_usp*/{0x00000000, 0x00000224, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_usp*/{0x00000000, 0x00000418, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_usp*/{0x00000000, 0x00004001, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_usp*/{0x00000000, 0x00020000, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_usp*/{0x00000000, 0x00020062, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_usp*/{0x00000000, 0x00040000, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_usp*/{0x00000000, 0x00040001, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_usp*/{0x00000000, 0x00040002, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_usp*/{0x00000000, 0x00040004, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_usp*/{0x00000000, 0x00040006, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_usp*/{0x00000000, 0x00040010, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_usp*/{0x00000000, 0x00080000, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_usp*/{0x00000000, 0x00080002, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_usp*/{0x00000000, 0x00080004, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_usp*/{0x00000000, 0x000C0004, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_usp*/{0x00000000, 0x00100004, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_usp*/{0x00000000, 0x00100204, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_usp*/{0x00000000, 0x00140004, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_usp*/{0x00000000, 0x01000400, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_usp*/{0x00000000, 0x01080418, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_usp*/{0x00000000, 0x010C0400, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_usp*/{0x00000000, 0x08000000, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_usp*/{0x00000000, 0x08000006, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_usp*/{0x00000000, 0x20100004, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_usp*/{0x00000000, 0x68300206, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_usp*/{0x80000001, 0x58000012, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_usp*/{0x80000004, 0x00000400, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_usp*/{0x80000008, 0x00000000, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_usp*/{0x80000100, 0x00020002, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_usp*/{0x80000101, 0x00000006, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_usp*/{0x80000200, 0x00000000, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_usp*/{0x80000200, 0x00000002, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_usp*/{0x80000200, 0x02040004, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_usp*/{0x80000200, 0x02140004, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_usp*/{0x80000200, 0x03000400, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_usp*/{0x80000400, 0x00000000, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_usp*/{0x80000400, 0x00000010, USCPathSetHint_C10ToF16, USC_DISABLE_TEMPREG_TEST},
+/**!sgx545_usp*/{0x80000400, 0x00000012, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_usp*/{0x80000400, 0x00180004, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_usp*/{0x80000400, 0x01000400, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_usp*/{0x80000400, 0x02000001, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_usp*/{0x80000400, 0x02000004, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_usp*/{0x80000400, 0x02000010, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_usp*/{0x80000400, 0x02080004, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_usp*/{0x80000400, 0x10000010, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_usp*/{0x80000500, 0x000A0060, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_usp*/{0x80000610, 0x00000000, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_usp*/{0x80000800, 0x00000204, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_usp*/{0x80000800, 0x1C1C0004, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_usp*/{0x80000800, 0x20000224, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_usp*/{0x80000800, 0x20108224, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_usp*/{0x80000800, 0x2810C204, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_usp*/{0x80000810, 0x0000000C, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_usp*/{0x80000810, 0x00100004, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_usp*/{0x80001700, 0x102C0010, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_usp*/{0x80002400, 0x06084001, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_usp*/{0x80002800, 0x20000204, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_usp*/{0x80003001, 0x48300006, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_usp*/{0x80003801, 0x68300006, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_usp*/{0x80004013, 0x00000002, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_usp*/{0x80004013, 0x00000010, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_usp*/{0x80004408, 0x00000010, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_usp*/{0x8000641B, 0x0000001A, USCPathSetHint_C10ToF16, 0},
+/**!sgx545_usp*/{0x00000000, 0x00000000, USCPathSetHint_C10F16ToF32, USC_DISABLE_TEMPREG_TEST},
+/**!sgx545_usp*/{0x00000000, 0x00000002, USCPathSetHint_C10F16ToF32, 0},
+/**!sgx545_usp*/{0x00000000, 0x00000006, USCPathSetHint_C10F16ToF32, USC_DISABLE_INSTCYCLE_TEST},
+/**!sgx545_usp*/{0x00000000, 0x00000060, USCPathSetHint_C10F16ToF32, 0},
+/**!sgx545_usp*/{0x00000000, 0x00000400, USCPathSetHint_C10F16ToF32, USC_DISABLE_TEMPREG_TEST},
+};
+
+#if defined(EXTERNAL_PCONVERT_HASH)
+IMG_INTERNAL
+IMG_PVOID IMG_CALLCONV PConvertGetProcAddress(const char *pszProcName)
+/*****************************************************************************
+ FUNCTION	: PConvertTranslateFlags
+
+ PURPOSE	: 
+
+ PARAMETERS	: 
+
+ RETURNS	: Nothing
+*****************************************************************************/
+{
+	IMG_UINT32 i;
+#define PATH_PROC_ENTRY(x) {#x, x}
+	static struct PathSetHintsProcEntries
+	{
+		IMG_CHAR						*pszProcName;
+		PCONVERT_FLAG_UPDATION_ROUTINE	pvProcAddrss;
+	} asEntries[] = {	PATH_PROC_ENTRY(USCPathSetHint_C10ToF16), 
+						PATH_PROC_ENTRY(USCPathSetHint_C10ToF32), 
+						PATH_PROC_ENTRY(USCPathSetHint_F16ToF32), 
+						PATH_PROC_ENTRY(USCPathSetHint_C10F16ToF32)};
+	for(i = 0; i < (sizeof(asEntries) / sizeof(asEntries[0])); i++)
+	{
+		if(strcmp(asEntries[i].pszProcName, pszProcName) == 0)
+			return (IMG_PVOID)asEntries[i].pvProcAddrss;
+	}
+	return IMG_NULL;
+#undef PATH_PROC_ENTRY
+}
+
+
+IMG_INTERNAL
+IMG_UINT32 IMG_CALLCONV PConvertTranslateFlags(const char *pszFlags)
+/*****************************************************************************
+ FUNCTION	: PConvertTranslateFlags
+
+ PURPOSE	: 
+
+ PARAMETERS	: 
+
+ RETURNS	: Nothing
+*****************************************************************************/
+{
+	IMG_UINT32 i, uReturnFlags;
+#define TEST_FLAG_ENTRY(x) {#x, x}
+	static struct PathSetHintsProcEntries
+	{
+		IMG_CHAR						*pszFlagName;
+		IMG_UINT32						uFlagValue;
+	} asEntries[] = {	TEST_FLAG_ENTRY(USC_DISABLE_INSTCYCLE_TEST), 
+						TEST_FLAG_ENTRY(USC_DISABLE_TEMPREG_TEST), 
+						TEST_FLAG_ENTRY(USC_DISABLE_ALL_TESTS), };
+	uReturnFlags = 0;
+	for(i = 0; i < (sizeof(asEntries) / sizeof(asEntries[0])); i++)
+	{
+		if(strstr(pszFlags, asEntries[i].pszFlagName) != 0)
+		{
+			uReturnFlags |= asEntries[i].uFlagValue;
+		}
+	}
+	return uReturnFlags;
+#undef TEST_FLAG_ENTRY
+}
+#endif
+
+
+static
+IMG_VOID USCPathSetHint_C10ToF16(PINTERMEDIATE_STATE psState)
+/*****************************************************************************
+ FUNCTION	: USCPathSetHint_C10ToF16
+
+ PURPOSE	: Enforece input for c10 to f16
+
+ PARAMETERS	: psState			- Compiler state.
+
+ RETURNS	: Nothing
+*****************************************************************************/
+{
+	psState->uCompilerFlags |= UF_FORCE_C10_TO_F16_PRECISION;
+}
+
+static
+IMG_VOID USCPathSetHint_C10ToF32(PINTERMEDIATE_STATE psState)
+/*****************************************************************************
+ FUNCTION	: USCPathSetHint_C10ToF32
+
+ PURPOSE	: Enforece input for c10 to f32
+
+ PARAMETERS	: psState			- Compiler state.
+
+ RETURNS	: Nothing
+*****************************************************************************/
+{
+	psState->uCompilerFlags |= UF_FORCE_C10_TO_F32_PRECISION;
+}
+
+static
+IMG_VOID USCPathSetHint_F16ToF32(PINTERMEDIATE_STATE psState)
+/*****************************************************************************
+ FUNCTION	: USCPathSetHint_F16ToF32
+
+ PURPOSE	: Enforece input for f16 to f32
+
+ PARAMETERS	: psState			- Compiler state.
+
+ RETURNS	: Nothing
+*****************************************************************************/
+{
+	psState->uCompilerFlags |= UF_FORCE_F16_TO_F32_PRECISION;
+}
+
+static
+IMG_VOID USCPathSetHint_C10F16ToF32(PINTERMEDIATE_STATE psState)
+/*****************************************************************************
+ FUNCTION	: USCPathSetHint_C10F16ToF32
+
+ PURPOSE	: Enforece input for c10 and f16 both to f32
+
+ PARAMETERS	: psState			- Compiler state.
+
+ RETURNS	: Nothing
+*****************************************************************************/
+{
+	psState->uCompilerFlags |= (UF_FORCE_C10_TO_F32_PRECISION | UF_FORCE_F16_TO_F32_PRECISION);
+}
+
+IMG_INTERNAL
+PINPUT_PROGRAM	OverridePrecisions(const PINTERMEDIATE_STATE psState, PUNIFLEX_INST psOrigProg)
+/*****************************************************************************
+ FUNCTION	: OverridePrecisions
+
+ PURPOSE	: SetHints precision according to compilation flags.
+
+ PARAMETERS	: psState			- Compiler state.
+			  psOrigProg		- Input UNIFLEX program
+
+ RETURNS	: Number of changes made
+*****************************************************************************/
+{
+	PUNIFLEX_INST		psOrigInst;
+	PINPUT_PROGRAM		psAlteredProg;
+	PUNIFLEX_INST		psAlteredInst;
+	
+	IMG_UINT32			uArg;
+	IMG_UINT32			uChanges = 0;
+	
+	IMG_BOOL			bUpConvertF16ToF32 = (psState->uCompilerFlags & UF_FORCE_F16_TO_F32_PRECISION) ? IMG_TRUE : IMG_FALSE;
+	IMG_BOOL			bUpConvertC10ToF32 = (psState->uCompilerFlags & UF_FORCE_C10_TO_F32_PRECISION) ? IMG_TRUE : IMG_FALSE;
+	IMG_BOOL			bUpConvertC10ToF16 = (psState->uCompilerFlags & UF_FORCE_C10_TO_F16_PRECISION) ? IMG_TRUE : IMG_FALSE;
+	
+
+	psAlteredProg = UscAlloc(psState, sizeof(INPUT_PROGRAM));
+	memset(psAlteredProg, 0, sizeof(INPUT_PROGRAM));
+	
+	if(bUpConvertC10ToF16 || bUpConvertC10ToF32 || bUpConvertF16ToF32)
+	{
+		/*
+			Convert lower precision registers to higher precision creating a copy of original program
+		*/
+		psOrigInst = psOrigProg;
+		while (psOrigInst != NULL)
+		{
+			psAlteredInst = AllocInputInst(psState, psAlteredProg, psOrigInst);
+			CopyInputInst(psAlteredInst, psOrigInst);
+			
+			for (uArg = 0; uArg < g_asInputInstDesc[psAlteredInst->eOpCode].uNumSrcArgs; uArg++)
+			{
+				if( (psAlteredInst->asSrc[uArg].eFormat == UF_REGFORMAT_F16 && bUpConvertF16ToF32) ||
+					(psAlteredInst->asSrc[uArg].eFormat == UF_REGFORMAT_C10 && bUpConvertC10ToF32) )
+				{
+					psAlteredInst->asSrc[uArg].eFormat = UF_REGFORMAT_F32;
+					uChanges++;
+				}
+				else
+				{
+					if(psAlteredInst->asSrc[uArg].eFormat == UF_REGFORMAT_C10 && bUpConvertC10ToF16)
+					{
+						psAlteredInst->asSrc[uArg].eFormat = UF_REGFORMAT_F16;
+						uChanges++;
+					}
+				}
+			}
+			
+			for (uArg = g_asInputInstDesc[psAlteredInst->eOpCode].uNumDests; uArg > 0; uArg--)
+			{
+				PUF_REGISTER psDest = (uArg == 2) ? &psAlteredInst->sDest2 : &psAlteredInst->sDest;
+				if ( (psDest->eFormat == UF_REGFORMAT_F16 && bUpConvertF16ToF32) ||
+					(psDest->eFormat == UF_REGFORMAT_C10 && bUpConvertC10ToF32) )
+				{
+					psDest->eFormat = UF_REGFORMAT_F32;
+					uChanges++;
+				}
+				else
+				{
+					if(psDest->eFormat == UF_REGFORMAT_C10 && bUpConvertC10ToF16)
+					{
+						psDest->eFormat = UF_REGFORMAT_F16;
+						uChanges++;
+					}
+				}
+			}
+			psOrigInst = psOrigInst->psILink;
+		}
+	}
+	
+	if(uChanges)
+	{
+		return psAlteredProg;
+	}
+	else
+	{
+		FreeInputProg(psState, &psAlteredProg);
+		return IMG_NULL;
+	}
+}
+
+IMG_INTERNAL
+IMG_VOID TrackRedundantFormatConversions(PINTERMEDIATE_STATE psState, PCODEBLOCK psBlock, IMG_PVOID pvSearchPaths)
+/*****************************************************************************
+ FUNCTION	: TrackRedundantFormatConversions
+
+ PURPOSE	: Search for conversion redundancy and sets recompilation flags
+			  accordingly.
+
+ PARAMETERS	: psState			- Compiler state.
+			  psBlock			- Input program.
+			  pvNull			- Not used.
+
+ RETURNS	: Nothing.
+*****************************************************************************/
+{
+	PINST			psInst;
+	IMG_BOOL		bResult;
+	IMG_UINT32		auPrecisionConversionPaths[2] = {0, 0};
+	
+	/*
+		Rules of pattern searching, expression trees
+	*/
+#if defined(DEBUG)
+	#define DEFINE_SEARCH_RULE(rule, a, b, c, d) \
+			static const PATTERN_RULE rule = {a, b, c, d, #rule}
+#else
+	#define DEFINE_SEARCH_RULE(rule, a, b, c, d) \
+			static const PATTERN_RULE rule = {a, b, c, d}
+#endif
+
+#if defined(SUPPORT_SGX543) || defined(SUPPORT_SGX544) || defined(SUPPORT_SGX554)
+	// u8 -> u8, flt
+	DEFINE_SEARCH_RULE(sNode_IVPCKU8U8, IVPCKU8U8, NODE_INSTRUCTION, IMG_NULL, IMG_NULL); 
+		DEFINE_SEARCH_RULE(sNode_IVPCKU8U8_ANY, IINVALID, NODE_ANYTHING, &sNode_IVPCKU8U8, IMG_NULL);
+	DEFINE_SEARCH_RULE(sNode_IVPCKFLTU8, IVPCKFLTU8, NODE_INSTRUCTION, IMG_NULL, IMG_NULL);
+		DEFINE_SEARCH_RULE(sNode_IVPCKFLTU8_ANY, IINVALID, NODE_ANYTHING, &sNode_IVPCKFLTU8, IMG_NULL);
+	
+	// c10 -> c10, flt
+	DEFINE_SEARCH_RULE(sNode_IVPCKC10C10, IVPCKC10C10, NODE_INSTRUCTION, IMG_NULL, IMG_NULL);
+		DEFINE_SEARCH_RULE(sNode_IVPCKC10C10_ANY, IINVALID, NODE_ANYTHING, &sNode_IVPCKC10C10, IMG_NULL);
+	DEFINE_SEARCH_RULE(sNode_IVPCKFLTC10, IVPCKFLTC10, NODE_INSTRUCTION, IMG_NULL, IMG_NULL);
+		DEFINE_SEARCH_RULE(sNode_IVPCKFLTC10_ANY, IINVALID, NODE_ANYTHING, &sNode_IVPCKFLTC10, IMG_NULL);
+	DEFINE_SEARCH_RULE(sNode_IVPCKFLTC10_VEC, IVPCKFLTC10_VEC, NODE_INSTRUCTION, IMG_NULL, IMG_NULL);
+		DEFINE_SEARCH_RULE(sNode_IVPCKFLTC10_VEC_ANY, IINVALID, NODE_ANYTHING, &sNode_IVPCKFLTC10_VEC, IMG_NULL);
+	
+	DEFINE_SEARCH_RULE(sNode_ISOPWM_VEC, ISOPWM_VEC, NODE_INSTRUCTION, IMG_NULL, IMG_NULL);
+		// DEFINE_SEARCH_RULE(sNode_ISOPWM_VEC_ANY, IINVALID, NODE_ANYTHING, &sNode_ISOPWM_VEC, IMG_NULL);
+	DEFINE_SEARCH_RULE(sNode_ISOP3_VEC, ISOP3_VEC, NODE_INSTRUCTION, IMG_NULL, IMG_NULL);
+		// DEFINE_SEARCH_RULE(sNode_ISOP3_VEC_ANY, IINVALID, NODE_ANYTHING, &sNode_ISOP3_VEC, IMG_NULL);
+	
+	// flt -> u8, c10, flt
+	DEFINE_SEARCH_RULE(sNode_IVPCKU8FLT, IVPCKU8FLT, NODE_INSTRUCTION, IMG_NULL, IMG_NULL);
+		DEFINE_SEARCH_RULE(sNode_IVPCKU8FLT_ANY, IINVALID, NODE_ANYTHING, &sNode_IVPCKU8FLT, IMG_NULL);
+	DEFINE_SEARCH_RULE(sNode_IVPCKU8FLT_EXP, IVPCKU8FLT_EXP, NODE_INSTRUCTION, IMG_NULL, IMG_NULL);
+		DEFINE_SEARCH_RULE(sNode_IVPCKU8FLT_EXP_ANY, IINVALID, NODE_ANYTHING, &sNode_IVPCKU8FLT_EXP, IMG_NULL);
+	DEFINE_SEARCH_RULE(sNode_IVPCKC10FLT, IVPCKC10FLT, NODE_INSTRUCTION, IMG_NULL, IMG_NULL);
+		DEFINE_SEARCH_RULE(sNode_IVPCKC10FLT_ANY, IINVALID, NODE_ANYTHING, &sNode_IVPCKC10FLT, IMG_NULL);
+	DEFINE_SEARCH_RULE(sNode_IVPCKC10FLT_EXP, IVPCKC10FLT_EXP, NODE_INSTRUCTION, IMG_NULL, IMG_NULL);
+		DEFINE_SEARCH_RULE(sNode_IVPCKC10FLT_EXP_ANY, IINVALID, NODE_ANYTHING, &sNode_IVPCKC10FLT_EXP, IMG_NULL);
+	DEFINE_SEARCH_RULE(sNode_IVPCKFLTFLT, IVPCKFLTFLT, NODE_INSTRUCTION, IMG_NULL, IMG_NULL);
+		DEFINE_SEARCH_RULE(sNode_IVPCKFLTFLT_ANY, IINVALID, NODE_ANYTHING, &sNode_IVPCKFLTFLT, IMG_NULL);
+	DEFINE_SEARCH_RULE(sNode_IVPCKFLTFLT_EXP, IVPCKFLTFLT_EXP, NODE_INSTRUCTION, IMG_NULL, IMG_NULL);
+		DEFINE_SEARCH_RULE(sNode_IVPCKFLTFLT_EXP_ANY, IINVALID, NODE_ANYTHING, &sNode_IVPCKFLTFLT_EXP, IMG_NULL);
+	
+	// u8 -> {u8, flt} -> {u8, c10, flt}
+	DEFINE_SEARCH_RULE(sNode_IVPCKU8U8_ANY_IVPCKU8U8_ANY, IINVALID, NODE_CONCAT, &sNode_IVPCKU8U8_ANY, &sNode_IVPCKU8U8_ANY);
+	DEFINE_SEARCH_RULE(sNode_IVPCKU8U8_ANY_IVPCKFLTU8_ANY, IINVALID, NODE_CONCAT, &sNode_IVPCKU8U8_ANY, &sNode_IVPCKFLTU8_ANY);
+	DEFINE_SEARCH_RULE(sNode_IVPCKFLTU8_ANY_IVPCKU8FLT_ANY, IINVALID, NODE_CONCAT, &sNode_IVPCKFLTU8_ANY, &sNode_IVPCKU8FLT_ANY);
+	DEFINE_SEARCH_RULE(sNode_IVPCKFLTU8_ANY_IVPCKU8FLT_EXP_ANY, IINVALID, NODE_CONCAT, &sNode_IVPCKFLTU8_ANY, &sNode_IVPCKU8FLT_EXP_ANY);
+	DEFINE_SEARCH_RULE(sNode_IVPCKFLTU8_ANY_IVPCKC10FLT_ANY, IINVALID, NODE_CONCAT, &sNode_IVPCKFLTU8_ANY, &sNode_IVPCKC10FLT_ANY);
+	DEFINE_SEARCH_RULE(sNode_IVPCKFLTU8_ANY_IVPCKC10FLT_EXP_ANY, IINVALID, NODE_CONCAT, &sNode_IVPCKFLTU8_ANY, &sNode_IVPCKC10FLT_EXP_ANY);
+	DEFINE_SEARCH_RULE(sNode_IVPCKFLTU8_ANY_IVPCKFLTFLT_ANY, IINVALID, NODE_CONCAT, &sNode_IVPCKFLTU8_ANY, &sNode_IVPCKFLTFLT_ANY);
+	DEFINE_SEARCH_RULE(sNode_IVPCKFLTU8_ANY_IVPCKFLTFLT_EXP_ANY, IINVALID, NODE_CONCAT, &sNode_IVPCKFLTU8_ANY, &sNode_IVPCKFLTFLT_EXP_ANY);
+	
+	// c10 -> { c10, flt} -> c10, flt
+	DEFINE_SEARCH_RULE(sNode_IVPCKC10C10_ANY_IVPCKC10C10_ANY, IINVALID, NODE_CONCAT, &sNode_IVPCKC10C10_ANY, &sNode_IVPCKC10C10_ANY);
+	DEFINE_SEARCH_RULE(sNode_IVPCKC10C10_ANY_IVPCKFLTC10_ANY, IINVALID, NODE_CONCAT, &sNode_IVPCKC10C10_ANY, &sNode_IVPCKFLTC10_ANY);
+	DEFINE_SEARCH_RULE(sNode_IVPCKC10C10_ANY_IVPCKFLTC10_VEC_ANY, IINVALID, NODE_CONCAT, &sNode_IVPCKC10C10_ANY, &sNode_IVPCKFLTC10_VEC_ANY);
+	DEFINE_SEARCH_RULE(sNode_IVPCKFLTC10_ANY_IVPCKU8FLT_ANY, IINVALID, NODE_CONCAT, &sNode_IVPCKFLTC10_ANY, &sNode_IVPCKU8FLT_ANY);
+	DEFINE_SEARCH_RULE(sNode_IVPCKFLTC10_ANY_IVPCKU8FLT_EXP_ANY, IINVALID, NODE_CONCAT, &sNode_IVPCKFLTC10_ANY, &sNode_IVPCKU8FLT_EXP_ANY);
+	DEFINE_SEARCH_RULE(sNode_IVPCKFLTC10_ANY_IVPCKC10FLT_ANY, IINVALID, NODE_CONCAT, &sNode_IVPCKFLTC10_ANY, &sNode_IVPCKC10FLT_ANY);
+	DEFINE_SEARCH_RULE(sNode_IVPCKFLTC10_ANY_IVPCKC10FLT_EXP_ANY, IINVALID, NODE_CONCAT, &sNode_IVPCKFLTC10_ANY, &sNode_IVPCKC10FLT_EXP_ANY);
+	DEFINE_SEARCH_RULE(sNode_IVPCKFLTC10_ANY_IVPCKFLTFLT_ANY, IINVALID, NODE_CONCAT, &sNode_IVPCKFLTC10_ANY, &sNode_IVPCKFLTFLT_ANY);
+	DEFINE_SEARCH_RULE(sNode_IVPCKFLTC10_ANY_IVPCKFLTFLT_EXP_ANY, IINVALID, NODE_CONCAT, &sNode_IVPCKFLTC10_ANY, &sNode_IVPCKFLTFLT_EXP_ANY);
+	
+	DEFINE_SEARCH_RULE(sNode_IVPCKFLTC10_VEC_ANY_IVPCKU8FLT_ANY, IINVALID, NODE_CONCAT, &sNode_IVPCKFLTC10_VEC_ANY, &sNode_IVPCKU8FLT_ANY);
+	DEFINE_SEARCH_RULE(sNode_IVPCKFLTC10_VEC_ANY_IVPCKU8FLT_EXP_ANY, IINVALID, NODE_CONCAT, &sNode_IVPCKFLTC10_VEC_ANY, &sNode_IVPCKU8FLT_EXP_ANY);
+	DEFINE_SEARCH_RULE(sNode_IVPCKFLTC10_VEC_ANY_IVPCKC10FLT_ANY, IINVALID, NODE_CONCAT, &sNode_IVPCKFLTC10_VEC_ANY, &sNode_IVPCKC10FLT_ANY);
+	DEFINE_SEARCH_RULE(sNode_IVPCKFLTC10_VEC_ANY_IVPCKC10FLT_EXP_ANY, IINVALID, NODE_CONCAT, &sNode_IVPCKFLTC10_VEC_ANY, &sNode_IVPCKC10FLT_EXP_ANY);
+	DEFINE_SEARCH_RULE(sNode_IVPCKFLTC10_VEC_ANY_IVPCKFLTFLT_ANY, IINVALID, NODE_CONCAT, &sNode_IVPCKFLTC10_VEC_ANY, &sNode_IVPCKFLTFLT_ANY);
+	DEFINE_SEARCH_RULE(sNode_IVPCKFLTC10_VEC_ANY_IVPCKFLTFLT_EXP_ANY, IINVALID, NODE_CONCAT, &sNode_IVPCKFLTC10_VEC_ANY, &sNode_IVPCKFLTFLT_EXP_ANY);
+	
+	// flt -> {u8, c10, flt} -> {u8, c10, flt}
+	DEFINE_SEARCH_RULE(sNode_IVPCKU8FLT_ANY_IVPCKU8U8_ANY, IINVALID, NODE_CONCAT, &sNode_IVPCKU8FLT_ANY, &sNode_IVPCKU8U8_ANY);
+	DEFINE_SEARCH_RULE(sNode_IVPCKU8FLT_ANY_IVPCKFLTU8_ANY, IINVALID, NODE_CONCAT, &sNode_IVPCKU8FLT_ANY, &sNode_IVPCKFLTU8_ANY);
+	DEFINE_SEARCH_RULE(sNode_IVPCKU8FLT_EXP_ANY_IVPCKU8U8_ANY, IINVALID, NODE_CONCAT, &sNode_IVPCKU8FLT_EXP_ANY, &sNode_IVPCKU8U8_ANY);
+	DEFINE_SEARCH_RULE(sNode_IVPCKU8FLT_EXP_ANY_IVPCKFLTU8_ANY, IINVALID, NODE_CONCAT, &sNode_IVPCKU8FLT_EXP_ANY, &sNode_IVPCKFLTU8_ANY);
+	DEFINE_SEARCH_RULE(sNode_IVPCKC10FLT_ANY_IVPCKC10C10_ANY, IINVALID, NODE_CONCAT, &sNode_IVPCKC10FLT_ANY, &sNode_IVPCKC10C10_ANY);
+	DEFINE_SEARCH_RULE(sNode_IVPCKC10FLT_ANY_IVPCKFLTC10_ANY, IINVALID, NODE_CONCAT, &sNode_IVPCKC10FLT_ANY, &sNode_IVPCKFLTC10_ANY);
+	DEFINE_SEARCH_RULE(sNode_IVPCKC10FLT_ANY_IVPCKFLTC10_VEC_ANY, IINVALID, NODE_CONCAT, &sNode_IVPCKC10FLT_ANY, &sNode_IVPCKFLTC10_VEC_ANY);
+	DEFINE_SEARCH_RULE(sNode_IVPCKC10FLT_EXP_ANY_IVPCKC10C10_ANY, IINVALID, NODE_CONCAT, &sNode_IVPCKC10FLT_EXP_ANY, &sNode_IVPCKC10C10_ANY);
+	DEFINE_SEARCH_RULE(sNode_IVPCKC10FLT_EXP_ANY_IVPCKFLTC10_ANY, IINVALID, NODE_CONCAT, &sNode_IVPCKC10FLT_EXP_ANY, &sNode_IVPCKFLTC10_ANY);
+	DEFINE_SEARCH_RULE(sNode_IVPCKC10FLT_EXP_ANY_IVPCKFLTC10_VEC_ANY, IINVALID, NODE_CONCAT, &sNode_IVPCKC10FLT_EXP_ANY, &sNode_IVPCKFLTC10_VEC_ANY);
+	DEFINE_SEARCH_RULE(sNode_IVPCKFLTFLT_ANY_IVPCKU8FLT_ANY, IINVALID, NODE_CONCAT, &sNode_IVPCKFLTFLT_ANY, &sNode_IVPCKU8FLT_ANY);
+	DEFINE_SEARCH_RULE(sNode_IVPCKFLTFLT_ANY_IVPCKU8FLT_EXP_ANY, IINVALID, NODE_CONCAT, &sNode_IVPCKFLTFLT_ANY, &sNode_IVPCKU8FLT_EXP_ANY);
+	DEFINE_SEARCH_RULE(sNode_IVPCKFLTFLT_ANY_IVPCKC10FLT_ANY, IINVALID, NODE_CONCAT, &sNode_IVPCKFLTFLT_ANY, &sNode_IVPCKC10FLT_ANY);
+	DEFINE_SEARCH_RULE(sNode_IVPCKFLTFLT_ANY_IVPCKC10FLT_EXP_ANY, IINVALID, NODE_CONCAT, &sNode_IVPCKFLTFLT_ANY, &sNode_IVPCKC10FLT_EXP_ANY);
+	DEFINE_SEARCH_RULE(sNode_IVPCKFLTFLT_ANY_IVPCKFLTFLT_ANY, IINVALID, NODE_CONCAT, &sNode_IVPCKFLTFLT_ANY, &sNode_IVPCKFLTFLT_ANY);
+	DEFINE_SEARCH_RULE(sNode_IVPCKFLTFLT_ANY_IVPCKFLTFLT_EXP_ANY, IINVALID, NODE_CONCAT, &sNode_IVPCKFLTFLT_ANY, &sNode_IVPCKFLTFLT_EXP_ANY);
+	DEFINE_SEARCH_RULE(sNode_IVPCKFLTFLT_EXP_ANY_IVPCKU8FLT_ANY, IINVALID, NODE_CONCAT, &sNode_IVPCKFLTFLT_EXP_ANY, &sNode_IVPCKU8FLT_ANY);
+	DEFINE_SEARCH_RULE(sNode_IVPCKFLTFLT_EXP_ANY_IVPCKU8FLT_EXP_ANY, IINVALID, NODE_CONCAT, &sNode_IVPCKFLTFLT_EXP_ANY, &sNode_IVPCKU8FLT_EXP_ANY);
+	DEFINE_SEARCH_RULE(sNode_IVPCKFLTFLT_EXP_ANY_IVPCKC10FLT_ANY, IINVALID, NODE_CONCAT, &sNode_IVPCKFLTFLT_EXP_ANY, &sNode_IVPCKC10FLT_ANY);
+	DEFINE_SEARCH_RULE(sNode_IVPCKFLTFLT_EXP_ANY_IVPCKC10FLT_EXP_ANY, IINVALID, NODE_CONCAT, &sNode_IVPCKFLTFLT_EXP_ANY, &sNode_IVPCKC10FLT_EXP_ANY);
+	DEFINE_SEARCH_RULE(sNode_IVPCKFLTFLT_EXP_ANY_IVPCKFLTFLT_ANY, IINVALID, NODE_CONCAT, &sNode_IVPCKFLTFLT_EXP_ANY, &sNode_IVPCKFLTFLT_ANY);
+	DEFINE_SEARCH_RULE(sNode_IVPCKFLTFLT_EXP_ANY_IVPCKFLTFLT_EXP_ANY, IINVALID, NODE_CONCAT, &sNode_IVPCKFLTFLT_EXP_ANY, &sNode_IVPCKFLTFLT_EXP_ANY);
+	
+#endif /* defined(SUPPORT_SGX543) || defined(SUPPORT_SGX544) || defined(SUPPORT_SGX554) */
+	DEFINE_SEARCH_RULE(sNode_ISOP3, ISOP3, NODE_INSTRUCTION, IMG_NULL, IMG_NULL);
+	DEFINE_SEARCH_RULE(sNode_ISOPWM, ISOPWM, NODE_INSTRUCTION, IMG_NULL, IMG_NULL);
+	
+	DEFINE_SEARCH_RULE(sNode_IPCKU8U8, IPCKU8U8, NODE_INSTRUCTION, IMG_NULL, IMG_NULL);
+	DEFINE_SEARCH_RULE(sNode_IPCKU8F16, IPCKU8F16, NODE_INSTRUCTION, IMG_NULL, IMG_NULL);
+	DEFINE_SEARCH_RULE(sNode_IPCKU8F32, IPCKU8F32, NODE_INSTRUCTION, IMG_NULL, IMG_NULL);
+	DEFINE_SEARCH_RULE(sNode_IPCKC10C10, IPCKC10C10, NODE_INSTRUCTION, IMG_NULL, IMG_NULL);
+	DEFINE_SEARCH_RULE(sNode_IPCKC10F16, IPCKC10F16, NODE_INSTRUCTION, IMG_NULL, IMG_NULL);
+	DEFINE_SEARCH_RULE(sNode_IPCKC10F32, IPCKC10F32, NODE_INSTRUCTION, IMG_NULL, IMG_NULL);
+	DEFINE_SEARCH_RULE(sNode_IPCKF16F16, IPCKF16F16, NODE_INSTRUCTION, IMG_NULL, IMG_NULL);	
+	DEFINE_SEARCH_RULE(sNode_IPCKF16F32, IPCKF16F32, NODE_INSTRUCTION, IMG_NULL, IMG_NULL);	
+	
+	DEFINE_SEARCH_RULE(sNode_IUNPCKU8U8, IPCKU8U8, NODE_INSTRUCTION, IMG_NULL, IMG_NULL);
+	DEFINE_SEARCH_RULE(sNode_IUNPCKF16U8, IUNPCKF16U8, NODE_INSTRUCTION, IMG_NULL, IMG_NULL);
+	DEFINE_SEARCH_RULE(sNode_IUNPCKF16C10, IUNPCKF16C10, NODE_INSTRUCTION, IMG_NULL, IMG_NULL);
+	DEFINE_SEARCH_RULE(sNode_IUNPCKF32U8, IUNPCKF32U8, NODE_INSTRUCTION, IMG_NULL, IMG_NULL);
+	DEFINE_SEARCH_RULE(sNode_IUNPCKF32C10, IUNPCKF32C10, NODE_INSTRUCTION, IMG_NULL, IMG_NULL);
+	DEFINE_SEARCH_RULE(sNode_IUNPCKF32F16, IUNPCKF32F16, NODE_INSTRUCTION, IMG_NULL, IMG_NULL);
+	
+	DEFINE_SEARCH_RULE(sNode_IPCKU8U8_ANY,IINVALID, NODE_ANYTHING, &sNode_IPCKU8U8, IMG_NULL);
+	DEFINE_SEARCH_RULE(sNode_IPCKU8F16_ANY, IINVALID, NODE_ANYTHING, &sNode_IPCKU8F16, IMG_NULL);
+	DEFINE_SEARCH_RULE(sNode_IPCKU8F32_ANY, IINVALID, NODE_ANYTHING, &sNode_IPCKU8F32, IMG_NULL);
+	DEFINE_SEARCH_RULE(sNode_IPCKC10C10_ANY, IINVALID, NODE_ANYTHING, &sNode_IPCKC10C10, IMG_NULL);
+	DEFINE_SEARCH_RULE(sNode_IPCKC10F16_ANY, IINVALID, NODE_ANYTHING, &sNode_IPCKC10F16, IMG_NULL);
+	DEFINE_SEARCH_RULE(sNode_IPCKC10F32_ANY, IINVALID, NODE_ANYTHING, &sNode_IPCKC10F32, IMG_NULL);
+	DEFINE_SEARCH_RULE(sNode_IPCKF16F16_ANY, IINVALID, NODE_ANYTHING, &sNode_IPCKF16F16, IMG_NULL);
+	DEFINE_SEARCH_RULE(sNode_IPCKF16F32_ANY, IINVALID, NODE_ANYTHING, &sNode_IPCKF16F32, IMG_NULL);
+	
+	DEFINE_SEARCH_RULE(sNode_IUNPCKF16U8_ANY, IINVALID, NODE_ANYTHING, &sNode_IUNPCKF16U8, IMG_NULL);
+	DEFINE_SEARCH_RULE(sNode_IUNPCKF32U8_ANY, IINVALID, NODE_ANYTHING, &sNode_IUNPCKF32U8, IMG_NULL);
+	DEFINE_SEARCH_RULE(sNode_IUNPCKF16C10_ANY, IINVALID, NODE_ANYTHING, &sNode_IUNPCKF16C10, IMG_NULL);
+	DEFINE_SEARCH_RULE(sNode_IUNPCKF32C10_ANY, IINVALID, NODE_ANYTHING, &sNode_IUNPCKF32C10, IMG_NULL);
+	DEFINE_SEARCH_RULE(sNode_IUNPCKF32F16_ANY, IINVALID, NODE_ANYTHING, &sNode_IUNPCKF32F16, IMG_NULL);
+	
+	
+	DEFINE_SEARCH_RULE(sNode_IPCKU8U8_ANY_IPCKU8U8_ANY, IINVALID, NODE_CONCAT, &sNode_IPCKU8U8_ANY, &sNode_IPCKU8U8_ANY);
+	DEFINE_SEARCH_RULE(sNode_IPCKU8U8_ANY_IUNPCKF16U8_ANY, IINVALID, NODE_CONCAT, &sNode_IPCKU8U8_ANY, &sNode_IUNPCKF16U8_ANY);
+	DEFINE_SEARCH_RULE(sNode_IPCKU8U8_ANY_IUNPCKF32U8_ANY, IINVALID, NODE_CONCAT, &sNode_IPCKU8U8_ANY, &sNode_IUNPCKF32U8_ANY);
+	
+	DEFINE_SEARCH_RULE(sNode_IUNPCKF16U8_ANY_IPCKU8F16_ANY, IINVALID, NODE_CONCAT, &sNode_IUNPCKF16U8_ANY, &sNode_IPCKU8F16_ANY);
+	DEFINE_SEARCH_RULE(sNode_IUNPCKF16U8_ANY_IPCKC10F16_ANY, IINVALID, NODE_CONCAT, &sNode_IUNPCKF16U8_ANY, &sNode_IPCKC10F16_ANY);
+	DEFINE_SEARCH_RULE(sNode_IUNPCKF16U8_ANY_IPCKF16F16_ANY, IINVALID, NODE_CONCAT, &sNode_IUNPCKF16U8_ANY, &sNode_IPCKF16F16_ANY);
+	DEFINE_SEARCH_RULE(sNode_IUNPCKF16U8_ANY_IUNPCKF32F16_ANY, IINVALID, NODE_CONCAT, &sNode_IUNPCKF16U8_ANY, &sNode_IUNPCKF32F16_ANY);
+	
+	// C10 -> { C10, F16, F32 }
+	DEFINE_SEARCH_RULE(sNode_IPCKC10C10_ANY_IPCKC10C10_ANY, IINVALID, NODE_CONCAT, &sNode_IPCKC10C10_ANY, &sNode_IPCKC10C10_ANY);
+	DEFINE_SEARCH_RULE(sNode_IPCKC10C10_ANY_IUNPCKF16C10_ANY, IINVALID, NODE_CONCAT, &sNode_IPCKC10C10_ANY, &sNode_IUNPCKF16C10_ANY);
+	DEFINE_SEARCH_RULE(sNode_IPCKC10C10_ANY_IUNPCKF32C10_ANY, IINVALID, NODE_CONCAT, &sNode_IPCKC10C10_ANY, &sNode_IUNPCKF32C10_ANY);
+	
+	DEFINE_SEARCH_RULE(sNode_IUNPCKF16C10_ANY_IPCKU8F16_ANY, IINVALID, NODE_CONCAT, &sNode_IUNPCKF16C10_ANY, &sNode_IPCKU8F16_ANY);
+	DEFINE_SEARCH_RULE(sNode_IUNPCKF16C10_ANY_IPCKC10F16_ANY, IINVALID, NODE_CONCAT, &sNode_IUNPCKF16C10_ANY, &sNode_IPCKC10F16_ANY);
+	DEFINE_SEARCH_RULE(sNode_IUNPCKF16C10_ANY_IPCKF16F16_ANY, IINVALID, NODE_CONCAT, &sNode_IUNPCKF16C10_ANY, &sNode_IPCKF16F16_ANY);
+	DEFINE_SEARCH_RULE(sNode_IUNPCKF16C10_ANY_IUNPCKF32F16_ANY, IINVALID, NODE_CONCAT, &sNode_IUNPCKF16C10_ANY, &sNode_IUNPCKF32F16_ANY);
+	
+	DEFINE_SEARCH_RULE(sNode_IUNPCKF32C10_ANY_IPCKU8F32_ANY, IINVALID, NODE_CONCAT, &sNode_IUNPCKF32C10_ANY, &sNode_IPCKU8F32_ANY);
+	DEFINE_SEARCH_RULE(sNode_IUNPCKF32C10_ANY_IPCKC10F32_ANY, IINVALID, NODE_CONCAT, &sNode_IUNPCKF32C10_ANY, &sNode_IPCKC10F32_ANY);
+	DEFINE_SEARCH_RULE(sNode_IUNPCKF32C10_ANY_IPCKF16F32_ANY, IINVALID, NODE_CONCAT, &sNode_IUNPCKF32C10_ANY, &sNode_IPCKF16F32_ANY);
+	
+	// F16 -> { U8, C10, F16, F32 }
+	DEFINE_SEARCH_RULE(sNode_IPCKU8F16_ANY_IPCKU8U8_ANY, IINVALID, NODE_CONCAT, &sNode_IPCKU8F16_ANY, &sNode_IPCKU8U8_ANY);
+	DEFINE_SEARCH_RULE(sNode_IPCKU8F16_ANY_IUNPCKF16U8_ANY, IINVALID, NODE_CONCAT, &sNode_IPCKU8F16_ANY, &sNode_IUNPCKF16U8_ANY);
+	DEFINE_SEARCH_RULE(sNode_IPCKU8F16_ANY_IUNPCKF32U8_ANY, IINVALID, NODE_CONCAT, &sNode_IPCKU8F16_ANY, &sNode_IUNPCKF32U8_ANY);
+	
+	DEFINE_SEARCH_RULE(sNode_IPCKC10F16_ANY_IPCKC10C10_ANY, IINVALID, NODE_CONCAT, &sNode_IPCKC10F16_ANY, &sNode_IPCKC10C10_ANY);
+	DEFINE_SEARCH_RULE(sNode_IPCKC10F16_ANY_IUNPCKF16C10_ANY, IINVALID, NODE_CONCAT, &sNode_IPCKC10F16_ANY, &sNode_IUNPCKF16C10_ANY);
+	DEFINE_SEARCH_RULE(sNode_IPCKC10F16_ANY_IUNPCKF32C10_ANY, IINVALID, NODE_CONCAT, &sNode_IPCKC10F16_ANY, &sNode_IUNPCKF32C10_ANY);
+	
+	DEFINE_SEARCH_RULE(sNode_IPCKF16F16_ANY_IPCKU8F16_ANY, IINVALID, NODE_CONCAT, &sNode_IPCKF16F16_ANY, &sNode_IPCKU8F16_ANY);
+	DEFINE_SEARCH_RULE(sNode_IPCKF16F16_ANY_IPCKC10F16_ANY, IINVALID, NODE_CONCAT, &sNode_IPCKF16F16_ANY, &sNode_IPCKC10F16_ANY);
+	DEFINE_SEARCH_RULE(sNode_IPCKF16F16_ANY_IPCKF16F16_ANY, IINVALID, NODE_CONCAT, &sNode_IPCKF16F16_ANY, &sNode_IPCKF16F16_ANY);
+	DEFINE_SEARCH_RULE(sNode_IPCKF16F16_ANY_IUNPCKF32F16_ANY, IINVALID, NODE_CONCAT, &sNode_IPCKF16F16_ANY, &sNode_IUNPCKF32F16_ANY);
+	
+	DEFINE_SEARCH_RULE(sNode_IUNPCKF32F16_ANY_IPCKU8F32_ANY, IINVALID, NODE_CONCAT, &sNode_IUNPCKF32F16_ANY, &sNode_IPCKU8F32_ANY);
+	DEFINE_SEARCH_RULE(sNode_IUNPCKF32F16_ANY_IPCKC10F32_ANY, IINVALID, NODE_CONCAT, &sNode_IUNPCKF32F16_ANY, &sNode_IPCKC10F32_ANY);
+	DEFINE_SEARCH_RULE(sNode_IUNPCKF32F16_ANY_IPCKF16F32_ANY, IINVALID, NODE_CONCAT, &sNode_IUNPCKF32F16_ANY, &sNode_IPCKF16F32_ANY);
+	
+	// F32 -> { U8, C10, F16 }
+	DEFINE_SEARCH_RULE(sNode_IPCKU8F32_ANY_IPCKU8U8_ANY, IINVALID, NODE_CONCAT, &sNode_IPCKU8F32_ANY, &sNode_IPCKU8U8_ANY);
+	DEFINE_SEARCH_RULE(sNode_IPCKU8F32_ANY_IUNPCKF16U8_ANY, IINVALID, NODE_CONCAT, &sNode_IPCKU8F32_ANY, &sNode_IUNPCKF16U8_ANY);
+	DEFINE_SEARCH_RULE(sNode_IPCKU8F32_ANY_IUNPCKF32U8_ANY, IINVALID, NODE_CONCAT, &sNode_IPCKU8F32_ANY, &sNode_IUNPCKF32U8_ANY);
+	
+	DEFINE_SEARCH_RULE(sNode_IPCKC10F32_ANY_IPCKC10C10_ANY, IINVALID, NODE_CONCAT, &sNode_IPCKC10F32_ANY, &sNode_IPCKC10C10_ANY);
+	DEFINE_SEARCH_RULE(sNode_IPCKC10F32_ANY_IUNPCKF16C10_ANY, IINVALID, NODE_CONCAT, &sNode_IPCKC10F32_ANY, &sNode_IUNPCKF16C10_ANY);
+	DEFINE_SEARCH_RULE(sNode_IPCKC10F32_ANY_IUNPCKF32C10_ANY, IINVALID, NODE_CONCAT, &sNode_IPCKC10F32_ANY, &sNode_IUNPCKF32C10_ANY);
+	
+	DEFINE_SEARCH_RULE(sNode_IPCKF16F32_ANY_IPCKU8F16_ANY, IINVALID, NODE_CONCAT, &sNode_IPCKF16F32_ANY, &sNode_IPCKU8F16_ANY);
+	DEFINE_SEARCH_RULE(sNode_IPCKF16F32_ANY_IPCKC10F16_ANY, IINVALID, NODE_CONCAT, &sNode_IPCKF16F32_ANY, &sNode_IPCKC10F16_ANY);
+	DEFINE_SEARCH_RULE(sNode_IPCKF16F32_ANY_IPCKF16F16_ANY, IINVALID, NODE_CONCAT, &sNode_IPCKF16F32_ANY, &sNode_IPCKF16F16_ANY);
+	DEFINE_SEARCH_RULE(sNode_IPCKF16F32_ANY_IUNPCKF32F16_ANY, IINVALID, NODE_CONCAT, &sNode_IPCKF16F32_ANY, &sNode_IUNPCKF32F16_ANY);
+	
+	PVR_UNREFERENCED_PARAMETER(pvSearchPaths);
+	
+	GenerateInstructionDAG(psState, psBlock, 0);
+	
+	USC_PATH_FLAGSET_COPY(psBlock->auPrecisionConversionPaths, auPrecisionConversionPaths);
+	for(psInst = psBlock->psBody; psInst != IMG_NULL; psInst = psInst->psNext)
+	{
+		if(!(psInst->uGraphFlags & DEP_GRAPH_HAS_SUBERORDINATES))
+		{
+			PINST psInstTemp;
+			
+#define USC_SEARCH_PATTERN(pat, flag)																\
+			{																						\
+				bResult = SearchInstPatternInDAG(psState, psInst, 									\
+												&pat, 												\
+												psBlock->uInstCount, &psInstTemp);	\
+				if(bResult == IMG_TRUE)																\
+				{																					\
+					USC_PATH_FLAG_APPEND_SINGLE_FLAG(psBlock->auPrecisionConversionPaths, flag);	\
+				}																					\
+			}																						\
+			
+#if defined(SUPPORT_SGX543) || defined(SUPPORT_SGX544) || defined(SUPPORT_SGX554)
+			if(	psState->psTargetDesc->eCoreType == SGX_CORE_ID_543 || 
+				psState->psTargetDesc->eCoreType == SGX_CORE_ID_544 || 
+				psState->psTargetDesc->eCoreType == SGX_CORE_ID_554)
+			{
+				USC_SEARCH_PATTERN(sNode_IVPCKU8U8, USE_PATH_TYPE_IVPCKU8U8);
+				USC_SEARCH_PATTERN(sNode_IVPCKFLTU8, USE_PATH_TYPE_IVPCKFLTU8);
+				
+				// c10 -> c10, flt
+				USC_SEARCH_PATTERN(sNode_IVPCKC10C10, USE_PATH_TYPE_IVPCKC10C10);
+				USC_SEARCH_PATTERN(sNode_IVPCKFLTC10, USE_PATH_TYPE_IVPCKFLTC10);
+				USC_SEARCH_PATTERN(sNode_IVPCKFLTC10_VEC, USE_PATH_TYPE_IVPCKFLTC10_VEC);
+				
+				USC_SEARCH_PATTERN(sNode_ISOPWM_VEC, USE_PATH_TYPE_ISOPWM_VEC);
+				USC_SEARCH_PATTERN(sNode_ISOP3_VEC, USE_PATH_TYPE_ISOP3_VEC);
+				
+				// flt -> u8, c10, flt
+				USC_SEARCH_PATTERN(sNode_IVPCKU8FLT, USE_PATH_TYPE_IVPCKU8FLT);
+				USC_SEARCH_PATTERN(sNode_IVPCKU8FLT_EXP, USE_PATH_TYPE_IVPCKU8FLT_EXP);
+				USC_SEARCH_PATTERN(sNode_IVPCKC10FLT, USE_PATH_TYPE_IVPCKC10FLT);
+				USC_SEARCH_PATTERN(sNode_IVPCKC10FLT_EXP, USE_PATH_TYPE_IVPCKC10FLT_EXP);
+				USC_SEARCH_PATTERN(sNode_IVPCKFLTFLT, USE_PATH_TYPE_IVPCKFLTFLT);
+				USC_SEARCH_PATTERN(sNode_IVPCKFLTFLT_EXP, USE_PATH_TYPE_IVPCKFLTFLT_EXP);
+				
+				// u8 -> {u8, flt} -> {u8, c10, flt}
+				USC_SEARCH_PATTERN(sNode_IVPCKU8U8_ANY_IVPCKU8U8_ANY, USE_PATH_TYPE_IVPCKU8U8_ANY_IVPCKU8U8_ANY);
+				USC_SEARCH_PATTERN(sNode_IVPCKU8U8_ANY_IVPCKFLTU8_ANY, USE_PATH_TYPE_IVPCKU8U8_ANY_IVPCKFLTU8_ANY);
+				USC_SEARCH_PATTERN(sNode_IVPCKFLTU8_ANY_IVPCKU8FLT_ANY, USE_PATH_TYPE_IVPCKFLTU8_ANY_IVPCKU8FLT_ANY);
+				USC_SEARCH_PATTERN(sNode_IVPCKFLTU8_ANY_IVPCKU8FLT_EXP_ANY, USE_PATH_TYPE_IVPCKFLTU8_ANY_IVPCKU8FLT_EXP_ANY);
+				USC_SEARCH_PATTERN(sNode_IVPCKFLTU8_ANY_IVPCKC10FLT_ANY, USE_PATH_TYPE_IVPCKFLTU8_ANY_IVPCKC10FLT_ANY);
+				USC_SEARCH_PATTERN(sNode_IVPCKFLTU8_ANY_IVPCKC10FLT_EXP_ANY, USE_PATH_TYPE_IVPCKFLTU8_ANY_IVPCKC10FLT_EXP_ANY);
+				USC_SEARCH_PATTERN(sNode_IVPCKFLTU8_ANY_IVPCKFLTFLT_ANY, USE_PATH_TYPE_IVPCKFLTU8_ANY_IVPCKFLTFLT_ANY);
+				USC_SEARCH_PATTERN(sNode_IVPCKFLTU8_ANY_IVPCKFLTFLT_EXP_ANY, USE_PATH_TYPE_IVPCKFLTU8_ANY_IVPCKFLTFLT_EXP_ANY);
+				
+				// c10 -> { c10, flt} -> c10, flt
+				USC_SEARCH_PATTERN(sNode_IVPCKC10C10_ANY_IVPCKC10C10_ANY, USE_PATH_TYPE_IVPCKC10C10_ANY_IVPCKC10C10_ANY);
+				USC_SEARCH_PATTERN(sNode_IVPCKC10C10_ANY_IVPCKFLTC10_ANY, USE_PATH_TYPE_IVPCKC10C10_ANY_IVPCKFLTC10_ANY);
+				USC_SEARCH_PATTERN(sNode_IVPCKC10C10_ANY_IVPCKFLTC10_VEC_ANY, USE_PATH_TYPE_IVPCKC10C10_ANY_IVPCKFLTC10_VEC_ANY);
+				USC_SEARCH_PATTERN(sNode_IVPCKFLTC10_ANY_IVPCKU8FLT_ANY, USE_PATH_TYPE_IVPCKFLTC10_ANY_IVPCKU8FLT_ANY);
+				USC_SEARCH_PATTERN(sNode_IVPCKFLTC10_ANY_IVPCKU8FLT_EXP_ANY, USE_PATH_TYPE_IVPCKFLTC10_ANY_IVPCKU8FLT_EXP_ANY);
+				USC_SEARCH_PATTERN(sNode_IVPCKFLTC10_ANY_IVPCKC10FLT_ANY, USE_PATH_TYPE_IVPCKFLTC10_ANY_IVPCKC10FLT_ANY);
+				USC_SEARCH_PATTERN(sNode_IVPCKFLTC10_ANY_IVPCKC10FLT_EXP_ANY, USE_PATH_TYPE_IVPCKFLTC10_ANY_IVPCKC10FLT_EXP_ANY);
+				USC_SEARCH_PATTERN(sNode_IVPCKFLTC10_ANY_IVPCKFLTFLT_ANY, USE_PATH_TYPE_IVPCKFLTC10_ANY_IVPCKFLTFLT_ANY);
+				USC_SEARCH_PATTERN(sNode_IVPCKFLTC10_ANY_IVPCKFLTFLT_EXP_ANY, USE_PATH_TYPE_IVPCKFLTC10_ANY_IVPCKFLTFLT_EXP_ANY);
+				
+				USC_SEARCH_PATTERN(sNode_IVPCKFLTC10_VEC_ANY_IVPCKU8FLT_ANY, USE_PATH_TYPE_IVPCKFLTC10_VEC_ANY_IVPCKU8FLT_ANY);
+				USC_SEARCH_PATTERN(sNode_IVPCKFLTC10_VEC_ANY_IVPCKU8FLT_EXP_ANY, USE_PATH_TYPE_IVPCKFLTC10_VEC_ANY_IVPCKU8FLT_EXP_ANY);
+				USC_SEARCH_PATTERN(sNode_IVPCKFLTC10_VEC_ANY_IVPCKC10FLT_ANY, USE_PATH_TYPE_IVPCKFLTC10_VEC_ANY_IVPCKC10FLT_ANY);
+				USC_SEARCH_PATTERN(sNode_IVPCKFLTC10_VEC_ANY_IVPCKC10FLT_EXP_ANY, USE_PATH_TYPE_IVPCKFLTC10_VEC_ANY_IVPCKC10FLT_EXP_ANY);
+				USC_SEARCH_PATTERN(sNode_IVPCKFLTC10_VEC_ANY_IVPCKFLTFLT_ANY, USE_PATH_TYPE_IVPCKFLTC10_VEC_ANY_IVPCKFLTFLT_ANY);
+				USC_SEARCH_PATTERN(sNode_IVPCKFLTC10_VEC_ANY_IVPCKFLTFLT_EXP_ANY, USE_PATH_TYPE_IVPCKFLTC10_VEC_ANY_IVPCKFLTFLT_EXP_ANY);
+				
+				
+				// flt -> {u8, c10, flt} -> {u8, c10, flt}
+				USC_SEARCH_PATTERN(sNode_IVPCKU8FLT_ANY_IVPCKU8U8_ANY, USE_PATH_TYPE_IVPCKU8FLT_ANY_IVPCKU8U8_ANY);
+				USC_SEARCH_PATTERN(sNode_IVPCKU8FLT_ANY_IVPCKFLTU8_ANY, USE_PATH_TYPE_IVPCKU8FLT_ANY_IVPCKFLTU8_ANY);
+				USC_SEARCH_PATTERN(sNode_IVPCKU8FLT_EXP_ANY_IVPCKU8U8_ANY, USE_PATH_TYPE_IVPCKU8FLT_EXP_ANY_IVPCKU8U8_ANY);
+				USC_SEARCH_PATTERN(sNode_IVPCKU8FLT_EXP_ANY_IVPCKFLTU8_ANY, USE_PATH_TYPE_IVPCKU8FLT_EXP_ANY_IVPCKFLTU8_ANY);
+				USC_SEARCH_PATTERN(sNode_IVPCKC10FLT_ANY_IVPCKC10C10_ANY, USE_PATH_TYPE_IVPCKC10FLT_ANY_IVPCKC10C10_ANY);
+				USC_SEARCH_PATTERN(sNode_IVPCKC10FLT_ANY_IVPCKFLTC10_ANY, USE_PATH_TYPE_IVPCKC10FLT_ANY_IVPCKFLTC10_ANY);
+				USC_SEARCH_PATTERN(sNode_IVPCKC10FLT_ANY_IVPCKFLTC10_VEC_ANY, USE_PATH_TYPE_IVPCKC10FLT_ANY_IVPCKFLTC10_VEC_ANY);
+				USC_SEARCH_PATTERN(sNode_IVPCKC10FLT_EXP_ANY_IVPCKC10C10_ANY, USE_PATH_TYPE_IVPCKC10FLT_EXP_ANY_IVPCKC10C10_ANY);
+				USC_SEARCH_PATTERN(sNode_IVPCKC10FLT_EXP_ANY_IVPCKFLTC10_ANY, USE_PATH_TYPE_IVPCKC10FLT_EXP_ANY_IVPCKFLTC10_ANY);
+				USC_SEARCH_PATTERN(sNode_IVPCKC10FLT_EXP_ANY_IVPCKFLTC10_VEC_ANY, USE_PATH_TYPE_IVPCKC10FLT_EXP_ANY_IVPCKFLTC10_VEC_ANY);
+				USC_SEARCH_PATTERN(sNode_IVPCKFLTFLT_ANY_IVPCKU8FLT_ANY, USE_PATH_TYPE_IVPCKFLTFLT_ANY_IVPCKU8FLT_ANY);
+				USC_SEARCH_PATTERN(sNode_IVPCKFLTFLT_ANY_IVPCKU8FLT_EXP_ANY, USE_PATH_TYPE_IVPCKFLTFLT_ANY_IVPCKU8FLT_EXP_ANY);
+				USC_SEARCH_PATTERN(sNode_IVPCKFLTFLT_ANY_IVPCKC10FLT_ANY, USE_PATH_TYPE_IVPCKFLTFLT_ANY_IVPCKC10FLT_ANY);
+				USC_SEARCH_PATTERN(sNode_IVPCKFLTFLT_ANY_IVPCKC10FLT_EXP_ANY, USE_PATH_TYPE_IVPCKFLTFLT_ANY_IVPCKC10FLT_EXP_ANY);
+				USC_SEARCH_PATTERN(sNode_IVPCKFLTFLT_ANY_IVPCKFLTFLT_ANY, USE_PATH_TYPE_IVPCKFLTFLT_ANY_IVPCKFLTFLT_ANY);
+				USC_SEARCH_PATTERN(sNode_IVPCKFLTFLT_ANY_IVPCKFLTFLT_EXP_ANY, USE_PATH_TYPE_IVPCKFLTFLT_ANY_IVPCKFLTFLT_EXP_ANY);
+				USC_SEARCH_PATTERN(sNode_IVPCKFLTFLT_EXP_ANY_IVPCKU8FLT_ANY, USE_PATH_TYPE_IVPCKFLTFLT_EXP_ANY_IVPCKU8FLT_ANY);
+				USC_SEARCH_PATTERN(sNode_IVPCKFLTFLT_EXP_ANY_IVPCKU8FLT_EXP_ANY, USE_PATH_TYPE_IVPCKFLTFLT_EXP_ANY_IVPCKU8FLT_EXP_ANY);
+				USC_SEARCH_PATTERN(sNode_IVPCKFLTFLT_EXP_ANY_IVPCKC10FLT_ANY, USE_PATH_TYPE_IVPCKFLTFLT_EXP_ANY_IVPCKC10FLT_ANY);
+				USC_SEARCH_PATTERN(sNode_IVPCKFLTFLT_EXP_ANY_IVPCKC10FLT_EXP_ANY, USE_PATH_TYPE_IVPCKFLTFLT_EXP_ANY_IVPCKC10FLT_EXP_ANY);
+				USC_SEARCH_PATTERN(sNode_IVPCKFLTFLT_EXP_ANY_IVPCKFLTFLT_ANY, USE_PATH_TYPE_IVPCKFLTFLT_EXP_ANY_IVPCKFLTFLT_ANY);
+				USC_SEARCH_PATTERN(sNode_IVPCKFLTFLT_EXP_ANY_IVPCKFLTFLT_EXP_ANY, USE_PATH_TYPE_IVPCKFLTFLT_EXP_ANY_IVPCKFLTFLT_EXP_ANY);
+			}
+			else
+#endif /* defined(SUPPORT_SGX543) || defined(SUPPORT_SGX544) || defined(SUPPORT_SGX554) */
+			{
+				USC_SEARCH_PATTERN(sNode_ISOP3, USE_PATH_TYPE_ISOP3)
+				USC_SEARCH_PATTERN(sNode_ISOPWM, USE_PATH_TYPE_ISOPWM)
+				USC_SEARCH_PATTERN(sNode_IPCKU8F16, USE_PATH_TYPE_IPCKU8F16)
+				USC_SEARCH_PATTERN(sNode_IPCKU8F32, USE_PATH_TYPE_IPCKU8F32)
+				USC_SEARCH_PATTERN(sNode_IUNPCKF32F16, USE_PATH_TYPE_IUNPCKF32F16)
+				USC_SEARCH_PATTERN(sNode_IUNPCKF32C10, USE_PATH_TYPE_IUNPCKF32C10)
+				USC_SEARCH_PATTERN(sNode_IUNPCKU8U8, USE_PATH_TYPE_IUNPCKU8U8)
+				
+				// U8 -> { U8, F16, F32 }
+				USC_SEARCH_PATTERN(sNode_IPCKU8U8_ANY_IPCKU8U8_ANY, USE_PATH_TYPE_IPCKU8U8_ANY_IPCKU8U8_ANY)
+				USC_SEARCH_PATTERN(sNode_IPCKU8U8_ANY_IUNPCKF16U8_ANY, USE_PATH_TYPE_IPCKU8U8_ANY_IUNPCKF16U8_ANY)
+				USC_SEARCH_PATTERN(sNode_IPCKU8U8_ANY_IUNPCKF32U8_ANY, USE_PATH_TYPE_IPCKU8U8_ANY_IUNPCKF32U8_ANY)
+				
+				USC_SEARCH_PATTERN(sNode_IUNPCKF16U8_ANY_IPCKU8F16_ANY, USE_PATH_TYPE_IUNPCKF16U8_ANY_IPCKU8F16_ANY)
+				USC_SEARCH_PATTERN(sNode_IUNPCKF16U8_ANY_IPCKC10F16_ANY, USE_PATH_TYPE_IUNPCKF16U8_ANY_IPCKC10F16_ANY)
+				USC_SEARCH_PATTERN(sNode_IUNPCKF16U8_ANY_IPCKF16F16_ANY, USE_PATH_TYPE_IUNPCKF16U8_ANY_IPCKF16F16_ANY)
+				USC_SEARCH_PATTERN(sNode_IUNPCKF16U8_ANY_IUNPCKF32F16_ANY, USE_PATH_TYPE_IUNPCKF16U8_ANY_IUNPCKF32F16_ANY)
+				
+				// C10 -> { C10, F16, F32 }
+				USC_SEARCH_PATTERN(sNode_IPCKC10C10_ANY_IPCKC10C10_ANY, USE_PATH_TYPE_IPCKC10C10_ANY_IPCKC10C10_ANY)
+				USC_SEARCH_PATTERN(sNode_IPCKC10C10_ANY_IUNPCKF16C10_ANY, USE_PATH_TYPE_IPCKC10C10_ANY_IUNPCKF16C10_ANY)
+				USC_SEARCH_PATTERN(sNode_IPCKC10C10_ANY_IUNPCKF32C10_ANY, USE_PATH_TYPE_IPCKC10C10_ANY_IUNPCKF32C10_ANY)
+				
+				USC_SEARCH_PATTERN(sNode_IUNPCKF16C10_ANY_IPCKU8F16_ANY, USE_PATH_TYPE_IUNPCKF16C10_ANY_IPCKU8F16_ANY)
+				USC_SEARCH_PATTERN(sNode_IUNPCKF16C10_ANY_IPCKC10F16_ANY, USE_PATH_TYPE_IUNPCKF16C10_ANY_IPCKC10F16_ANY)
+				USC_SEARCH_PATTERN(sNode_IUNPCKF16C10_ANY_IPCKF16F16_ANY, USE_PATH_TYPE_IUNPCKF16C10_ANY_IPCKF16F16_ANY)
+				USC_SEARCH_PATTERN(sNode_IUNPCKF16C10_ANY_IUNPCKF32F16_ANY, USE_PATH_TYPE_IUNPCKF16C10_ANY_IUNPCKF32F16_ANY)
+				
+				USC_SEARCH_PATTERN(sNode_IUNPCKF32C10_ANY_IPCKU8F32_ANY, USE_PATH_TYPE_IUNPCKF32C10_ANY_IPCKU8F32_ANY)
+				USC_SEARCH_PATTERN(sNode_IUNPCKF32C10_ANY_IPCKC10F32_ANY, USE_PATH_TYPE_IUNPCKF32C10_ANY_IPCKC10F32_ANY)
+				USC_SEARCH_PATTERN(sNode_IUNPCKF32C10_ANY_IPCKF16F32_ANY, USE_PATH_TYPE_IUNPCKF32C10_ANY_IPCKF16F32_ANY)
+				
+				// F16 -> { U8, C10, F16, F32 }
+				USC_SEARCH_PATTERN(sNode_IPCKU8F16_ANY_IPCKU8U8_ANY, USE_PATH_TYPE_IPCKU8F16_ANY_IPCKU8U8_ANY)
+				USC_SEARCH_PATTERN(sNode_IPCKU8F16_ANY_IUNPCKF16U8_ANY, USE_PATH_TYPE_IPCKU8F16_ANY_IUNPCKF16U8_ANY)
+				USC_SEARCH_PATTERN(sNode_IPCKU8F16_ANY_IUNPCKF32U8_ANY, USE_PATH_TYPE_IPCKU8F16_ANY_IUNPCKF32U8_ANY)
+				
+				USC_SEARCH_PATTERN(sNode_IPCKC10F16_ANY_IPCKC10C10_ANY, USE_PATH_TYPE_IPCKC10F16_ANY_IPCKC10C10_ANY)
+				USC_SEARCH_PATTERN(sNode_IPCKC10F16_ANY_IUNPCKF16C10_ANY, USE_PATH_TYPE_IPCKC10F16_ANY_IUNPCKF16C10_ANY)
+				USC_SEARCH_PATTERN(sNode_IPCKC10F16_ANY_IUNPCKF32C10_ANY, USE_PATH_TYPE_IPCKC10F16_ANY_IUNPCKF32C10_ANY)
+				
+				USC_SEARCH_PATTERN(sNode_IPCKF16F16_ANY_IPCKU8F16_ANY, USE_PATH_TYPE_IPCKF16F16_ANY_IPCKU8F16_ANY)
+				USC_SEARCH_PATTERN(sNode_IPCKF16F16_ANY_IPCKC10F16_ANY, USE_PATH_TYPE_IPCKF16F16_ANY_IPCKC10F16_ANY)
+				USC_SEARCH_PATTERN(sNode_IPCKF16F16_ANY_IPCKF16F16_ANY, USE_PATH_TYPE_IPCKF16F16_ANY_IPCKF16F16_ANY)
+				USC_SEARCH_PATTERN(sNode_IPCKF16F16_ANY_IUNPCKF32F16_ANY, USE_PATH_TYPE_IPCKF16F16_ANY_IUNPCKF32F16_ANY)
+				
+				USC_SEARCH_PATTERN(sNode_IUNPCKF32F16_ANY_IPCKU8F32_ANY, USE_PATH_TYPE_IUNPCKF32F16_ANY_IPCKU8F32_ANY)
+				USC_SEARCH_PATTERN(sNode_IUNPCKF32F16_ANY_IPCKC10F32_ANY, USE_PATH_TYPE_IUNPCKF32F16_ANY_IPCKC10F32_ANY)
+				USC_SEARCH_PATTERN(sNode_IUNPCKF32F16_ANY_IPCKF16F32_ANY, USE_PATH_TYPE_IUNPCKF32F16_ANY_IPCKF16F32_ANY)
+				
+				// F32 -> { U8, C10, F16 }
+				USC_SEARCH_PATTERN(sNode_IPCKU8F32_ANY_IPCKU8U8_ANY, USE_PATH_TYPE_IPCKU8F32_ANY_IPCKU8U8_ANY)
+				USC_SEARCH_PATTERN(sNode_IPCKU8F32_ANY_IUNPCKF16U8_ANY, USE_PATH_TYPE_IPCKU8F32_ANY_IUNPCKF16U8_ANY)
+				USC_SEARCH_PATTERN(sNode_IPCKU8F32_ANY_IUNPCKF32U8_ANY, USE_PATH_TYPE_IPCKU8F32_ANY_IUNPCKF32U8_ANY)
+				
+				USC_SEARCH_PATTERN(sNode_IPCKC10F32_ANY_IPCKC10C10_ANY, USE_PATH_TYPE_IPCKC10F32_ANY_IPCKC10C10_ANY)
+				USC_SEARCH_PATTERN(sNode_IPCKC10F32_ANY_IUNPCKF16C10_ANY, USE_PATH_TYPE_IPCKC10F32_ANY_IUNPCKF16C10_ANY)
+				USC_SEARCH_PATTERN(sNode_IPCKC10F32_ANY_IUNPCKF32C10_ANY, USE_PATH_TYPE_IPCKC10F32_ANY_IUNPCKF32C10_ANY)
+				
+				USC_SEARCH_PATTERN(sNode_IPCKF16F32_ANY_IPCKU8F16_ANY, USE_PATH_TYPE_IPCKF16F32_ANY_IPCKU8F16_ANY)
+				USC_SEARCH_PATTERN(sNode_IPCKF16F32_ANY_IPCKC10F16_ANY, USE_PATH_TYPE_IPCKF16F32_ANY_IPCKC10F16_ANY)
+				USC_SEARCH_PATTERN(sNode_IPCKF16F32_ANY_IPCKF16F16_ANY, USE_PATH_TYPE_IPCKF16F32_ANY_IPCKF16F16_ANY)
+				USC_SEARCH_PATTERN(sNode_IPCKF16F32_ANY_IUNPCKF32F16_ANY, USE_PATH_TYPE_IPCKF16F32_ANY_IUNPCKF32F16_ANY)
+			}
+#undef USC_SEARCH_PATTERN
+		}
+	}
+	FreeInstructionDAG(psState, psBlock);
+}
+
+IMG_INTERNAL
+IMG_UINT32 ConsolidateFormatConversionPatterns(PINTERMEDIATE_STATE psState, const PFUNC psFunc,
+											   IMG_UINT32 *puPrecisionConversionPaths)
+/*********************************************************************************
+ Function		: ConsolidateFormatConversionPatterns
+
+ Description	: Sets precision enoforcing flags acording to paths found.
+
+ Parameters		: psState    - Compiler state
+                  psFunc     - Function input
+
+ Return			: Nothing.
+*********************************************************************************/
+{
+	IMG_UINT32						i, j = 0;
+	IMG_UINT32						auPrecisionConversionPaths[2] = {0,0};
+	IMG_UINT32						uLookEntries = 0, uSelectedHash;
+	const USE_PATH_LOOKUP_ENTRY		*pauUSCPathLookupTable = IMG_NULL;
+	
+#define BIND_HASH_TABLE_FORE_CORE(CORE, HASHTABLE, USP)		\
+							{ CORE, USP, (HASHTABLE), (sizeof(HASHTABLE) / sizeof(USE_PATH_LOOKUP_ENTRY)) }
+	typedef struct _PATH_HASH_ENTRIES_
+	{
+		SGX_CORE_ID_TYPE				eCoreType;
+		IMG_BOOL						bUSPEnabled;
+		const USE_PATH_LOOKUP_ENTRY		*pauUSCPathLookupTable;
+		IMG_UINT32						uLookEntries;
+	} PATH_HASH_ENTRIES;
+	
+	static const PATH_HASH_ENTRIES asPathEntries[] = {	
+											BIND_HASH_TABLE_FORE_CORE(SGX_CORE_ID_520, gasUSCPathLookupTable_sgx535_nonusp, IMG_FALSE),
+												BIND_HASH_TABLE_FORE_CORE(SGX_CORE_ID_520, gasUSCPathLookupTable_sgx535_usp, IMG_TRUE),
+												
+											BIND_HASH_TABLE_FORE_CORE(SGX_CORE_ID_530, gasUSCPathLookupTable_sgx535_nonusp, IMG_FALSE),
+												BIND_HASH_TABLE_FORE_CORE(SGX_CORE_ID_530, gasUSCPathLookupTable_sgx535_usp, IMG_TRUE),
+												
+											BIND_HASH_TABLE_FORE_CORE(SGX_CORE_ID_531, gasUSCPathLookupTable_sgx535_nonusp, IMG_FALSE),
+												BIND_HASH_TABLE_FORE_CORE(SGX_CORE_ID_531, gasUSCPathLookupTable_sgx535_usp, IMG_TRUE),
+											
+											BIND_HASH_TABLE_FORE_CORE(SGX_CORE_ID_535, gasUSCPathLookupTable_sgx535_nonusp, IMG_FALSE),
+												BIND_HASH_TABLE_FORE_CORE(SGX_CORE_ID_535, gasUSCPathLookupTable_sgx535_usp, IMG_TRUE),
+											
+											BIND_HASH_TABLE_FORE_CORE(SGX_CORE_ID_540, gasUSCPathLookupTable_sgx540_nonusp, IMG_FALSE),
+												BIND_HASH_TABLE_FORE_CORE(SGX_CORE_ID_540, gasUSCPathLookupTable_sgx540_usp, IMG_TRUE),
+											
+											BIND_HASH_TABLE_FORE_CORE(SGX_CORE_ID_541, gasUSCPathLookupTable_sgx540_nonusp, IMG_FALSE),
+												BIND_HASH_TABLE_FORE_CORE(SGX_CORE_ID_541, gasUSCPathLookupTable_sgx540_usp, IMG_TRUE),
+											
+											BIND_HASH_TABLE_FORE_CORE(SGX_CORE_ID_543, gasUSCPathLookupTable_sgx543_nonusp, IMG_FALSE),
+												BIND_HASH_TABLE_FORE_CORE(SGX_CORE_ID_543, gasUSCPathLookupTable_sgx543_usp, IMG_TRUE),
+											
+											BIND_HASH_TABLE_FORE_CORE(SGX_CORE_ID_544, gasUSCPathLookupTable_sgx543_nonusp, IMG_FALSE),
+												BIND_HASH_TABLE_FORE_CORE(SGX_CORE_ID_544, gasUSCPathLookupTable_sgx543_usp, IMG_TRUE),
+											
+											BIND_HASH_TABLE_FORE_CORE(SGX_CORE_ID_545, gasUSCPathLookupTable_sgx545_nonusp, IMG_FALSE),
+												BIND_HASH_TABLE_FORE_CORE(SGX_CORE_ID_545, gasUSCPathLookupTable_sgx545_usp, IMG_TRUE),
+											
+											BIND_HASH_TABLE_FORE_CORE(SGX_CORE_ID_554, gasUSCPathLookupTable_sgx543_nonusp, IMG_FALSE),
+												BIND_HASH_TABLE_FORE_CORE(SGX_CORE_ID_554, gasUSCPathLookupTable_sgx543_usp, IMG_TRUE),
+										};
+	
+#if defined(EXTERNAL_PCONVERT_HASH)
+	extern USE_PATH_LOOKUP_ENTRY	*g_psOverideLookupTable;
+	extern IMG_UINT32				g_uOverideLookupTableEntries;
+	if((g_psOverideLookupTable != IMG_NULL) && (g_uOverideLookupTableEntries != 0))
+	{
+		uLookEntries = g_uOverideLookupTableEntries;
+		pauUSCPathLookupTable = g_psOverideLookupTable;
+	}
+	else
+#endif
+#if defined(SUPPORT_SGX540) && defined(OUTPUT_USPBIN)
+	if(psState->uCompilerFlags & UF_SGX540_VECTORISE_F16)
+	{
+		/* OVERRIDE dafult hash table*/
+		uLookEntries = sizeof(gasUSCPathLookupTable_sgx540_usp_genvec16) / sizeof(gasUSCPathLookupTable_sgx540_usp_genvec16[0]);
+		pauUSCPathLookupTable = gasUSCPathLookupTable_sgx540_usp_genvec16;
+	}
+	else
+#endif
+	{
+		IMG_BOOL bUsingUSP;
+		
+	#if defined(OUTPUT_USPBIN)
+		bUsingUSP = IMG_TRUE;
+	#else
+		bUsingUSP = IMG_FALSE;
+	#endif
+		for(uSelectedHash = 0; uSelectedHash < (sizeof(asPathEntries) / sizeof(PATH_HASH_ENTRIES)); uSelectedHash++)
+		{
+			if(asPathEntries[uSelectedHash].eCoreType == psState->psTargetDesc->eCoreType &&
+						asPathEntries[uSelectedHash].bUSPEnabled == bUsingUSP )
+			{
+				uLookEntries = asPathEntries[uSelectedHash].uLookEntries;
+				pauUSCPathLookupTable = asPathEntries[uSelectedHash].pauUSCPathLookupTable;
+				break;
+			}
+		}
+	}
+	
+	ASSERT(uLookEntries);
+	ASSERT(pauUSCPathLookupTable);
+
+#if defined(DEBUG)
+	/* Sanity check for pauUSCPathLookupTable - entries should be unique */
+	for(i = 0; i < uLookEntries; i++)
+	{
+		for(j = (i + 1); j < uLookEntries; j++)
+		{
+			if( pauUSCPathLookupTable[i].auConversionPaths0 == pauUSCPathLookupTable[j].auConversionPaths0 &&
+				pauUSCPathLookupTable[i].auConversionPaths1 == pauUSCPathLookupTable[j].auConversionPaths1)
+			{
+				DBG_PRINTF((DBG_ERROR, "Sanity check for hash failed"));
+				imgabort();
+			}
+		}
+	}
+#else
+	PVR_UNREFERENCED_PARAMETER(j);
+#endif
+	
+	for (i = 0; i < psFunc->sCfg.uNumBlocks; i++)
+	{
+		const PCODEBLOCK psBlock = psFunc->sCfg.apsAllBlocks[i];
+		USC_PATH_FLAGSET_APPEND(auPrecisionConversionPaths, psBlock->auPrecisionConversionPaths);
+	}
+	
+	puPrecisionConversionPaths[0] = auPrecisionConversionPaths[0];
+	puPrecisionConversionPaths[1] = auPrecisionConversionPaths[1];
+	
+	DBG_PRINTF((DBG_PCONVERT_DATA, "PCONVERT: uPrecisionConversionPaths:%08X%08X (%s)", auPrecisionConversionPaths[1], auPrecisionConversionPaths[0], USC_INPUT_FILENAME));
+
+	psState->uCompilerFlags &= ~UF_FORCE_PRECISION_MASK;
+
+	for(i = 0; i < uLookEntries; i++)
+	{
+		if( pauUSCPathLookupTable[i].auConversionPaths0 == auPrecisionConversionPaths[0] &&
+			pauUSCPathLookupTable[i].auConversionPaths1 == auPrecisionConversionPaths[1])
+		{
+			/* Pick up the enforcing settings */
+			pauUSCPathLookupTable[i].pfUpdateFlagRoutine(psState);
+			
+			/* Return test settings */
+			return pauUSCPathLookupTable[i].uTestSettings;
+		}
+	}
+	return 0;
+}
+
+IMG_INTERNAL
+IMG_BOOL TryDefaultPrecisionEnforcingSetting(PINTERMEDIATE_STATE psState, USC_PCONVERT_DEFAULT_CONVERSION_SETTING eSetting)
+/*********************************************************************************
+ Function		: TryDefaultPrecisionEnforcingSetting
+
+ Description	: Try an alternet setting
+
+ Parameters		: psState    - Compiler state
+                  psFunc     - Function input
+
+ Return			: Nothing.
+*********************************************************************************/
+{
+#if defined(SUPPORT_SGX543) || defined(SUPPORT_SGX544) || defined(SUPPORT_SGX554)
+	psState->uCompilerFlags &= ~UF_FORCE_PRECISION_MASK;
+	switch(eSetting)
+	{
+		case USC_PCONVERT_PRIMARY:
+			USCPathSetHint_C10ToF16(psState);
+			break;
+		case USC_PCONVERT_SECONDARY:
+			USCPathSetHint_C10F16ToF32(psState);
+			break;
+		default:
+			imgabort();
+	}
+	return IMG_TRUE;
+#else
+	PVR_UNREFERENCED_PARAMETER(psState);
+	PVR_UNREFERENCED_PARAMETER(eSetting);
+	return IMG_FALSE;
+#endif
+}
+
+static 
+PINST EstimateCycleCostForInst(PINTERMEDIATE_STATE psState, PINST psInst, IMG_UINT32 *puInstCy)
+/*********************************************************************************
+ Function		: EstimateCycleCostForInst
+
+ Description	: Predicts instruction cycle count for given instruction.
+
+ Parameters		: psState    - Compiler state
+                  psFunc     - Function input
+
+ Return			: Nothing.
+*********************************************************************************/
+{
+	IMG_BOOL bLastInstWasRepeat, bLastInstWasISMPBIASUSP, bContinue;
+	
+	typedef enum _USE_INST_TYPE_
+	{
+		USE_INST_TYPE_OTHER,
+		USE_INST_TYPE_BRANCH,
+		USE_INST_TYPE_MOECONTROL,
+		USE_INST_TYPE_COUNT
+	}USE_INST_TYPE;
+	
+	IMG_UINT32 auCycleCost[USE_INST_TYPE_COUNT] = {0};
+	IMG_UINT32 uRetCycle;
+	
+	bLastInstWasRepeat = IMG_FALSE;
+	bLastInstWasISMPBIASUSP = IMG_FALSE;
+
+	uRetCycle = 0;
+	do{
+		bContinue = IMG_FALSE;
+		
+		if(!psInst)
+			break;
+		
+		switch(psInst->eOpcode)
+		{
+			/* USE_INST_TYPE_BRANCH */
+			case IBR:
+			case ICALL:
+				auCycleCost[USE_INST_TYPE_BRANCH] += EstimateFunctionCycleCosting(psState, psInst->u.psCall->psTarget);
+
+			case INOP:
+			case IWDF:
+				break;
+	#if defined(OUTPUT_USPBIN)
+			case ISMP_USP_NDR:
+				break;
+			case ISMPBIAS_USP:
+			case ISMP_USP:
+				auCycleCost[USE_INST_TYPE_OTHER]++;
+				bLastInstWasISMPBIASUSP = IMG_TRUE;
+				bContinue = IMG_TRUE;
+				break;
+			case ISMPUNPACK_USP:
+				if(bLastInstWasISMPBIASUSP && psInst->uDestCount == 1 && psInst->asDest[0].eFmt == UF_REGFORMAT_U8)
+				{
+					
+				}
+				else
+				{
+					PINST psNxInst = psInst->psNext;
+					if(
+						!(psNxInst && 
+								(   psNxInst->eOpcode == IUNPCKF16U8 
+								 || psNxInst->eOpcode == IUNPCKF32U8
+#if defined(SUPPORT_SGX543) || defined(SUPPORT_SGX544) || defined(SUPPORT_SGX554)
+								 || psNxInst->eOpcode == IVPCKFLTU8
+#endif
+								)))
+					{
+#if defined(SUPPORT_SGX543) || defined(SUPPORT_SGX544) || defined(SUPPORT_SGX554)
+						auCycleCost[USE_INST_TYPE_OTHER]++;
+#else
+						IMG_UINT32 i;
+						for(i = 0; i< psInst->uDestCount; i++)
+						{
+							if(psInst->auDestMask[i])
+								auCycleCost[USE_INST_TYPE_OTHER] += 1;
+						}
+#endif
+					}
+				}
+				break;
+			case IUNPCKF16U8:
+			case IUNPCKF32U8:
+				if(bLastInstWasISMPBIASUSP == IMG_FALSE)
+					auCycleCost[USE_INST_TYPE_OTHER]++;
+				break;
+	#else
+			case ISMPREPLACE:
+			case ISMPBIAS:
+			case ISMPGRAD:
+			case ISMP:
+				break;
+	#endif
+			
+			/* USE_INST_TYPE_MOECONTROL */
+			case ISMR:
+			case ISMLSI:
+			case ISMBO:
+			case ISETFC:
+				if(bLastInstWasRepeat == IMG_FALSE)
+					auCycleCost[USE_INST_TYPE_MOECONTROL]++;
+				bLastInstWasRepeat = IMG_FALSE;
+				break;
+		
+		
+			/* USE_INST_TYPE_OTHER */
+			default:
+				if(psInst->uRepeat > 0 && g_psInstDesc[psInst->eOpcode].bCanRepeat == IMG_TRUE)
+				{
+					auCycleCost[USE_INST_TYPE_OTHER] += psInst->uRepeat;
+					bLastInstWasRepeat = IMG_TRUE;
+					bContinue = IMG_TRUE;
+				}
+				else
+				{
+					if (psInst->uMask > 1)
+					{
+						auCycleCost[USE_INST_TYPE_OTHER] += 
+														( ((psInst->uMask & 1) ? 1U : 0U)
+														+ ((psInst->uMask & 2) ? 1U : 0U)
+														+ ((psInst->uMask & 4) ? 1U : 0U)
+														+ ((psInst->uMask & 8) ? 1U : 0U));
+					}
+					else 
+					{
+						if ((psInst->eOpcode >= ILDARRF32 && psInst->eOpcode <= ISTARRC10) &&
+								psInst->u.psLdStArray->uLdStMask > 0)
+						{
+							auCycleCost[USE_INST_TYPE_OTHER] += 
+									( ((psInst->u.psLdStArray->uLdStMask & 1) ? 1U : 0U)
+									+ ((psInst->u.psLdStArray->uLdStMask & 2) ? 1U : 0U)
+									+ ((psInst->u.psLdStArray->uLdStMask & 4) ? 1U : 0U)
+									+ ((psInst->u.psLdStArray->uLdStMask & 8) ? 1U : 0U));
+						}
+						else
+						{
+							auCycleCost[USE_INST_TYPE_OTHER]++;
+						}
+					}
+					if(auCycleCost[USE_INST_TYPE_OTHER] > 1)
+					{
+						bLastInstWasRepeat = IMG_TRUE;
+						bContinue = IMG_TRUE;
+					}
+				}
+				break;
+		}
+		uRetCycle = (auCycleCost[USE_INST_TYPE_OTHER] 
+				+ auCycleCost[USE_INST_TYPE_BRANCH] 
+				+ auCycleCost[USE_INST_TYPE_MOECONTROL]);
+		
+		psInst = psInst->psNext;
+	} while(bContinue);
+	
+	*puInstCy = uRetCycle;
+	return psInst;
+}
+
+#if 0
+static
+const char * GET_BLOCK_DEP(const PCODEBLOCK psBlock)
+{
+	IMG_UINT32 i;
+	static char aszBlockDep[1024];
+	char aszBlockDepTemp[1024];
+	
+	aszBlockDep[0] = '\0';
+	strcat(aszBlockDep, "[");
+	for(i = 0; i < psBlock->uNumPreds; i++)
+	{
+		sprintf(aszBlockDepTemp, "%p ", psBlock->apsPreds[i]);
+		strcat(aszBlockDep, aszBlockDepTemp);
+	}
+	strcat(aszBlockDep, "],[");
+	for(i = 0; i < psBlock->uNumSuccs; i++)
+	{
+		sprintf(aszBlockDepTemp, "%p ", psBlock->apsSuccs[i]);
+		strcat(aszBlockDep, aszBlockDepTemp);
+	}
+	strcat(aszBlockDep, "]");
+	return aszBlockDep;
+}
+#endif
+
+static
+IMG_UINT32 EstimateCycleCostForBlock(PINTERMEDIATE_STATE psState, const PCODEBLOCK psBlock, IMG_UINT32 uDepth)
+/*********************************************************************************
+ Function		: EstimateCycleCostForBlock
+
+ Description	: Predicts total cycle count for given code block.
+ 				  Returns worst path cycle cost.
+
+ Parameters		: psState    - Compiler state
+                  psBlock    - Code block input
+                  uDepth     - Recursion depth
+
+ Return			: Nothing.
+*********************************************************************************/
+{
+	IMG_UINT32 uWorstPathCycles, i;
+	
+	if(psBlock->uFlags & USC_CODEBLOCK_TRAVERSED)
+	{
+		return (psBlock->uInstructionCycleEstimate + psBlock->uWorstPathCycleEstimate);
+	}
+
+	psBlock->uFlags |= USC_CODEBLOCK_TRAVERSED;
+	
+	uWorstPathCycles = 0;
+	psBlock->uPathTotal = 0;
+	switch(psBlock->eType)
+	{
+		case CBTYPE_UNCOND:
+		{
+			uWorstPathCycles = EstimateCycleCostForBlock(psState, psBlock->asSuccs[0].psDest, uDepth + 1);
+			if(psBlock->asSuccs[0].psDest->uIdx != psBlock->uIdx + 1 || psBlock->u.sUncond.bSyncEnd)
+			{
+				uWorstPathCycles++;
+				
+				psBlock->uPathTotal += 
+					(((psBlock->asSuccs[0].psDest->uInstructionCycleEstimate + 1) * psBlock->asSuccs[0].psDest->uPathDivisions) + 
+					psBlock->asSuccs[0].psDest->uPathTotal );
+			}
+			else
+			{
+				psBlock->uPathTotal += 
+					((psBlock->asSuccs[0].psDest->uInstructionCycleEstimate * psBlock->asSuccs[0].psDest->uPathDivisions) + 
+					psBlock->asSuccs[0].psDest->uPathTotal );
+			}
+			psBlock->uPathDivisions = psBlock->asSuccs[0].psDest->uPathDivisions;
+			break;
+		}
+		case CBTYPE_COND:
+		case CBTYPE_SWITCH:
+		{
+			psBlock->uPathDivisions = 0;
+			for(i = 0; i < psBlock->uNumSuccs; i++)
+			{
+				IMG_UINT32 uWorstPathCycleEstimate = EstimateCycleCostForBlock(psState, psBlock->asSuccs[i].psDest, uDepth + 1);
+				if(uWorstPathCycles < uWorstPathCycleEstimate)
+				{
+					uWorstPathCycles = uWorstPathCycleEstimate + 1;
+				}
+				psBlock->uPathDivisions += psBlock->asSuccs[i].psDest->uPathDivisions;
+				psBlock->uPathTotal += 
+						((psBlock->asSuccs[i].psDest->uInstructionCycleEstimate + 1) * psBlock->asSuccs[i].psDest->uPathDivisions)
+						+ psBlock->asSuccs[i].psDest->uPathTotal;
+			}
+			break;
+		}
+		default:
+		{
+			psBlock->uPathDivisions = 1;
+		}
+	}
+	psBlock->uWorstPathCycleEstimate = uWorstPathCycles;
+	return (psBlock->uInstructionCycleEstimate + psBlock->uWorstPathCycleEstimate);
+}
+
+static
+IMG_UINT32 EstimateFunctionCycleCosting(PINTERMEDIATE_STATE psState, PFUNC psFunc)
+/*********************************************************************************
+ Function		: EstimateFunctionCycleCosting
+
+ Description	: Computes cycle cost for function, and updates structure.
+				  Returns worst path cycle count.
+
+ Parameters		: psState    - Compiler state
+                  psFunc     - Function input
+
+ Return			: Nothing.
+*********************************************************************************/
+{
+	IMG_UINT32 i, uInstCount;
+	
+	PCODEBLOCK psEntryBlock = psFunc->sCfg.psEntry;
+	
+	PVR_UNREFERENCED_PARAMETER(psState);
+	
+	if(psFunc->uWorstPathCycleEstimate)
+	{
+		return psFunc->uWorstPathCycleEstimate;
+	}
+	
+	for (i = 0; i < psFunc->sCfg.uNumBlocks; i++)
+	{
+		PINST psInst;
+		
+		PCODEBLOCK psBlock = psFunc->sCfg.apsAllBlocks[i];
+		psBlock->uFlags &= ~USC_CODEBLOCK_TRAVERSED;
+		
+		psBlock->uInstructionCycleEstimate = 0;
+		psBlock->uWorstPathCycleEstimate = 0;
+		
+		for (psInst = psBlock->psBody; psInst != NULL; )
+		{
+			IMG_UINT32 uInstCy;
+			
+			psInst = EstimateCycleCostForInst(psState, psInst, &uInstCy);
+			psBlock->uInstructionCycleEstimate += uInstCy;
+		}
+	}
+
+	uInstCount = EstimateCycleCostForBlock(psState, psEntryBlock, 0);
+	
+	psFunc->uWorstPathCycleEstimate = uInstCount;
+	psFunc->uPathTotal = (psEntryBlock->uInstructionCycleEstimate * psEntryBlock->uPathDivisions) + psEntryBlock->uPathTotal;
+	psFunc->fAverageCycleCount = ((IMG_FLOAT)psFunc->uPathTotal) / ((IMG_FLOAT)psEntryBlock->uPathDivisions);
+	
+	return uInstCount;
+}
+
+IMG_INTERNAL
+IMG_BOOL PConvertCompareCostings( PINTERMEDIATE_STATE			psState,
+								  PINTERMEDIATE_STATE			psStateOriginal,
+								  PINTERMEDIATE_STATE			psStateEnfored,
+								  USC_PCONVERT_SETTINGS_FLAGS	eEnforcementTestSettings)
+/*********************************************************************************
+ Function		: EstimateCycleCostForBlock
+
+ Description	: Predicts total cycle count for given code block.
+ 				  Returns worst path cycle cost.
+
+ Parameters		: psState   		- Compiler current state
+                  psStateOriginal   - Original compiler state before precision
+                  					  override.
+                  psStateEnfored	- Compiler sate after precision override
+                  eEnforcementTestSettings
+                  					- Precision enforcing settings 
+
+ Return			: Result for costing compare of original and enforced state.
+                  TRUE if enforced version is better
+*********************************************************************************/
+{
+	IMG_BOOL		bResult;
+	IMG_FLOAT		fPrevAverageCycleCount, fNewAverageCycleCount;
+	IMG_UINT32 		uNewRegUsages, uOldRegUsages;
+	
+	EstimateFunctionCycleCosting(psState, psStateOriginal->psMainProg);
+	fPrevAverageCycleCount = psStateOriginal->psMainProg->fAverageCycleCount;
+	
+	EstimateFunctionCycleCosting(psState, psStateEnfored->psMainProg);
+	fNewAverageCycleCount = psStateEnfored->psMainProg->fAverageCycleCount;
+	
+	uOldRegUsages = (psStateOriginal->sHWRegs.uNumPrimaryAttributes
+						+ max(psStateOriginal->uTemporaryRegisterCount, psStateOriginal->uTemporaryRegisterCountPostSplit));
+	
+	uNewRegUsages = (psStateEnfored->sHWRegs.uNumPrimaryAttributes
+						+ max(psStateEnfored->uTemporaryRegisterCount, psStateEnfored->uTemporaryRegisterCountPostSplit));
+	
+	DBG_PRINTF((DBG_PCONVERT_DATA, "PCONVERT_INSTCOUNT:%s,%f,%f", USC_INPUT_FILENAME, fPrevAverageCycleCount, fNewAverageCycleCount));
+	DBG_PRINTF((DBG_PCONVERT_DATA, "PCONVERT_REGSCOUNT:%s,%d,%d", USC_INPUT_FILENAME, uOldRegUsages, uNewRegUsages));
+	
+	if((!(eEnforcementTestSettings & USC_DISABLE_TEMPREG_TEST))
+				&& fNewAverageCycleCount == fPrevAverageCycleCount)
+	{
+		/* Compare count of primary attributes + count of temporary registers */
+		bResult = (uNewRegUsages < uOldRegUsages) ? IMG_TRUE : IMG_FALSE;
+	}
+	else
+	{
+		/* Compre the instruction cycle estimates */
+		bResult = (fNewAverageCycleCount < fPrevAverageCycleCount) ? IMG_TRUE : IMG_FALSE;
+	}
+	return bResult;
+}
+
+IMG_INTERNAL
+IMG_VOID DoOnAllBlocksForFunction(PINTERMEDIATE_STATE psState, const PFUNC psFunc, BLOCK_PROC pfBlockProc, IMG_PVOID pvParam)
+/*********************************************************************************
+ Function		: DoOnAllBlocksForFunction
+
+ Description	: Performs provided block procedure on each block of function
+
+ Parameters		: psState     - Compiler state
+                  psFunc      - Function input
+                  pfBlockProc - Block 
+                  pvParam     - Parameter for block procedure
+
+ Return			: Nothing.
+*********************************************************************************/
+{
+	IMG_UINT32 i;
+	
+	PVR_UNREFERENCED_PARAMETER(psState);
+
+	for (i = 0; i < psFunc->sCfg.uNumBlocks; i++)
+	{
+		PCODEBLOCK psBlock = psFunc->sCfg.apsAllBlocks[i];
+		pfBlockProc(psState, psBlock, pvParam);
+	}
+}
+
+#endif /* defined(TRACK_REDUNDANT_PCONVERSION) */
+/******************************************************************************
+ End of file (pconvert.c)
+******************************************************************************/

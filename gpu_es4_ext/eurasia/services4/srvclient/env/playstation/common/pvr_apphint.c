@@ -123,17 +123,20 @@ IMG_EXPORT IMG_BOOL PVRSRVGetAppHint(IMG_VOID		*pvHintState,
 		if (!sceClibStrncasecmp(pszHintName, "PDSFragBufferSize", 18))
 		{
 			*(IMG_UINT32 *)pvReturn = s_appHint.ui32PDSFragBufferSize;
-			bFound = IMG_TRUE;
+			if (*(IMG_UINT32 *)pvReturn != 0)
+				bFound = IMG_TRUE;
 		}
 		else if (!sceClibStrncasecmp(pszHintName, "ParamBufferSize", 16))
 		{
 			*(IMG_UINT32 *)pvReturn = s_appHint.ui32ParamBufferSize;
-			bFound = IMG_TRUE;
+			if (*(IMG_UINT32 *)pvReturn != 0)
+				bFound = IMG_TRUE;
 		}
 		else if (!sceClibStrncasecmp(pszHintName, "DriverMemorySize", 17))
 		{
 			*(IMG_UINT32 *)pvReturn = s_appHint.ui32DriverMemorySize;
-			bFound = IMG_TRUE;
+			if (*(IMG_UINT32 *)pvReturn != 0)
+				bFound = IMG_TRUE;
 		}
 		else if (!sceClibStrncasecmp(pszHintName, "ExternalZBufferMode", 20))
 		{
@@ -143,12 +146,14 @@ IMG_EXPORT IMG_BOOL PVRSRVGetAppHint(IMG_VOID		*pvHintState,
 		else if (!sceClibStrncasecmp(pszHintName, "ui32ExternalZBufferXSize", 25))
 		{
 			*(IMG_UINT32 *)pvReturn = s_appHint.ui32ExternalZBufferXSize;
-			bFound = IMG_TRUE;
+			if (*(IMG_UINT32 *)pvReturn != 0)
+				bFound = IMG_TRUE;
 		}
 		else if (!sceClibStrncasecmp(pszHintName, "ui32ExternalZBufferYSize", 25))
 		{
 			*(IMG_UINT32 *)pvReturn = s_appHint.ui32ExternalZBufferYSize;
-			bFound = IMG_TRUE;
+			if (*(IMG_UINT32 *)pvReturn != 0)
+				bFound = IMG_TRUE;
 		}
 		else if (!sceClibStrncasecmp(pszHintName, "WindowSystem", 13))
 		{
@@ -167,7 +172,7 @@ IMG_EXPORT IMG_BOOL PVRSRVGetAppHint(IMG_VOID		*pvHintState,
 		}
 		else if (!sceClibStrncasecmp(pszHintName, "DumpProfileData", 16))
 		{
-			*(IMG_UINT32 *)pvReturn = s_appHint.ui32DumpProfileData;
+			*(IMG_UINT32 *)pvReturn = s_appHint.bDumpProfileData;
 			bFound = IMG_TRUE;
 		}
 		else if (!sceClibStrncasecmp(pszHintName, "ProfileStartFrame", 18))
@@ -182,7 +187,129 @@ IMG_EXPORT IMG_BOOL PVRSRVGetAppHint(IMG_VOID		*pvHintState,
 		}
 		else if (!sceClibStrncasecmp(pszHintName, "DisableMetricsOutput", 21))
 		{
-			*(IMG_UINT32 *)pvReturn = s_appHint.ui32DisableMetricsOutput;
+			*(IMG_UINT32 *)pvReturn = s_appHint.bDisableMetricsOutput;
+			bFound = IMG_TRUE;
+		}
+		else if (!sceClibStrncasecmp(pszHintName, "FBODepthDiscard", 16))
+		{
+			*(IMG_UINT32 *)pvReturn = s_appHint.bFBODepthDiscard;
+			bFound = IMG_TRUE;
+		}
+		else if (!sceClibStrncasecmp(pszHintName, "OptimisedValidation", 20))
+		{
+			*(IMG_UINT32 *)pvReturn = s_appHint.bOptimisedValidation;
+			bFound = IMG_TRUE;
+		}
+		else if (!sceClibStrncasecmp(pszHintName, "DisableHWTQTextureUpload", 25))
+		{
+			*(IMG_UINT32 *)pvReturn = s_appHint.bDisableHWTQTextureUpload;
+			bFound = IMG_TRUE;
+		}
+		else if (!sceClibStrncasecmp(pszHintName, "DisableHWTQNormalBlit", 22))
+		{
+			*(IMG_UINT32 *)pvReturn = s_appHint.bDisableHWTQNormalBlit;
+			bFound = IMG_TRUE;
+		}
+		else if (!sceClibStrncasecmp(pszHintName, "DisableHWTQBufferBlit", 22))
+		{
+			*(IMG_UINT32 *)pvReturn = s_appHint.bDisableHWTQBufferBlit;
+			bFound = IMG_TRUE;
+		}
+		else if (!sceClibStrncasecmp(pszHintName, "DisableHWTQMipGen", 18))
+		{
+			*(IMG_UINT32 *)pvReturn = s_appHint.bDisableHWTQMipGen;
+			bFound = IMG_TRUE;
+		}
+		else if (!sceClibStrncasecmp(pszHintName, "DisableHWTQMipGen", 18))
+		{
+			*(IMG_UINT32 *)pvReturn = s_appHint.bDisableHWTQMipGen;
+			bFound = IMG_TRUE;
+		}
+		else if (!sceClibStrncasecmp(pszHintName, "DisableHWTextureUpload", 23))
+		{
+			*(IMG_UINT32 *)pvReturn = s_appHint.bDisableHWTextureUpload;
+			bFound = IMG_TRUE;
+		}
+		else if (!sceClibStrncasecmp(pszHintName, "FlushBehaviour", 15))
+		{
+			*(IMG_UINT32 *)pvReturn = s_appHint.ui32FlushBehaviour;
+			bFound = IMG_TRUE;
+		}
+		else if (!sceClibStrncasecmp(pszHintName, "EnableStaticPDSVertex", 22))
+		{
+			*(IMG_UINT32 *)pvReturn = s_appHint.bEnableStaticPDSVertex;
+			bFound = IMG_TRUE;
+		}
+		else if (!sceClibStrncasecmp(pszHintName, "EnableStaticMTECopy", 20))
+		{
+			*(IMG_UINT32 *)pvReturn = s_appHint.bEnableStaticMTECopy;
+			bFound = IMG_TRUE;
+		}
+		else if (!sceClibStrncasecmp(pszHintName, "DisableStaticPDSPixelSAProgram", 31))
+		{
+			*(IMG_UINT32 *)pvReturn = s_appHint.bDisableStaticPDSPixelSAProgram;
+			bFound = IMG_TRUE;
+		}
+		else if (!sceClibStrncasecmp(pszHintName, "DisableUSEASMOPT", 17))
+		{
+			*(IMG_UINT32 *)pvReturn = s_appHint.bDisableUSEASMOPT;
+			bFound = IMG_TRUE;
+		}
+		else if (!sceClibStrncasecmp(pszHintName, "DumpShaders", 12))
+		{
+			*(IMG_UINT32 *)pvReturn = s_appHint.bDumpShaders;
+			bFound = IMG_TRUE;
+		}
+		else if (!sceClibStrncasecmp(pszHintName, "DefaultVertexBufferSize", 24))
+		{
+			*(IMG_UINT32 *)pvReturn = s_appHint.ui32DefaultVertexBufferSize;
+			if (*(IMG_UINT32 *)pvReturn != 0)
+				bFound = IMG_TRUE;
+		}
+		else if (!sceClibStrncasecmp(pszHintName, "MaxVertexBufferSize", 20))
+		{
+		*(IMG_UINT32 *)pvReturn = s_appHint.ui32MaxVertexBufferSize;
+			if (*(IMG_UINT32 *)pvReturn != 0)
+				bFound = IMG_TRUE;
+		}
+		else if (!sceClibStrncasecmp(pszHintName, "DefaultIndexBufferSize", 23))
+		{
+		*(IMG_UINT32 *)pvReturn = s_appHint.ui32DefaultIndexBufferSize;
+			if (*(IMG_UINT32 *)pvReturn != 0)
+				bFound = IMG_TRUE;
+		}
+		else if (!sceClibStrncasecmp(pszHintName, "DefaultPDSVertBufferSize", 25))
+		{
+			*(IMG_UINT32 *)pvReturn = s_appHint.ui32DefaultPDSVertBufferSize;
+			if (*(IMG_UINT32 *)pvReturn != 0)
+				bFound = IMG_TRUE;
+		}
+		else if (!sceClibStrncasecmp(pszHintName, "DefaultPregenPDSVertBufferSize", 31))
+		{
+			*(IMG_UINT32 *)pvReturn = s_appHint.ui32DefaultPregenPDSVertBufferSize;
+			if (*(IMG_UINT32 *)pvReturn != 0)
+				bFound = IMG_TRUE;
+		}
+		else if (!sceClibStrncasecmp(pszHintName, "DefaultPregenMTECopyBufferSize", 31))
+		{
+			*(IMG_UINT32 *)pvReturn = s_appHint.ui32DefaultPregenMTECopyBufferSize;
+			if (*(IMG_UINT32 *)pvReturn != 0)
+				bFound = IMG_TRUE;
+		}
+		else if (!sceClibStrncasecmp(pszHintName, "DefaultVDMBufferSize", 21))
+		{
+			*(IMG_UINT32 *)pvReturn = s_appHint.ui32DefaultVDMBufferSize;
+			if (*(IMG_UINT32 *)pvReturn != 0)
+				bFound = IMG_TRUE;
+		}
+		else if (!sceClibStrncasecmp(pszHintName, "EnableMemorySpeedTest", 22))
+		{
+			*(IMG_UINT32 *)pvReturn = s_appHint.bEnableMemorySpeedTest;
+			bFound = IMG_TRUE;
+		}
+		else if (!sceClibStrncasecmp(pszHintName, "EnableAppTextureDependency", 27))
+		{
+			*(IMG_UINT32 *)pvReturn = s_appHint.bEnableAppTextureDependency;
 			bFound = IMG_TRUE;
 		}
 	}

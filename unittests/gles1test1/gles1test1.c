@@ -123,11 +123,10 @@ static void init_texture(void)
  Returns            : None
  Description        : Initialises vertex and texture data
 ************************************************************************************/
-
 static void init(void) 
 {
 	glClearColor(0.0, 1.0, 0.0, 1.0); // R,G,B,A
-	/*static GLfloat vertices[] =
+	static GLfloat vertices[] =
 		{-0.5f,-0.5f,  0.0f,0.5f,  0.5f,-0.5f,  -0.5f,-0.5f,  0.0f,0.5f,  0.5f,-0.5f};
     
 	static GLfloat colors[]   =
@@ -158,37 +157,7 @@ static void init(void)
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
                  TEX_SIZE, TEX_SIZE, 0, GL_RGBA, GL_UNSIGNED_BYTE, texdata);
 
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);*/
-}
-
-typedef struct {
-	GLfloat x;
-	GLfloat y;
-	GLfloat z;
-} Vertex3D;
-
-typedef struct {
-	Vertex3D v1;
-	Vertex3D v2;
-	Vertex3D v3;
-} Triangle3D;
-
-static inline Vertex3D Vertex3DMake(GLfloat inX, GLfloat inY, GLfloat inZ)
-{
-	Vertex3D ret;
-	ret.x = inX;
-	ret.y = inY;
-	ret.z = inZ;
-	return ret;
-}
-
-static inline Triangle3D Triangle3DMake(Vertex3D inX, Vertex3D inY, Vertex3D inZ)
-{
-	Triangle3D ret;
-	ret.v1 = inX;
-	ret.v2 = inY;
-	ret.v3 = inZ;
-	return ret;
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 }
 
 /***********************************************************************************
@@ -202,48 +171,35 @@ static void display(void)
 {
 	static int framecount=0;
 
-	//glClear(GL_COLOR_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT);
 
-	//glMatrixMode(GL_MODELVIEW);
+	glMatrixMode(GL_MODELVIEW);
 
 	/*
 	// Triangle 1
 	*/
-	/*glLoadIdentity();
+	glLoadIdentity();
 
 	glTranslatef(-0.5,0,0);
 
 	glRotatef(5.0f*(GLfloat)framecount,0,1,0);
 
-	//glEnable(GL_TEXTURE_2D);
+	glEnable(GL_TEXTURE_2D);
 
-	glDrawArrays (GL_TRIANGLES, 0, 3);*/
+	glDrawArrays (GL_TRIANGLES, 0, 3);
 
-	//glDisable(GL_TEXTURE_2D);
+	glDisable(GL_TEXTURE_2D);
 
 	/*
 	// Triangle 2
 	*/
-	/*glLoadIdentity();
-
-	glTranslatef(0.5,0,0);*/
-
-	//glRotatef(-5.0f*(GLfloat)framecount*2,0,1,0); /* Twice the speed of triangle 1 
-
-	//glDrawArrays (GL_TRIANGLES, 3, 3);
-
-	Vertex3D    vertex1 = Vertex3DMake(0.0, 1.0, 0.0);
-	Vertex3D    vertex2 = Vertex3DMake(1.0, 0.0, 0.0);
-	Vertex3D    vertex3 = Vertex3DMake(-1.0, 0.0, 0.0);
-	Triangle3D  triangle = Triangle3DMake(vertex1, vertex2, vertex3);
-
 	glLoadIdentity();
-	glClear(GL_COLOR_BUFFER_BIT);
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glColor4f(1.0, 0.0, 0.0, 1.0);
-	glVertexPointer(3, GL_FLOAT, 0, &triangle);
-	glDrawArrays(GL_TRIANGLES, 0, 9);
-	glDisableClientState(GL_VERTEX_ARRAY);
+
+	glTranslatef(0.5,0,0);
+
+	glRotatef(-5.0f*(GLfloat)framecount*2,0,1,0); /* Twice the speed of triangle 1 */
+
+	glDrawArrays (GL_TRIANGLES, 3, 3);
 
 	framecount++;
 }
@@ -304,8 +260,6 @@ int EglMain(EGLNativeDisplayType eglDisplay, EGLNativeWindowType eglWindow)
 #else
 	eRetStatus = eglGetConfigs(dpy, configs, 2, &config_count);
 
-	printf("count: %d\n", config_count);
-
 	if (eRetStatus != EGL_TRUE)
 	{
 		handle_egl_error("eglGetConfigs");		
@@ -332,7 +286,7 @@ int EglMain(EGLNativeDisplayType eglDisplay, EGLNativeWindowType eglWindow)
 	{
 		handle_egl_error("eglCreateContext");
 	}
-	
+
 	eRetStatus = eglMakeCurrent(dpy, surface, surface, context);
 
 	if (eRetStatus != EGL_TRUE)
@@ -392,21 +346,47 @@ int main(int argc, char *argv[])
 #if defined(__psp2__)
 
 	PVRSRV_PSP2_APPHINT hint;
+	sceClibMemset(&hint, 0, sizeof(PVRSRV_PSP2_APPHINT));
 
 	sceClibStrncpy(hint.szGLES1, "app0:libGLESv1_CM.suprx", 256);
 	sceClibStrncpy(hint.szWindowSystem, "app0:libpvrPSP2_WSEGL.suprx", 256);
-	hint.ui32DisableMetricsOutput = 0;
-	hint.ui32DumpProfileData = 0;
-	hint.ui32ExternalZBufferMode = 0;
+	hint.bDisableMetricsOutput = IMG_FALSE;
+	hint.bDumpProfileData = IMG_TRUE;
+	hint.ui32ProfileStartFrame = 50;
+	hint.ui32ProfileEndFrame = 60;
+	hint.ui32ExternalZBufferMode = IMG_FALSE;
 	hint.ui32ExternalZBufferXSize = 0;
 	hint.ui32ExternalZBufferYSize = 0;
 	hint.ui32ParamBufferSize = 16 * 1024 * 1024;
 	hint.ui32PDSFragBufferSize = 50 * 1024;
 	hint.ui32DriverMemorySize = 4 * 1024 * 1024;
 
+	hint.bDisableHWTextureUpload = IMG_FALSE;
+	hint.bDisableHWTQBufferBlit = IMG_FALSE;
+	hint.bDisableHWTQMipGen = IMG_FALSE;
+	hint.bDisableHWTQNormalBlit = IMG_FALSE;
+	hint.bDisableHWTQTextureUpload = IMG_FALSE;
+	hint.bDisableStaticPDSPixelSAProgram = IMG_FALSE;
+	hint.bDisableUSEASMOPT = IMG_FALSE;
+	hint.bDumpShaders = IMG_FALSE;
+	hint.bEnableAppTextureDependency = IMG_FALSE;
+	hint.bEnableMemorySpeedTest = IMG_TRUE;
+	hint.bEnableStaticMTECopy = IMG_TRUE;
+	hint.bEnableStaticPDSVertex = IMG_TRUE;
+	hint.bFBODepthDiscard = IMG_TRUE;
+	hint.bOptimisedValidation = IMG_TRUE;
+	hint.ui32DefaultIndexBufferSize = 200 * 1024;
+	hint.ui32DefaultPDSVertBufferSize = 50 * 1024;
+	hint.ui32DefaultPregenMTECopyBufferSize = 50 * 1024;
+	hint.ui32DefaultPregenPDSVertBufferSize = 80 * 1024;
+	hint.ui32DefaultVDMBufferSize = 20 * 1024;
+	hint.ui32DefaultVertexBufferSize = 200 * 1024;
+	hint.ui32FlushBehaviour = 0;
+	hint.ui32MaxVertexBufferSize = 800 * 1024;
+
 	PVRSRVCreateVirtualAppHint(&hint);
 
-	frameStop = 1000;
+	frameStop = 999999;
 #endif
 
 	return EglMain(EGL_DEFAULT_DISPLAY, 0);

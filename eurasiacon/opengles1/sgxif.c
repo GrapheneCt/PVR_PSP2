@@ -1201,7 +1201,6 @@ IMG_INTERNAL IMG_VOID KickLimit_ScheduleTA(IMG_VOID *pvContext, IMG_BOOL bLastIn
 	ScheduleTA(gc, gc->psRenderSurface, ui32Flags);
 }	
 
-
 /***********************************************************************************
  Function Name      : DoKickTA
  Inputs             : gc, psRenderSurface, ui32Flags
@@ -1535,7 +1534,6 @@ static IMG_EGLERROR DoKickTA(GLES1Context *gc, EGLRenderSurface *psRenderSurface
 	/* TARegs */
 	psKickTA->sKickTACommon.sTABufferCtlStreamBase = gc->apsBuffers[CBUF_TYPE_VDM_CTRL_BUFFER]->uTACtrlKickDevAddr;
 	psKickTA->sKickTACommon.ui32MTECtrl = psTARegs->sMTEControl.ui32RegVal;
-
 
 #if defined(PDUMP)
 	PDUMP_SETFRAME(gc);

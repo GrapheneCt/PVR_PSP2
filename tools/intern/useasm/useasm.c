@@ -21673,7 +21673,6 @@ IMG_INTERNAL IMG_UINT32 IMG_CALLCONV UseAssembler(PCSGX_CORE_DESC psTarget,
 	for ( ; psInst != NULL; psInst = psInst->psNext)
 	{
 		IMG_UINT32	uInstSize;
-
 		uInstSize = UseAssembleInstruction(psTarget, psInst, puBaseInst, puInst, uCodeOffset, psContext);
 		if (uInstSize == USE_UNDEF)
 		{

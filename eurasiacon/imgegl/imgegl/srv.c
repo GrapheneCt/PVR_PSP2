@@ -670,8 +670,10 @@ IMG_EXPORT PVRSRV_ERROR IMG_CALLCONV KEGLAllocDeviceMemPsp2(SrvSysContext *psSys
 	IMG_UINT32 ui32Size, IMG_UINT32 ui32Alignment, PVRSRV_CLIENT_MEM_INFO **ppsMemInfo)
 {
 	PVRSRV_ERROR eError;
-	PVRSRV_CLIENT_MEM_INFO *psMemInfo = *ppsMemInfo;
+	PVRSRV_CLIENT_MEM_INFO *psMemInfo;;
 	IMG_BOOL bNeedSync = IMG_FALSE;
+
+	*ppsMemInfo = IMG_NULL;
 
 	if (!(ui32Attribs & PVRSRV_MEM_NO_SYNCOBJ))
 	{
@@ -685,6 +687,8 @@ IMG_EXPORT PVRSRV_ERROR IMG_CALLCONV KEGLAllocDeviceMemPsp2(SrvSysContext *psSys
 
 	if (eError == PVRSRV_OK)
 	{
+		psMemInfo = *ppsMemInfo;
+
 		if (bNeedSync)
 		{
 			eError = PVRSRVAllocSyncInfo(psDevData, &psMemInfo->psClientSyncInfo);

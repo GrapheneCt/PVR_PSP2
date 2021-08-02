@@ -137,9 +137,11 @@ IMG_EXPORT IMG_VOID PVRSRVInitProfileOutput(IMG_VOID **ppvFileInfo)
 
 	sceAppMgrAppParamGetString(SCE_KERNEL_PROCESS_ID_SELF, 12, appname, 12);
 
+	sceIoMkdir("ux0:data/PVRSRV_Profile", 0777);
+
 	sceClibSnprintf(fullPath, 256, "%s%s%s", "ux0:data/PVRSRV_Profile/", appname, "_profile.txt");
 
-	fd = sceIoOpen(fullPath, SCE_O_WRONLY | SCE_O_CREAT, 0);
+	fd = sceIoOpen(fullPath, SCE_O_WRONLY | SCE_O_CREAT, 0777);
 
 	if (fd <= 0)
 	{
@@ -178,14 +180,12 @@ IMG_EXPORT IMG_VOID PVRSRVDeInitProfileOutput(IMG_VOID **ppvFileInfo)
 IMG_EXPORT IMG_VOID PVRSRVProfileOutput(IMG_VOID *pvFileInfo, const IMG_CHAR *psString)
 {
 	IMG_CHAR newline[2];
-	IMG_UINT32 len;
 	SceUID fd = (SceUID)pvFileInfo;
 	sceClibStrncpy(newline, "\n", 2);
 
-	if(pvFileInfo > 0)
+	if(fd > 0)
 	{
-		len = sceClibStrnlen(psString, 1024);
-		sceIoWrite(fd, psString, len - 1);
+		sceIoWrite(fd, psString, sceClibStrnlen(psString, 1024));
 		sceIoWrite(fd, newline, sizeof(newline));
 	}
 

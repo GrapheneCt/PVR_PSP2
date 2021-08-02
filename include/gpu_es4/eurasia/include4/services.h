@@ -48,19 +48,47 @@ extern "C" {
 
 	typedef struct _PVRSRV_PSP2_APPHINT_
 	{
+		/* Common hints */
+
 		IMG_UINT32 ui32PDSFragBufferSize;
 		IMG_UINT32 ui32ParamBufferSize;
 		IMG_UINT32 ui32DriverMemorySize;
 		IMG_UINT32 ui32ExternalZBufferMode;
 		IMG_UINT32 ui32ExternalZBufferXSize;
 		IMG_UINT32 ui32ExternalZBufferYSize;
-		IMG_UINT32 ui32DumpProfileData;
+		IMG_BOOL bDumpProfileData;
 		IMG_UINT32 ui32ProfileStartFrame;
 		IMG_UINT32 ui32ProfileEndFrame;
-		IMG_UINT32 ui32DisableMetricsOutput;
+		IMG_BOOL bDisableMetricsOutput;
 		IMG_CHAR szWindowSystem[256]; //path to libpvrPSP2_WSEGL module
 		IMG_CHAR szGLES1[256]; //path to libGLESv1_CM module
 		IMG_CHAR szGLES2[256]; //path to libGLESv2 module
+
+		/* OGLES1 hints */
+
+		IMG_BOOL bFBODepthDiscard;
+		IMG_BOOL bOptimisedValidation;
+		IMG_BOOL bDisableHWTQTextureUpload;
+		IMG_BOOL bDisableHWTQNormalBlit;
+		IMG_BOOL bDisableHWTQBufferBlit;
+		IMG_BOOL bDisableHWTQMipGen;
+		IMG_BOOL bDisableHWTextureUpload;
+		IMG_UINT32 ui32FlushBehaviour;
+		IMG_BOOL bEnableStaticPDSVertex;
+		IMG_BOOL bEnableStaticMTECopy;
+		IMG_BOOL bDisableStaticPDSPixelSAProgram;
+		IMG_BOOL bDisableUSEASMOPT;
+		IMG_BOOL bDumpShaders;
+		IMG_UINT32 ui32DefaultVertexBufferSize;
+		IMG_UINT32 ui32MaxVertexBufferSize;
+		IMG_UINT32 ui32DefaultIndexBufferSize;
+		IMG_UINT32 ui32DefaultPDSVertBufferSize;
+		IMG_UINT32 ui32DefaultPregenPDSVertBufferSize;
+		IMG_UINT32 ui32DefaultPregenMTECopyBufferSize;
+		IMG_UINT32 ui32DefaultVDMBufferSize;
+		IMG_BOOL bEnableMemorySpeedTest;
+		IMG_BOOL bEnableAppTextureDependency;
+
 	} PVRSRV_PSP2_APPHINT;
 #endif
 
