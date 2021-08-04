@@ -267,7 +267,7 @@ static IMG_VOID FreeBufferObject(GLES1Context *gc, GLESBufferObject *psBufObj, I
 		gc->ui32VBOMemCurrent -= psBufObj->psMemInfo->uAllocSize;
 #endif /* defined(DEBUG) || defined(TIMING) */
 
-		GLES1FREEDEVICEMEM(gc->ps3DDevData, psBufObj->psMemInfo);
+		GLES1FREEDEVICEMEM_HEAP(gc, psBufObj->psMemInfo);
 
 	}
 
@@ -654,6 +654,7 @@ GL_API void GL_APIENTRY glBufferData(GLenum target, GLsizeiptr size, const void 
 	IMG_UINT32 ui32TargetIndex, uAllocSize, ui32AllocAlign;
 	GLESBufferObject *psBufObj;
 	GLES1VertexArrayObject *psVAO;
+	PVRSRV_ERROR eError;
 
 	__GLES1_GET_CONTEXT();
 
@@ -750,7 +751,7 @@ GL_API void GL_APIENTRY glBufferData(GLenum target, GLsizeiptr size, const void 
 				gc->ui32VBOMemCurrent -= psBufObj->psMemInfo->uAllocSize;
 #endif /* defined(DEBUG) || defined(TIMING) */
 
-				GLES1FREEDEVICEMEM(gc->ps3DDevData, psBufObj->psMemInfo);
+				GLES1FREEDEVICEMEM_HEAP(gc, psBufObj->psMemInfo);
 
 				psBufObj->psMemInfo = IMG_NULL;
 			}
@@ -772,12 +773,23 @@ GL_API void GL_APIENTRY glBufferData(GLenum target, GLsizeiptr size, const void 
 	{
 		if(size)
 		{
-			if(GLES1ALLOCDEVICEMEM(gc->ps3DDevData,
-								gc->psSysContext->hGeneralHeap,
+
+			eError = GLES1ALLOCDEVICEMEM_HEAP(gc,
+								PVRSRV_MEM_READ | PVRSRV_MAP_GC_MMU,		/* Read only (by device) */
+								uAllocSize,
+								ui32AllocAlign,
+								&psBufObj->psMemInfo);
+
+			if (eError != PVRSRV_OK)
+			{
+				eError = GLES1ALLOCDEVICEMEM_HEAP(gc,
 								PVRSRV_MEM_READ,							/* Read only (by device) */
 								uAllocSize,
 								ui32AllocAlign,
-								&psBufObj->psMemInfo) != PVRSRV_OK)
+								&psBufObj->psMemInfo);
+			}
+
+			if(eError != PVRSRV_OK)
 			{
 				PVR_DPF((PVR_DBG_ERROR,"glBufferData: Can't allocate memory for object"));
 

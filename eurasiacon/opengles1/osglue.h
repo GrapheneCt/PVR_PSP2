@@ -20,10 +20,12 @@
 #ifndef _OSGLUE_
 #define _OSGLUE_
 
+#include <libheap.h>
+
 /******************************************************************************
 	Memory manipulation functions
 ******************************************************************************/
-#if (defined(__linux__) && !defined(DEBUG))
+#if ((defined(__linux__) || defined(__psp2__)) && !defined(DEBUG))
 	#include <string.h>
 
 	#define	GLES1MemCopy(X,Y,Z)		memcpy(X, Y, Z)
@@ -36,9 +38,9 @@
 /******************************************************************************
 	Allocation functions
 ******************************************************************************/
-#if defined(__linux__)
+#if defined(__linux__) || defined(__psp2__)
 
-	#if defined(DEBUG)
+	#if defined(DEBUG) && !defined(__psp2__)
 
 		extern IMG_EXPORT IMG_PVOID PVRSRVAllocUserModeMemTracking(IMG_UINT32 ui32Size, IMG_CHAR *pszFileName, IMG_UINT32 ui32LineNumber);
 		extern IMG_EXPORT IMG_PVOID PVRSRVCallocUserModeMemTracking(IMG_UINT32 ui32Size, IMG_CHAR *pszFileName, IMG_UINT32 ui32LineNumber);
@@ -67,7 +69,6 @@
 	#define GLES1Free(X,Y)				   PVRSRVFreeUserModeMem(Y)
 
 #endif
-
 
 #endif /* _OSGLUE_ */
 

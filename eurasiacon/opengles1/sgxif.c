@@ -1322,18 +1322,43 @@ static IMG_EGLERROR DoKickTA(GLES1Context *gc, EGLRenderSurface *psRenderSurface
 
 			PVR_DPF((PVR_DBG_WARNING,"DoKickTA: Creating ZS buffer for overflow"));
 
-			if (GLES1ALLOCDEVICEMEM(&gc->psSysContext->s3D,
-									gc->psSysContext->hGeneralHeap,
-									PVRSRV_MEM_READ | PVRSRV_MEM_WRITE | PVRSRV_MEM_NO_SYNCOBJ,	
-									ui32SizeInBytes,
-									EURASIA_PDS_DOUTT2_TEXADDR_ALIGNSHIFT,
-									&psRenderSurface->psZSBufferMemInfo) != PVRSRV_OK)
+			SceKernelAllocMemBlockOpt opt;
+			sceClibMemset(&opt, 0, sizeof(SceKernelAllocMemBlockOpt));
+			opt.size = sizeof(SceKernelAllocMemBlockOpt);
+			opt.attr = SCE_KERNEL_ALLOC_MEMBLOCK_ATTR_HAS_ALIGNMENT;
+			opt.alignment = EURASIA_PDS_DOUTT2_TEXADDR_ALIGNSHIFT;
+
+			psRenderSurface->hZSBufferMemBlockUID = sceKernelAllocMemBlock(
+				"SGXZSBufferMem",
+				SCE_KERNEL_MEMBLOCK_TYPE_USER_CDRAM_RW,
+				ui32SizeInBytes,
+				&opt);
+
+			if (psRenderSurface->hZSBufferMemBlockUID <= 0)
 			{
-				PVR_DPF((PVR_DBG_ERROR,"DoKickTA: Couldn't allocate memory for Z buffer"));
-		
+				PVR_DPF((PVR_DBG_ERROR, "DoKickTA: Couldn't allocate memory for Z buffer"));
 				psRenderSurface->psZSBufferMemInfo = IMG_NULL;
+				goto skip_zs_alloc;
 			}
-			else
+
+			psRenderSurface->psZSBufferMemInfo = PVRSRVAllocUserModeMem(sizeof(PVRSRV_CLIENT_MEM_INFO));
+
+			sceKernelGetMemBlockBase(psRenderSurface->hZSBufferMemBlockUID, &psRenderSurface->psZSBufferMemInfo->pvLinAddr);
+			psRenderSurface->psZSBufferMemInfo->psNext = IMG_NULL;
+			psRenderSurface->psZSBufferMemInfo->sDevVAddr.uiAddr = psRenderSurface->psZSBufferMemInfo->pvLinAddr;
+
+			PVRSRVMapMemoryToGpu(gc->ps3DDevData,
+				gc->psSysContext->hDevMemContext,
+				0,
+				ui32SizeInBytes,
+				0,
+				psRenderSurface->psZSBufferMemInfo->pvLinAddr,
+				PVRSRV_MEM_READ | PVRSRV_MEM_WRITE | PVRSRV_MEM_USER_SUPPLIED_DEVVADDR,
+				IMG_NULL);
+
+skip_zs_alloc:
+
+			if (psRenderSurface->psZSBufferMemInfo != IMG_NULL)
 			{
 				SetupZLSAddressSizeFormat(psRenderSurface, ui32RoundedWidth, ui32RoundedHeight);
 			}

@@ -408,7 +408,7 @@ GL_API_EXT void GL_APIENTRY glEGLImageTargetTexture2DOES(GLenum target, GLeglIma
 #if (defined(DEBUG) || defined(TIMING))
 			ui32TextureMemCurrent -= psTex->psMemInfo->uAllocSize;
 #endif
-			GLES1FREEDEVICEMEM(gc->ps3DDevData, psTex->psMemInfo);
+			GLES1FREEDEVICEMEM_HEAP(gc, psTex->psMemInfo);
 
 			psTex->psMemInfo = IMG_NULL;
 		}

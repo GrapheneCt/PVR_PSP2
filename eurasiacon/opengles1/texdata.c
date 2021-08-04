@@ -494,7 +494,7 @@ IMG_INTERNAL IMG_BOOL PrepareHWTQTextureUpload(GLES1Context       *gc,
 	PVR_UNREFERENCED_PARAMETER(gc);
 	GLES1MemSet(psQueueTransfer, 0, sizeof(SGX_QUEUETRANSFER));
 
-	psQueueTransfer->eType = SGXTQ_TEXTURE_UPLOAD;
+	psQueueTransfer->eType = SGXTQ_BLIT;
 
 	psQueueTransfer->Details.sTextureUpload.pbySrcLinAddr = pbySrcLinAddr;
 	psQueueTransfer->Details.sTextureUpload.ui32BytesPP = ui32BytesPerTexel;
@@ -514,7 +514,11 @@ IMG_INTERNAL IMG_BOOL PrepareHWTQTextureUpload(GLES1Context       *gc,
 	psQueueTransfer->asDests[0].ui32Height       = ui32DstRoundedHeight;
 	psQueueTransfer->asDests[0].eMemLayout       = eDstMemLayout;
 	psQueueTransfer->asDests[0].ui32ChunkStride  = ui32DstChunkStride;
-	psQueueTransfer->asDests[0].i32StrideInBytes = i32DstStrideInBytes;
+	if (eDstMemLayout == SGXTQ_MEMLAYOUT_OUT_TWIDDLED && i32DstStrideInBytes == 0)
+		psQueueTransfer->asDests[0].i32StrideInBytes = ui32DstRoundedWidth * ui32BytesPerTexel;
+	else
+		psQueueTransfer->asDests[0].i32StrideInBytes = i32DstStrideInBytes;
+
 #if defined(GLES1_EXTENSION_EGL_IMAGE)
 	if(psTex->psEGLImageTarget)
 	{
@@ -542,6 +546,24 @@ IMG_INTERNAL IMG_BOOL PrepareHWTQTextureUpload(GLES1Context       *gc,
 	psQueueTransfer->ui32Flags = SGX_KICKTRANSFER_FLAGS_3DTQ_SYNC;
 	psQueueTransfer->bPDumpContinuous = IMG_TRUE;
 
+	psQueueTransfer->Details.sBlit.bEnableGamma = 0;
+	psQueueTransfer->Details.sBlit.bEnablePattern = 0;
+	psQueueTransfer->Details.sBlit.bSingleSource = 0;
+	psQueueTransfer->Details.sBlit.byCustomRop3 = 0;
+	psQueueTransfer->Details.sBlit.byGlobalAlpha = 0;
+	psQueueTransfer->Details.sBlit.eAlpha = 0;
+	psQueueTransfer->Details.sBlit.eColourKey = 0;
+	psQueueTransfer->Details.sBlit.eCopyOrder = 0;
+	psQueueTransfer->Details.sBlit.eFilter = 0;
+	psQueueTransfer->Details.sBlit.eRotation = 0;
+	psQueueTransfer->Details.sBlit.sUSEExecAddr.uiAddr = 0;
+	psQueueTransfer->Details.sBlit.ui32ColourKey = 0;
+	psQueueTransfer->Details.sBlit.ui32ColourKeyMask = 0;
+	psQueueTransfer->Details.sBlit.uiNumTemporaryRegisters = 0;
+	psQueueTransfer->Details.sBlit.UseParams[0] = 0;
+	psQueueTransfer->Details.sBlit.UseParams[1] = 0;
+
+	psQueueTransfer->asSources[0].sDevVAddr.uiAddr = pbySrcLinAddr;
 
 	return IMG_TRUE;
 
@@ -562,9 +584,10 @@ IMG_INTERNAL IMG_BOOL HWTQTextureUpload(GLES1Context *gc,
 										SGX_QUEUETRANSFER *psQueueTransfer)
 {
   
-	PVRSRV_ERROR eResult;
+	PVRSRV_ERROR eResult = 3;
 
 	eResult = SGXQueueTransfer(&gc->psSysContext->s3D, gc->psSysContext->hTransferContext, psQueueTransfer);
+	SGXWaitTransfer(&gc->psSysContext->s3D, gc->psSysContext->hTransferContext);
 
 	if(eResult != PVRSRV_OK)
 	{
@@ -1717,7 +1740,7 @@ IMG_INTERNAL IMG_VOID TranslateLevel(GLES1Context *gc, GLESTexture *psTex, IMG_U
 				return;
 			}
 #endif /* defined(GLES1_EXTENSION_EGL_IMAGE) */
-
+			IMG_UINT32 time1 = sceKernelGetProcessTimeLow();
 			if ( (!gc->sAppHints.bDisableHWTQTextureUpload) &&
 				 (PrepareHWTQTextureUpload(gc, psTex, ui32OffsetInBytes, psMipLevel,
 										   IMG_NULL, IMG_NULL, 0, IMG_NULL, &sQueueTransfer)) )
@@ -1732,6 +1755,7 @@ IMG_INTERNAL IMG_VOID TranslateLevel(GLES1Context *gc, GLESTexture *psTex, IMG_U
 				psTex->pfnTextureTwiddle(pvDest, psMipLevel->pui8Buffer, psMipLevel->ui32Width, 
 										 psMipLevel->ui32Height, psMipLevel->ui32Width);
 			}
+			sceClibPrintf("OP time: %u\n", sceKernelGetProcessTimeLow() - time1);
 		}
 	}
 

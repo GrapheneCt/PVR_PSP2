@@ -19,6 +19,8 @@
  *  --- Revision Logs Removed --- 
  *****************************************************************************/
 
+#include <kernel.h>
+
 #include "context.h"
 
 #if defined(EGL_EXTENSION_RENDER_TO_TEXTURE)
@@ -330,7 +332,7 @@ static IMG_VOID ReclaimTextureMemKRM(IMG_VOID *pvContext, KRMResource *psResourc
 		while(psTex->ui32TextureTarget != GLES1_TEXTURE_TARGET_2D);
 #endif
 		/* After all mipmaps have been read back, free the texture's device mem and mark it as non-resident */
-		GLES1FREEDEVICEMEM(gc->ps3DDevData, psTex->psMemInfo);
+		GLES1FREEDEVICEMEM_HEAP(gc, psTex->psMemInfo);
 
 		psTex->psMemInfo  = IMG_NULL;
 		psTex->bResidence = IMG_FALSE;
@@ -373,7 +375,7 @@ static IMG_VOID DestroyTextureGhostKRM(IMG_VOID *pvContext, KRMResource *psResou
 	else
 #endif /* defined(GLES1_EXTENSION_TEXTURE_STREAM) */
 	{
-		GLES1FREEDEVICEMEM(gc->ps3DDevData, psGhost->psMemInfo);
+		GLES1FREEDEVICEMEM_HEAP(gc, psGhost->psMemInfo);
 	}
 	
 	gc->psSharedState->psTextureManager->ui32GhostMem -= psGhost->ui32Size;
@@ -394,10 +396,12 @@ IMG_INTERNAL IMG_BOOL CreateTextureMemory(GLES1Context *gc, GLESTexture *psTex)
 {
 	GLES1TextureManager *psTexMgr         = gc->psSharedState->psTextureManager;
 	IMG_UINT32 ui32TexSize;
+	IMG_UINT32 ui32TexSizeSceAlign;
 	IMG_UINT32 ui32TexAlign = EURASIA_CACHE_LINE_SIZE;
 	IMG_UINT32 ui32BytesPerTexel = psTex->psFormat->ui32TotalBytesPerTexel;
 	IMG_UINT32 ui32TexWord1      = psTex->sState.ui32StateWord1;
 	IMG_UINT32 ui32TopUsize, ui32TopVsize;
+	PVRSRV_ERROR eError;
 
 #if defined(SGX_FEATURE_TAG_POT_TWIDDLE)
 	ui32TopUsize = 1U << ((ui32TexWord1 & ~EURASIA_PDS_DOUTT1_USIZE_CLRMSK) >> EURASIA_PDS_DOUTT1_USIZE_SHIFT);
@@ -472,26 +476,46 @@ IMG_INTERNAL IMG_BOOL CreateTextureMemory(GLES1Context *gc, GLESTexture *psTex)
 	}
 #endif
 
-	if(GLES1ALLOCDEVICEMEM(gc->ps3DDevData,
-							gc->psSysContext->hGeneralHeap,
-							PVRSRV_MEM_READ | PVRSRV_MEM_WRITE,
-							ui32TexSize,
-							ui32TexAlign,
-							&psTex->psMemInfo) != PVRSRV_OK)
+	eError = GLES1ALLOCDEVICEMEM_HEAP(gc,
+		PVRSRV_MEM_READ | PVRSRV_MEM_WRITE | PVRSRV_MAP_GC_MMU,
+		ui32TexSize,
+		ui32TexAlign,
+		&psTex->psMemInfo);
+
+	if (eError != PVRSRV_OK)
 	{
-		PVR_DPF((PVR_DBG_WARNING,"CreateTextureMemory: Reaping active textures"));
+		eError = GLES1ALLOCDEVICEMEM_HEAP(gc,
+			PVRSRV_MEM_READ | PVRSRV_MEM_WRITE,
+			ui32TexSize,
+			ui32TexAlign,
+			&psTex->psMemInfo);
+	}
+
+	if (eError != PVRSRV_OK)
+	{
+		PVR_DPF((PVR_DBG_WARNING, "CreateTextureMemory: Reaping active textures"));
 
 		KRM_DestroyUnneededGhosts(gc, &psTexMgr->sKRM);
 		KRM_ReclaimUnneededResources(gc, &psTexMgr->sKRM);
 
-		if(GLES1ALLOCDEVICEMEM(gc->ps3DDevData,
-								gc->psSysContext->hGeneralHeap,
-								PVRSRV_MEM_READ | PVRSRV_MEM_WRITE,
-								ui32TexSize,
-								ui32TexAlign,
-								&psTex->psMemInfo) != PVRSRV_OK)
+		eError = GLES1ALLOCDEVICEMEM_HEAP(gc,
+			PVRSRV_MEM_READ | PVRSRV_MEM_WRITE | PVRSRV_MAP_GC_MMU,
+			ui32TexSize,
+			ui32TexAlign,
+			&psTex->psMemInfo);
+
+		if (eError != PVRSRV_OK)
 		{
-/* PRQA S 3332 1 */ /* FIXME is reserved here for reference. */
+			eError = GLES1ALLOCDEVICEMEM_HEAP(gc,
+				PVRSRV_MEM_READ | PVRSRV_MEM_WRITE,
+				ui32TexSize,
+				ui32TexAlign,
+				&psTex->psMemInfo);
+		}
+
+		if (eError != PVRSRV_OK)
+		{
+			/* PRQA S 3332 1 */ /* FIXME is reserved here for reference. */
 			{
 				/* Could do Load store render to clear active list */
 				GLES1_TIME_STOP(GLES1_TIMER_TEXTURE_ALLOCATE_TIME);
@@ -1168,7 +1192,7 @@ IMG_INTERNAL IMG_BOOL UnloadInconsistentTexture(GLES1Context *gc, GLESTexture *p
 #if (defined(DEBUG) || defined(TIMING))
 			ui32TextureMemCurrent -= psTex->psMemInfo->uAllocSize;
 #endif
-			GLES1FREEDEVICEMEM(gc->ps3DDevData, psTex->psMemInfo);
+			GLES1FREEDEVICEMEM_HEAP(gc, psTex->psMemInfo);
 
 			psTex->psMemInfo = IMG_NULL;
 		
@@ -2338,7 +2362,7 @@ static IMG_VOID FreeTexture(GLES1Context *gc, GLESTexture *psTex)
 #if (defined(DEBUG) || defined(TIMING))
 			ui32TextureMemCurrent -= psTex->psMemInfo->uAllocSize;
 #endif
-			GLES1FREEDEVICEMEM(gc->ps3DDevData, psTex->psMemInfo);
+			GLES1FREEDEVICEMEM_HEAP(gc, psTex->psMemInfo);
 
 			psTex->psMemInfo = IMG_NULL;
 		}		

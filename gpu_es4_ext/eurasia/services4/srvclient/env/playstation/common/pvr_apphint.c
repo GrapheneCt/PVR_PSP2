@@ -312,12 +312,33 @@ IMG_EXPORT IMG_BOOL PVRSRVGetAppHint(IMG_VOID		*pvHintState,
 			*(IMG_UINT32 *)pvReturn = s_appHint.bEnableAppTextureDependency;
 			bFound = IMG_TRUE;
 		}
+		else if (!sceClibStrncasecmp(pszHintName, "OGLES1UNCTexHeapSize", 21))
+		{
+			*(IMG_UINT32 *)pvReturn = s_appHint.ui32OGLES1UNCTexHeapSize;
+			bFound = IMG_TRUE;
+		}
+		else if (!sceClibStrncasecmp(pszHintName, "OGLES1CDRAMTexHeapSize", 23))
+		{
+			*(IMG_UINT32 *)pvReturn = s_appHint.ui32OGLES1CDRAMTexHeapSize;
+			bFound = IMG_TRUE;
+		}
+		else if (!sceClibStrncasecmp(pszHintName, "OGLES1EnableUNCAutoExtend", 26))
+		{
+			*(IMG_UINT32 *)pvReturn = s_appHint.bOGLES1EnableUNCAutoExtend;
+			bFound = IMG_TRUE;
+		}
+		else if (!sceClibStrncasecmp(pszHintName, "OGLES1EnableCDRAMAutoExtend", 28))
+		{
+			*(IMG_UINT32 *)pvReturn = s_appHint.bOGLES1EnableCDRAMAutoExtend;
+			bFound = IMG_TRUE;
+		}
 	}
 
 	if (!bFound)
 	{
 		uDefault.pvData = pvDefault;
 		uReturn.pvData = pvReturn;
+		sceClibPrintf("apphint not found\n");
 
 		switch(eDataType)
 		{

@@ -114,13 +114,11 @@ PVRSRV_ERROR IMG_CALLCONV SGXQueue2DTransfer(IMG_HANDLE hTransferContext,
 	{
 		case SGXTQ_BLIT:
 		case SGXTQ_FILL:
-		case SGXTQ_TEXTURE_UPLOAD:
 		{
 			switch (psQueueTransfer->eType)
 			{
 				default:
 				case SGXTQ_BLIT:
-				case SGXTQ_TEXTURE_UPLOAD:
 				{
 					eError = GeneratePTLAControlStream(psQueueTransfer,
 														aui32ControlStream,
@@ -504,14 +502,14 @@ static PVRSRV_ERROR GeneratePTLAControlStream(const SGX_QUEUETRANSFER *psQueueTr
 	{
 		return Ret;
 	}
-	
+
 	bRotated = (pBlt->eRotation == SGXTQ_ROTATION_NONE) ? IMG_FALSE : IMG_TRUE;
 	iBltDestWidth = SGX_QUEUETRANSFER_DST_RECT((*psQueueTransfer), 0).x1 - SGX_QUEUETRANSFER_DST_RECT((*psQueueTransfer), 0).x0;
 	iBltDestHeight = SGX_QUEUETRANSFER_DST_RECT((*psQueueTransfer), 0).y1 - SGX_QUEUETRANSFER_DST_RECT((*psQueueTransfer), 0).y0;
 	
 	// Caller may specify the copy order		
 	bBackwards = (pBlt->eCopyOrder >= SGXTQ_COPYORDER_TR2BL) ? IMG_TRUE : IMG_FALSE;
-	
+
 	if (ui32DestSurfaceLayout == EURASIA_PTLA_SURF_LAYOUT_TWIDDLED)
 	{
 		if (!IsPo2(iBltDestWidth) || !IsPo2(iBltDestHeight)

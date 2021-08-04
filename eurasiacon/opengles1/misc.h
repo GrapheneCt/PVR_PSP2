@@ -85,6 +85,13 @@ typedef struct GLESAppHintsRec
 #endif /* (TIMING) || (DEBUG) */
 
 	IMG_BOOL    bEnableAppTextureDependency;
+
+	/* PSP2-specific */
+
+	IMG_UINT32 ui32OGLES1CDRAMTexHeapSize;
+	IMG_UINT32 ui32OGLES1UNCTexHeapSize;
+	IMG_BOOL bOGLES1EnableCDRAMAutoExtend;
+	IMG_BOOL bOGLES1EnableUNCAutoExtend;
 } GLESAppHints;
 
 IMG_BOOL GetApplicationHints(GLESAppHints *psAppHints, EGLcontextMode *psMode);

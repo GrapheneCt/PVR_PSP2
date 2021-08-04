@@ -88,6 +88,10 @@ extern "C" {
 		IMG_UINT32 ui32DefaultVDMBufferSize;
 		IMG_BOOL bEnableMemorySpeedTest;
 		IMG_BOOL bEnableAppTextureDependency;
+		IMG_UINT32 ui32OGLES1UNCTexHeapSize;
+		IMG_UINT32 ui32OGLES1CDRAMTexHeapSize;
+		IMG_BOOL bOGLES1EnableUNCAutoExtend;
+		IMG_BOOL bOGLES1EnableCDRAMAutoExtend;
 
 	} PVRSRV_PSP2_APPHINT;
 #endif

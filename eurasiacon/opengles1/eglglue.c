@@ -19,6 +19,7 @@
 
 #include "context.h"
 #include "pvrversion.h"
+#include "psp2/libheap_custom.h"
 #include <string.h>
 
 #include "pds_mte_state_copy_sizeof.h"
@@ -534,6 +535,34 @@ static IMG_BOOL InitContext(GLES1Context *gc, GLES1Context *psShareContext, EGLc
 		PVR_DPF((PVR_DBG_ERROR,"InitContext: CreateSharedState failed"));
 
 		goto FAILED_CreateSharedState;
+	}
+
+	SceHeapOptParam heapOpt;
+	heapOpt.size = sizeof(SceHeapOptParam);
+	heapOpt.memblockType = SCE_HEAP_OPT_MEMBLOCK_TYPE_USER;
+
+	if (gc->sAppHints.ui32OGLES1UNCTexHeapSize)
+	{
+		heapOpt.memblockType = SCE_HEAP_OPT_MEMBLOCK_TYPE_USER_NC;
+
+		gc->pvUNCHeap = sceHeapCreateHeap(gc->ps3DDevData,
+			gc->psSysContext->hDevMemContext,
+			"OGLES1UNCHeap",
+			gc->sAppHints.ui32OGLES1UNCTexHeapSize,
+			gc->sAppHints.bOGLES1EnableUNCAutoExtend ? SCE_HEAP_AUTO_EXTEND : 0,
+			&heapOpt);
+	}
+
+	if (gc->sAppHints.ui32OGLES1CDRAMTexHeapSize)
+	{
+		heapOpt.memblockType = SCE_HEAP_OPT_MEMBLOCK_TYPE_CDRAM;
+
+		gc->pvCDRAMHeap = sceHeapCreateHeap(gc->ps3DDevData,
+			gc->psSysContext->hDevMemContext,
+			"OGLES1CDRAMHeap",
+			gc->sAppHints.ui32OGLES1UNCTexHeapSize,
+			gc->sAppHints.bOGLES1EnableCDRAMAutoExtend ? SCE_HEAP_AUTO_EXTEND : 0,
+			&heapOpt);
 	}
 
 #if defined(GLES1_EXTENSION_VERTEX_ARRAY_OBJECT)
@@ -1263,6 +1292,22 @@ static IMG_BOOL GLESCreateGC(SrvSysContext *psSysContext,
 
 		goto Failed_GC_Creation;
 	}
+
+	//TODOPSP2: hi Rinne!
+	IMG_PVOID pvDummy = GLES1Malloc(0, 4);
+	SceKernelMemBlockInfo sMbInfo;
+	sMbInfo.size = sizeof(SceKernelMemBlockInfo);
+	sceKernelGetMemBlockInfoByAddr(pvDummy, &sMbInfo);
+	int ret = PVRSRVMapMemoryToGpu(
+		gc->ps3DDevData,
+		gc->psSysContext->hDevMemContext,
+		0,
+		sMbInfo.mappedSize,
+		0,
+		sMbInfo.mappedBase,
+		PVRSRV_MEM_READ | PVRSRV_MEM_WRITE | PVRSRV_MEM_USER_SUPPLIED_DEVVADDR,
+		IMG_NULL);
+	GLES1Free(0, pvDummy);
 
 #if defined (TIMING) || defined (DEBUG)
 	if (!InitMetrics(gc))

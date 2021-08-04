@@ -191,7 +191,7 @@ PVRSRV_ERROR PVRSRVUnmapDeviceClassMemory(const PVRSRV_DEV_DATA *psDevData,
 		psDevData,
 		psMemInfo->pvLinAddr,
 		0,
-		IMG_NULL);
+		IMG_FALSE);
 	if (eError != PVRSRV_OK)
 	{
 		PVR_DPF((PVR_DBG_ERROR, "PVRSRVUnmapDeviceClassMemory: Failed to unmap memory from GPU"));

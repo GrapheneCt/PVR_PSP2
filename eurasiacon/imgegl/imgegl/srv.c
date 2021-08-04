@@ -518,6 +518,8 @@ IMG_EXPORT PVRSRV_ERROR IMG_CALLCONV KEGLAllocDeviceMemTrack(SrvSysContext *psSy
 	else
 	{
 		PVR_DPF((PVR_DBG_ERROR, "KEGLAllocDeviceMemTrack: PVRSRVAllocDeviceMem failed\n\nReturn code: %d\nHeap handle 0x%X\nAllocation size: 0x%X\nAllocation attrib: 0x%X\n\n", eError, hDevMemHeap, ui32Size, ui32Attribs));
+
+		return eError;
 	}
 
 	psMemInfo = *ppsMemInfo;
@@ -729,9 +731,7 @@ IMG_EXPORT PVRSRV_ERROR IMG_CALLCONV KEGLFreeDeviceMemPsp2(SrvSysContext *psSysC
 
 	return eError;
 }
-
 #endif /* defined(DEBUG) */
-
 
 /******************************************************************************
  End of file (srv.c)

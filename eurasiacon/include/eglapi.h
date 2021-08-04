@@ -749,6 +749,10 @@ IMG_IMPORT PVRSRV_ERROR IMG_CALLCONV KEGLFreeDeviceMemTrack(SrvSysContext *psSys
 															IMG_UINT32 ui32Line, PVRSRV_DEV_DATA	*psDevData,
 															PVRSRV_CLIENT_MEM_INFO *psMemInfo);
 
+IMG_IMPORT PVRSRV_ERROR IMG_CALLCONV KEGLAllocDeviceMemPsp2(SrvSysContext *psSysContext,
+															PVRSRV_DEV_DATA *psDevData, IMG_HANDLE hDevMemHeap, IMG_UINT32 ui32Attribs,
+															IMG_UINT32 ui32Size, IMG_UINT32 ui32Alignment, PVRSRV_CLIENT_MEM_INFO **ppsMemInfo);
+
 #endif /* defined(DEBUG) */
 
 #if defined (__cplusplus)

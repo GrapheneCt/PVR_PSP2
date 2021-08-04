@@ -117,6 +117,7 @@ typedef struct SrvSysContext_TAG
 	SceUID						hDriverMemUID;
 	SceUID						h3DParamBufMemUID;
 	IMG_SID						hPerProcRef;
+
 } SrvSysContext;
 
 

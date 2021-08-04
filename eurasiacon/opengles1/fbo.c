@@ -463,7 +463,7 @@ static IMG_VOID FreeRenderBuffer(GLES1Context *gc, GLESRenderBuffer *psRenderBuf
 
 	if(psRenderBuffer->psMemInfo)
 	{
-		GLES1FREEDEVICEMEM(gc->ps3DDevData, psRenderBuffer->psMemInfo);
+		GLES1FREEDEVICEMEM_HEAP(gc, psRenderBuffer->psMemInfo);
 	}
 
 	GLES1Free(gc, psRenderBuffer);
@@ -2257,6 +2257,7 @@ GL_API_EXT void GL_APIENTRY glRenderbufferStorageOES(GLenum target, GLenum inter
 	GLESRenderBuffer *psRenderBuffer;
 	IMG_UINT32 ui32BufferSize;
 	IMG_UINT8  ui8RedSize, ui8GreenSize, ui8BlueSize, ui8AlphaSize, ui8DepthSize, ui8StencilSize;
+	PVRSRV_ERROR eError;
 
 	__GLES1_GET_CONTEXT();
 
@@ -2443,7 +2444,7 @@ GL_API_EXT void GL_APIENTRY glRenderbufferStorageOES(GLenum target, GLenum inter
 		/* The size has changed. Free any memory that we had allocated earlier for this renderbuffer */
 		if(psRenderBuffer->psMemInfo)
 		{
-			GLES1FREEDEVICEMEM(gc->ps3DDevData, psRenderBuffer->psMemInfo);
+			GLES1FREEDEVICEMEM_HEAP(gc, psRenderBuffer->psMemInfo);
 
 			psRenderBuffer->psMemInfo = IMG_NULL;
 		}
@@ -2452,13 +2453,22 @@ GL_API_EXT void GL_APIENTRY glRenderbufferStorageOES(GLenum target, GLenum inter
 		/* TODO: use heuristics to decide whether it is necessary to alloc external z/stencil buffers */
 		if(width!=0 && height!=0)
 		{
-			if(GLES1ALLOCDEVICEMEM(gc->ps3DDevData,
-									gc->psSysContext->hGeneralHeap,
-									PVRSRV_MEM_READ | PVRSRV_MEM_WRITE | PVRSRV_MEM_NO_SYNCOBJ,
-									ui32BufferSize,
-									EURASIA_CACHE_LINE_SIZE,
-									&psRenderBuffer->psMemInfo) != PVRSRV_OK)
+			eError = GLES1ALLOCDEVICEMEM_HEAP(gc,
+				PVRSRV_MEM_READ | PVRSRV_MEM_WRITE | PVRSRV_MEM_NO_SYNCOBJ | PVRSRV_MAP_GC_MMU,
+				ui32BufferSize,
+				EURASIA_CACHE_LINE_SIZE,
+				&psRenderBuffer->psMemInfo);
 
+			if (eError != PVRSRV_OK)
+			{
+				eError = GLES1ALLOCDEVICEMEM_HEAP(gc,
+					PVRSRV_MEM_READ | PVRSRV_MEM_WRITE | PVRSRV_MEM_NO_SYNCOBJ,
+					ui32BufferSize,
+					EURASIA_CACHE_LINE_SIZE,
+					&psRenderBuffer->psMemInfo);
+			}
+
+			if(eError != PVRSRV_OK)
 			{
 				SetError(gc, GL_OUT_OF_MEMORY);
 
@@ -2575,7 +2585,7 @@ IMG_INTERNAL IMG_BOOL SetupRenderbufferFromEGLImage(GLES1Context *gc, GLESRender
 	/* Free any memory that we had allocated earlier for this renderbuffer */
 	if(psRenderBuffer->psMemInfo)
 	{
-		GLES1FREEDEVICEMEM(gc->ps3DDevData, psRenderBuffer->psMemInfo);
+		GLES1FREEDEVICEMEM_HEAP(gc, psRenderBuffer->psMemInfo);
 
 		psRenderBuffer->psMemInfo = IMG_NULL;
 	}

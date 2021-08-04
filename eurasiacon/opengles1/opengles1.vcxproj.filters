@@ -54,6 +54,9 @@
     <Filter Include="Source Files\tools\intern\usc2">
       <UniqueIdentifier>{40ac7c55-a0e0-4210-907a-27db94f3ffa1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\psp2">
+      <UniqueIdentifier>{4f891098-c2cd-4da9-923f-9978dabc4e3c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="accum.c">
@@ -386,6 +389,9 @@
     <ClCompile Include="..\..\tools\intern\usc2\reorder.c">
       <Filter>Source Files\tools\intern\usc2</Filter>
     </ClCompile>
+    <ClCompile Include="psp2\heap.c">
+      <Filter>Source Files\psp2</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bufobj.h">
@@ -495,6 +501,12 @@
     </ClInclude>
     <ClInclude Include="pds_compiled\pds_mte_state_copy_sizeof.h">
       <Filter>Header Files\pds_compiled</Filter>
+    </ClInclude>
+    <ClInclude Include="psp2\heaplib_internal.h">
+      <Filter>Header Files\psp2</Filter>
+    </ClInclude>
+    <ClInclude Include="psp2\libheap_custom.h">
+      <Filter>Header Files\psp2</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

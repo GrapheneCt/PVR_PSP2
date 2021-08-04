@@ -100,6 +100,7 @@
     <ClCompile Include="pdump.c" />
     <ClCompile Include="pixop.c" />
     <ClCompile Include="profile.c" />
+    <ClCompile Include="psp2\heap.c" />
     <ClCompile Include="psp2\module.c" />
     <ClCompile Include="scissor.c" />
     <ClCompile Include="sgxif.c" />
@@ -146,6 +147,8 @@
     <ClInclude Include="pds_compiled\pds_mte_state_copy_sizeof.h" />
     <ClInclude Include="pdump.h" />
     <ClInclude Include="profile.h" />
+    <ClInclude Include="psp2\heaplib_internal.h" />
+    <ClInclude Include="psp2\libheap_custom.h" />
     <ClInclude Include="shader.h" />
     <ClInclude Include="spanpack.h" />
     <ClInclude Include="state.h" />
@@ -201,7 +204,6 @@
     <Link>
       <AdditionalDependencies>$(OutDir)libgpu_es4_ext_stub.a;$(OutDir)libpvrPSP2_WSEGL_stub.a;$(OutDir)libIMGEGL_stub.a;$(SolutionDir)gpu_es4_ext\libSceGpuEs4User_stub.a;-lSceGxm_stub;-lSceGpuEs4ForUser_stub;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SCE_PSP2_SDK_DIR)\target\lib\vdsuite;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalOptions>--no-required-files</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|PSVita'">
@@ -215,7 +217,6 @@
       <AdditionalDependencies>$(OutDir)libgpu_es4_ext_stub.a;$(OutDir)libpvrPSP2_WSEGL_stub.a;$(OutDir)libIMGEGL_stub.a;$(SolutionDir)gpu_es4_ext\libSceGpuEs4User_stub.a;-lSceGxm_stub;-lSceGpuEs4ForUser_stub;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SCE_PSP2_SDK_DIR)\target\lib\vdsuite;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <InfoStripping>StripSymsAndDebug</InfoStripping>
-      <AdditionalOptions>--no-required-files</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
   <Import Condition="'$(ConfigurationType)' == 'Makefile' and Exists('$(VCTargetsPath)\Platforms\$(Platform)\SCE.Makefile.$(Platform).targets')" Project="$(VCTargetsPath)\Platforms\$(Platform)\SCE.Makefile.$(Platform).targets" />

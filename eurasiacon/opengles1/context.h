@@ -24,6 +24,8 @@
 #include <stddef.h>
 #include <math.h>
 
+#include "psp2/libheap_custom.h"
+
 #include "imgextensions.h"
 
 #include "services.h"
@@ -509,6 +511,10 @@ struct GLES1Context_TAG
 	/* State that is shared among all contexts */
 	GLES1ContextSharedState *psSharedState;
 
+	/* PSP2-specific */
+
+	IMG_PVOID pvUNCHeap;
+	IMG_PVOID pvCDRAMHeap;
 };
 
 
@@ -588,6 +594,104 @@ IMG_EGLERROR GLESGetImageSource(EGLContextHandle hContext, IMG_UINT32 ui32Source
          KEGLFreeDeviceMemPsp2(gc->psSysContext, psDevData, psMemInfo)
 
 #endif /* defined(DEBUG) */
+
+
+#define GLES1MallocHeapUNC(X,Y)	(IMG_VOID*)sceHeapAllocHeapMemory(X->pvUNCHeap, Y)
+__inline IMG_VOID *GLES1MemalignHeapUNC(GLES1Context *gc, unsigned int size, unsigned int alignment)
+{
+	SceHeapAllocOptParam opt;
+	opt.size = sizeof(SceHeapAllocOptParam);
+	opt.alignment = alignment;
+	return sceHeapAllocHeapMemoryWithOption(gc->pvUNCHeap, size, &opt);
+}
+__inline IMG_VOID *GLES1CallocHeapUNC(GLES1Context *gc, unsigned int size)
+{
+	IMG_VOID *ret = sceHeapAllocHeapMemory(gc->pvUNCHeap, size);
+	sceClibMemset(ret, 0, size);
+	return ret;
+}
+#define GLES1ReallocHeapUNC(X,Y,Z)	(IMG_VOID*)sceHeapReallocHeapMemory(X->pvUNCHeap, Y, Z)
+#define GLES1FreeHeapUNC(X,Y)				   sceHeapFreeHeapMemory(X->pvUNCHeap, Y)
+
+
+#define GLES1MallocHeapCDRAM(X,Y)	(IMG_VOID*)sceHeapAllocHeapMemory(X->pvCDRAMHeap, Y)
+__inline IMG_VOID *GLES1MemalignHeapCDRAM(GLES1Context *gc, unsigned int size, unsigned int alignment)
+{
+	SceHeapAllocOptParam opt;
+	opt.size = sizeof(SceHeapAllocOptParam);
+	opt.alignment = alignment;
+	return sceHeapAllocHeapMemoryWithOption(gc->pvCDRAMHeap, size, &opt);
+}
+__inline IMG_VOID *GLES1CallocHeapCDRAM(GLES1Context *gc, unsigned int size)
+{
+	IMG_VOID *ret = sceHeapAllocHeapMemory(gc->pvCDRAMHeap, size);
+	sceClibMemset(ret, 0, size);
+	return ret;
+}
+#define GLES1ReallocHeapCDRAM(X,Y,Z)	(IMG_VOID*)sceHeapReallocHeapMemory(X->pvCDRAMHeap, Y, Z)
+#define GLES1FreeHeapCDRAM(X,Y)				   sceHeapFreeHeapMemory(X->pvCDRAMHeap, Y)
+
+
+__inline PVRSRV_ERROR GLES1ALLOCDEVICEMEM_HEAP(GLES1Context *gc, IMG_UINT32 ui32Attribs, IMG_UINT32 ui32Size, IMG_UINT32 ui32Alignment, PVRSRV_CLIENT_MEM_INFO **ppsMemInfo)
+{
+	PVRSRV_CLIENT_MEM_INFO *psMemInfo;
+	IMG_PVOID mem;
+
+	if (ui32Attribs & PVRSRV_MAP_GC_MMU)
+		mem = GLES1MemalignHeapCDRAM(gc, ui32Size, ui32Alignment);
+	else
+		mem = GLES1MemalignHeapUNC(gc, ui32Size, ui32Alignment);
+
+	if (!mem)
+	{
+		return PVRSRV_ERROR_OUT_OF_MEMORY;
+	}
+
+	psMemInfo = GLES1Malloc(gc, sizeof(PVRSRV_CLIENT_MEM_INFO));
+	if (!psMemInfo)
+	{
+		GLES1FreeHeapCDRAM(gc, mem);
+		return PVRSRV_ERROR_OUT_OF_MEMORY;
+	}
+
+	psMemInfo->pvLinAddr = mem;
+
+	if (!(ui32Attribs & PVRSRV_MEM_NO_SYNCOBJ))
+	{
+		PVRSRVAllocSyncInfo(gc->ps3DDevData, &psMemInfo->psClientSyncInfo);
+	}
+	else
+	{
+		psMemInfo->psClientSyncInfo = IMG_NULL;
+	}
+
+	psMemInfo->hKernelMemInfo = 0;
+	psMemInfo->psNext = IMG_NULL;
+	psMemInfo->sDevVAddr.uiAddr = psMemInfo->pvLinAddr;
+	psMemInfo->uAllocSize = ui32Size;
+	psMemInfo->ui32Flags = ui32Attribs;
+
+	*ppsMemInfo = psMemInfo;
+
+	return PVRSRV_OK;
+}
+
+__inline PVRSRV_ERROR GLES1FREEDEVICEMEM_HEAP(GLES1Context *gc, PVRSRV_CLIENT_MEM_INFO *psMemInfo)
+{
+	if (psMemInfo->psClientSyncInfo)
+	{
+		PVRSRVFreeSyncInfo(gc->ps3DDevData, psMemInfo->psClientSyncInfo);
+	}
+
+	if (psMemInfo->ui32Flags & PVRSRV_MAP_GC_MMU)
+		GLES1FreeHeapCDRAM(gc, psMemInfo->pvLinAddr);
+	else
+		GLES1FreeHeapUNC(gc, psMemInfo->pvLinAddr);
+
+	GLES1Free(gc, psMemInfo);
+
+	return PVRSRV_OK;
+}
 
 
 #endif /* _CONTEXT_ */

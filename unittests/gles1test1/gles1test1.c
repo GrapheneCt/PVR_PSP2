@@ -28,6 +28,8 @@
 
 #include <kernel.h>
 
+unsigned int sceLibcHeapSize = 16 * 1024 * 1024;
+
 SCE_USER_MODULE_LIST("app0:libgpu_es4_ext.suprx", "app0:libIMGEGL.suprx");
 
 #include <services.h>
@@ -37,11 +39,11 @@ SCE_USER_MODULE_LIST("app0:libgpu_es4_ext.suprx", "app0:libIMGEGL.suprx");
 #include "eglhelper.h"
 #endif
 
-#define TEX_SIZE 64
+#define TEX_SIZE 256
 
 static int handle_events(void);
 
-static GLubyte texdata[TEX_SIZE*TEX_SIZE*4];
+static GLubyte *texdata[TEX_SIZE*TEX_SIZE*4];
 
 static int frameStop;
 
@@ -125,7 +127,6 @@ static void init_texture(void)
 ************************************************************************************/
 static void init(void) 
 {
-	glClearColor(0.0, 1.0, 0.0, 1.0); // R,G,B,A
 	static GLfloat vertices[] =
 		{-0.5f,-0.5f,  0.0f,0.5f,  0.5f,-0.5f,  -0.5f,-0.5f,  0.0f,0.5f,  0.5f,-0.5f};
     
@@ -350,8 +351,8 @@ int main(int argc, char *argv[])
 
 	sceClibStrncpy(hint.szGLES1, "app0:libGLESv1_CM.suprx", 256);
 	sceClibStrncpy(hint.szWindowSystem, "app0:libpvrPSP2_WSEGL.suprx", 256);
-	hint.bDisableMetricsOutput = IMG_FALSE;
-	hint.bDumpProfileData = IMG_TRUE;
+	hint.bDisableMetricsOutput = IMG_TRUE;
+	hint.bDumpProfileData = IMG_FALSE;
 	hint.ui32ProfileStartFrame = 50;
 	hint.ui32ProfileEndFrame = 60;
 	hint.ui32ExternalZBufferMode = IMG_FALSE;
@@ -359,13 +360,13 @@ int main(int argc, char *argv[])
 	hint.ui32ExternalZBufferYSize = 0;
 	hint.ui32ParamBufferSize = 16 * 1024 * 1024;
 	hint.ui32PDSFragBufferSize = 50 * 1024;
-	hint.ui32DriverMemorySize = 4 * 1024 * 1024;
+	hint.ui32DriverMemorySize = 16 * 1024 * 1024;
 
-	hint.bDisableHWTextureUpload = IMG_TRUE;
-	hint.bDisableHWTQBufferBlit = IMG_TRUE;
-	hint.bDisableHWTQMipGen = IMG_TRUE;
-	hint.bDisableHWTQNormalBlit = IMG_TRUE;
-	hint.bDisableHWTQTextureUpload = IMG_TRUE;
+	hint.bDisableHWTextureUpload = IMG_FALSE;
+	hint.bDisableHWTQBufferBlit = IMG_FALSE;
+	hint.bDisableHWTQMipGen = IMG_FALSE;
+	hint.bDisableHWTQNormalBlit = IMG_FALSE;
+	hint.bDisableHWTQTextureUpload = IMG_FALSE;
 	hint.bDisableStaticPDSPixelSAProgram = IMG_FALSE;
 	hint.bDisableUSEASMOPT = IMG_FALSE;
 	hint.bDumpShaders = IMG_FALSE;
@@ -383,10 +384,14 @@ int main(int argc, char *argv[])
 	hint.ui32DefaultVertexBufferSize = 200 * 1024;
 	hint.ui32FlushBehaviour = 0;
 	hint.ui32MaxVertexBufferSize = 800 * 1024;
+	hint.ui32OGLES1UNCTexHeapSize = 4 * 1024;
+	hint.ui32OGLES1CDRAMTexHeapSize = 256 * 1024;
+	hint.bOGLES1EnableUNCAutoExtend = IMG_TRUE;
+	hint.bOGLES1EnableCDRAMAutoExtend = IMG_TRUE;
 
 	PVRSRVCreateVirtualAppHint(&hint);
 
-	frameStop = 100;
+	frameStop = 50000;
 #endif
 
 	return EglMain(EGL_DEFAULT_DISPLAY, 0);

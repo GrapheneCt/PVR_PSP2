@@ -425,5 +425,51 @@ int main(int argc, char ** argv)
 	DPF("Waiting %u seconds...\n", WAIT_BETWEEN_SWAPS_SEC);
 	sceKernelDelayThread(WAIT_BETWEEN_SWAPS_SEC * 1000000);
 
+	DPF("----------------------- format conversion begin -----------------------\n");
+
+	memset(&sBlitInfo, 0, sizeof(PVR2DBLTINFO));
+
+	sBlitInfo.CopyCode = PVR2DROPcopy;
+	sBlitInfo.BlitFlags = PVR2D_BLIT_PATH_2DCORE;
+	sBlitInfo.SrcFormat = PVR2D_ARGB8888;
+	sBlitInfo.DstFormat = PVR2D_ARGB8888 | PVR2D_FORMAT_LAYOUT_TWIDDLED;
+
+	sBlitInfo.pSrcMemInfo = psBufMemInfo[1];
+	sBlitInfo.SrcOffset = 0;
+	sBlitInfo.SrcStride = 128 * BLIT_BPP;
+	sBlitInfo.pDstMemInfo = psBufMemInfo[0];
+	sBlitInfo.DstOffset = 0;
+	sBlitInfo.DstStride = 0;
+
+	sBlitInfo.SrcX = 0;
+	sBlitInfo.SrcY = 0;
+	sBlitInfo.DstX = 0;
+	sBlitInfo.DstY = 0;
+	sBlitInfo.SizeX = 128;
+	sBlitInfo.SizeY = 128;
+	sBlitInfo.DSizeX = 128;
+	sBlitInfo.DSizeY = 128;
+	sBlitInfo.SrcSurfWidth = 128;
+	sBlitInfo.SrcSurfHeight = 128;
+	sBlitInfo.DstSurfWidth = 128;
+	sBlitInfo.DstSurfHeight = 128;
+
+	DPF("Try PVR2DBlt front buffer->back buffer copy with format conversion \n", sBlitInfo.Colour);
+
+	eError = PVR2DBlt(hPvr2dCtx, &sBlitInfo);
+
+	FAIL_IF_ERROR(eError);
+
+	DPF("Try PVR2DQueryBlitsComplete\n");
+
+	eError = PVR2DQueryBlitsComplete(hPvr2dCtx, psBufMemInfo[1], IMG_TRUE);
+
+	if (eError != PVR2D_OK)
+	{
+		DPF("Result: ");
+		PrintError(eError);
+		DPF("\n");
+	}
+
 	DPF("---------------------End test OK---------------------\n");
 }
