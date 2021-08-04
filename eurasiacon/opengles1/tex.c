@@ -3555,7 +3555,7 @@ bad_op:
 			
 			PVRSRVLockMutex(gc->psSharedState->hTertiaryLock);
 
-			psMipLevel->pui8Buffer = GLES1Malloc(gc, ui32BufferSize);
+			psMipLevel->pui8Buffer = GLES1MallocHeapUNC(gc, ui32BufferSize);
 
 			if(!psMipLevel->pui8Buffer)
 			{
@@ -3576,7 +3576,7 @@ bad_op:
 						      ui32SrcRowSize, psMipLevel, IMG_TRUE);
 			TranslateLevel(gc, psTex, 0, 0);
 
-			GLES1Free(gc, psMipLevel->pui8Buffer);
+			GLES1FreeHeapUNC(gc, psMipLevel->pui8Buffer);
 
 			psMipLevel->pui8Buffer = GLES1_LOADED_LEVEL;
 
@@ -3777,7 +3777,7 @@ bad_op:
 
 
 				ui32SubTexBufferSize = (IMG_UINT32)width * (IMG_UINT32)height * psTargetTexFormat->ui32TotalBytesPerTexel;
-				pui8SubTexBuffer = (IMG_UINT8 *) GLES1Malloc(gc, ui32SubTexBufferSize);
+				pui8SubTexBuffer = (IMG_UINT8 *) GLES1MallocHeapUNC(gc, ui32SubTexBufferSize);
 
 				if(!pui8SubTexBuffer)
 				{
@@ -3817,7 +3817,7 @@ bad_op:
 					}
 				}
 					
-				GLES1Free(gc, pui8SubTexBuffer);
+				GLES1FreeHeapUNC(gc, pui8SubTexBuffer);
 			}
 		}
 
@@ -3833,7 +3833,7 @@ bad_op:
 			IMG_UINT32 ui32BufferSize = ui32DstStride * psMipLevel->ui32Height;
 			IMG_VOID *pvDest;
 
-			pui8Dest = GLES1Malloc(gc, ui32BufferSize);
+			pui8Dest = GLES1MallocHeapUNC(gc, ui32BufferSize);
 	
 			if(!pui8Dest)
 			{
@@ -4476,7 +4476,7 @@ GL_API void GL_APIENTRY glCompressedTexSubImage2D(GLenum target, GLint level, GL
 	if(pui8Dest == GLES1_LOADED_LEVEL)
 	{
 		/* Only support fullsize subtexture */
-		pui8Dest = GLES1Malloc(gc, imageSize);
+		pui8Dest = GLES1MallocHeapUNC(gc, imageSize);
 		
 		if(!pui8Dest)
 		{
@@ -5637,7 +5637,7 @@ bad_op:
 		
 		PVRSRVLockMutex(gc->psSharedState->hTertiaryLock);
 
-		psMipLevel->pui8Buffer = GLES1Malloc(gc, ui32BufferSize);
+		psMipLevel->pui8Buffer = GLES1MallocHeapUNC(gc, ui32BufferSize);
 
 		if(!psMipLevel->pui8Buffer)
 		{
@@ -5714,7 +5714,7 @@ bad_op:
 
 		TranslateLevel(gc, psTex, 0, 0);
 
-		GLES1Free(gc, psMipLevel->pui8Buffer);
+		GLES1FreeHeapUNC(gc, psMipLevel->pui8Buffer);
 
 		psMipLevel->pui8Buffer = GLES1_LOADED_LEVEL;
 
@@ -6095,7 +6095,7 @@ bad_op:
 
 
 				ui32SubTexBufferSize = (IMG_UINT32)(sSpanInfo.ui32Width * sSpanInfo.ui32Height * psTargetTexFormat->ui32TotalBytesPerTexel);
-				pui8SubTexBuffer = GLES1Malloc(gc, ui32SubTexBufferSize);
+				pui8SubTexBuffer = GLES1MallocHeapUNC(gc, ui32SubTexBufferSize);
 
 				if (!pui8SubTexBuffer)
 				{
@@ -6159,7 +6159,7 @@ bad_op:
 					}
 				}
 
-				GLES1Free(gc, pui8SubTexBuffer);
+				GLES1FreeHeapUNC(gc, pui8SubTexBuffer);
 			}
 
 			/* otherwise, use the software copy subtexture uploading:
@@ -6171,7 +6171,7 @@ bad_op:
 				if ((sSpanInfo.ui32Height) && (sSpanInfo.ui32Width))
 				{
 				    IMG_UINT32 ui32BufferSize = ui32DstStride * psMipLevel->ui32Height;
-					pui8Dest = GLES1Malloc(gc, ui32BufferSize);
+					pui8Dest = GLES1MallocHeapUNC(gc, ui32BufferSize);
 				
 					if(!pui8Dest)
 					{

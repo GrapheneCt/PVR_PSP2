@@ -47,7 +47,6 @@ typedef struct GLESAppHintsRec
 
 	IMG_BOOL	bDisableHWTQTextureUpload;
 	IMG_BOOL    bDisableHWTQNormalBlit;
-    IMG_BOOL    bDisableHWTQBufferBlit;
     IMG_BOOL    bDisableHWTQMipGen;
 
     IMG_UINT32  ui32FlushBehaviour;
@@ -92,6 +91,9 @@ typedef struct GLESAppHintsRec
 	IMG_UINT32 ui32OGLES1UNCTexHeapSize;
 	IMG_BOOL bOGLES1EnableCDRAMAutoExtend;
 	IMG_BOOL bOGLES1EnableUNCAutoExtend;
+	IMG_UINT32 ui32OGLES1SwTexOpThreadNum;
+	IMG_UINT32 ui32OGLES1SwTexOpThreadPriority;
+	IMG_UINT32 ui32OGLES1SwTexOpThreadAffinity;
 } GLESAppHints;
 
 IMG_BOOL GetApplicationHints(GLESAppHints *psAppHints, EGLcontextMode *psMode);

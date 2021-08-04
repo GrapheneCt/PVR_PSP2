@@ -102,6 +102,7 @@
     <ClCompile Include="profile.c" />
     <ClCompile Include="psp2\heap.c" />
     <ClCompile Include="psp2\module.c" />
+    <ClCompile Include="psp2\swtexop.c" />
     <ClCompile Include="scissor.c" />
     <ClCompile Include="sgxif.c" />
     <ClCompile Include="shader.c" />
@@ -149,6 +150,7 @@
     <ClInclude Include="profile.h" />
     <ClInclude Include="psp2\heaplib_internal.h" />
     <ClInclude Include="psp2\libheap_custom.h" />
+    <ClInclude Include="psp2\swtexop.h" />
     <ClInclude Include="shader.h" />
     <ClInclude Include="spanpack.h" />
     <ClInclude Include="state.h" />
@@ -202,19 +204,20 @@
       <AdditionalIncludeDirectories>$(SCE_PSP2_SDK_DIR)\target\include\vdsuite\user;$(SCE_PSP2_SDK_DIR)\target\include\vdsuite\common;$(SolutionDir)include\gpu_es4;$(SolutionDir)include\gpu_es4\eurasia\include4;$(SolutionDir)include\gpu_es4\eurasia\hwdefs;$(SolutionDir)include\gpu_es4\eurasia\services4\include;$(SolutionDir)include\gpu_es4\eurasia\services4\system\psp2;$(SolutionDir)codegen\pds;$(SolutionDir)codegen\pixevent;$(SolutionDir)codegen\usegen;$(SolutionDir)eurasiacon\include;$(SolutionDir)eurasiacon\common;$(SolutionDir)common\tls;$(SolutionDir)common\dmscalc;$(SolutionDir)include\gpu_es4\eurasia\services4\srvclient\devices\sgx;$(SolutionDir)codegen\ffgen;$(SolutionDir)tools\intern\useasm;$(SolutionDir)codegen\pixfmts;$(SolutionDir)intermediates\pds_mte_state_copy;$(SolutionDir)intermediates\pds_aux_vtx;$(SolutionDir)intermediates\pixelevent;$(SolutionDir)intermediates\pixelevent_tilexy;$(SolutionDir)intermediates\sgxsupport;$(SolutionDir)intermediates\errata;$(SolutionDir)tools\intern\usc2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>$(OutDir)libgpu_es4_ext_stub.a;$(OutDir)libpvrPSP2_WSEGL_stub.a;$(OutDir)libIMGEGL_stub.a;$(SolutionDir)gpu_es4_ext\libSceGpuEs4User_stub.a;-lSceGxm_stub;-lSceGpuEs4ForUser_stub;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(OutDir)libgpu_es4_ext_stub.a;$(OutDir)libpvrPSP2_WSEGL_stub.a;$(OutDir)libIMGEGL_stub.a;$(SolutionDir)gpu_es4_ext\libSceGpuEs4User_stub.a;-lSceGxm_stub;-lSceGpuEs4ForUser_stub;-lSceDmacmgr_stub;-lSceSysmodule_stub;-lSceUlt_stub_weak;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SCE_PSP2_SDK_DIR)\target\lib\vdsuite;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|PSVita'">
     <ClCompile>
       <PreprocessorDefinitions>NDEBUG;INCLUDE_SGX_FEATURE_TABLE;INCLUDE_SGX_BUG_TABLE;PROFILE_COMMON;FFGEN_UNIFLEX;OUTPUT_USCHW;OGLES_PSP2_PRX_EXPORT;USER;PDS_BUILD_OPENGLES;USE_GCC__thread_KEYWORD;OGLES1_MODULE;SUPPORT_SGX;SUPPORT_SGX543;SUPPORT_OPENGLES1;GLES1_EXTENSION_EGL_IMAGE_EXTERNAL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <OptimizationLevel>Level2</OptimizationLevel>
+      <OptimizationLevel>Level3</OptimizationLevel>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <AdditionalIncludeDirectories>$(SCE_PSP2_SDK_DIR)\target\include\vdsuite\user;$(SCE_PSP2_SDK_DIR)\target\include\vdsuite\common;$(SolutionDir)include\gpu_es4;$(SolutionDir)include\gpu_es4\eurasia\include4;$(SolutionDir)include\gpu_es4\eurasia\hwdefs;$(SolutionDir)include\gpu_es4\eurasia\services4\include;$(SolutionDir)include\gpu_es4\eurasia\services4\system\psp2;$(SolutionDir)codegen\pds;$(SolutionDir)codegen\pixevent;$(SolutionDir)codegen\usegen;$(SolutionDir)eurasiacon\include;$(SolutionDir)eurasiacon\common;$(SolutionDir)common\tls;$(SolutionDir)common\dmscalc;$(SolutionDir)include\gpu_es4\eurasia\services4\srvclient\devices\sgx;$(SolutionDir)codegen\ffgen;$(SolutionDir)tools\intern\useasm;$(SolutionDir)codegen\pixfmts;$(SolutionDir)intermediates\pds_mte_state_copy;$(SolutionDir)intermediates\pds_aux_vtx;$(SolutionDir)intermediates\pixelevent;$(SolutionDir)intermediates\pixelevent_tilexy;$(SolutionDir)intermediates\sgxsupport;$(SolutionDir)intermediates\errata;$(SolutionDir)tools\intern\usc2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <FastMath>true</FastMath>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>$(OutDir)libgpu_es4_ext_stub.a;$(OutDir)libpvrPSP2_WSEGL_stub.a;$(OutDir)libIMGEGL_stub.a;$(SolutionDir)gpu_es4_ext\libSceGpuEs4User_stub.a;-lSceGxm_stub;-lSceGpuEs4ForUser_stub;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(OutDir)libgpu_es4_ext_stub.a;$(OutDir)libpvrPSP2_WSEGL_stub.a;$(OutDir)libIMGEGL_stub.a;$(SolutionDir)gpu_es4_ext\libSceGpuEs4User_stub.a;-lSceGxm_stub;-lSceGpuEs4ForUser_stub;-lSceDmacmgr_stub;-lSceSysmodule_stub;-lSceUlt_stub_weak;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SCE_PSP2_SDK_DIR)\target\lib\vdsuite;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <InfoStripping>StripSymsAndDebug</InfoStripping>
     </Link>

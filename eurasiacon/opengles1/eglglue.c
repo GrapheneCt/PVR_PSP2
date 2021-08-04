@@ -21,6 +21,8 @@
 #include "pvrversion.h"
 #include "psp2/libheap_custom.h"
 #include <string.h>
+#include <ult.h>
+#include <libsysmodule.h>
 
 #include "pds_mte_state_copy_sizeof.h"
 #include "pds_aux_vtx_sizeof.h"
@@ -551,6 +553,13 @@ static IMG_BOOL InitContext(GLES1Context *gc, GLES1Context *psShareContext, EGLc
 			gc->sAppHints.ui32OGLES1UNCTexHeapSize,
 			gc->sAppHints.bOGLES1EnableUNCAutoExtend ? SCE_HEAP_AUTO_EXTEND : 0,
 			&heapOpt);
+
+		if (!gc->pvUNCHeap)
+		{
+			PVR_DPF((PVR_DBG_ERROR, "InitContext: Couldn't create UNC heap"));
+
+			return IMG_FALSE;
+		}
 	}
 
 	if (gc->sAppHints.ui32OGLES1CDRAMTexHeapSize)
@@ -563,6 +572,45 @@ static IMG_BOOL InitContext(GLES1Context *gc, GLES1Context *psShareContext, EGLc
 			gc->sAppHints.ui32OGLES1UNCTexHeapSize,
 			gc->sAppHints.bOGLES1EnableCDRAMAutoExtend ? SCE_HEAP_AUTO_EXTEND : 0,
 			&heapOpt);
+
+		if (!gc->pvCDRAMHeap)
+		{
+			PVR_DPF((PVR_DBG_ERROR, "InitContext: Couldn't create CDRAM heap"));
+			if (gc->pvUNCHeap)
+			{
+				sceHeapDeleteHeap(gc->pvUNCHeap);
+			}
+
+			return IMG_FALSE;
+		}
+	}
+
+	sceSysmoduleLoadModuleInternal(SCE_SYSMODULE_INTERNAL_ULT);
+
+	IMG_UINT32 ui32UltRuntimeWorkAreaSize = sceUltUlthreadRuntimeGetWorkAreaSize(2, 1);
+	IMG_PVOID pvUltRuntimeWorkArea = GLES1Malloc(gc, ui32UltRuntimeWorkAreaSize);
+	gc->pvUltRuntime = GLES1Malloc(gc, _SCE_ULT_ULTHREAD_RUNTIME_SIZE);
+
+	SceUltUlthreadRuntimeOptParam sUltOptParam;
+	sceUltUlthreadRuntimeOptParamInitialize(&sUltOptParam);
+	sUltOptParam.oneShotThreadStackSize = 16 * 1024;
+	sUltOptParam.workerThreadAttr = 0;
+	sUltOptParam.workerThreadCpuAffinityMask = 0;
+	sUltOptParam.workerThreadOptParam = 0;
+	sUltOptParam.workerThreadPriority = 64;
+
+	i = sceUltUlthreadRuntimeCreate(gc->pvUltRuntime,
+		"OGLES1UltRuntime",
+		2,
+		1,
+		pvUltRuntimeWorkArea,
+		&sUltOptParam);
+
+	if (i != SCE_OK)
+	{
+		PVR_DPF((PVR_DBG_ERROR, "InitContext: Couldn't create ULT runtime"));
+
+		goto FAILED_sceUltUlthreadRuntimeCreate;
 	}
 
 #if defined(GLES1_EXTENSION_VERTEX_ARRAY_OBJECT)
@@ -577,7 +625,7 @@ static IMG_BOOL InitContext(GLES1Context *gc, GLES1Context *psShareContext, EGLc
 
 			DestroyNamesArray(gc, gc->apsNamesArray[i]);
 
-			return IMG_FALSE;
+			goto FAILED_TASync;
 		}
 	}
 #endif /* defined(GLES1_EXTENSION_VERTEX_ARRAY_OBJECT) */
@@ -1146,6 +1194,19 @@ FAILED_TASync:
 
 	FreeContextSharedState(gc);
 
+	sceUltUlthreadRuntimeDestroy((SceUltUlthreadRuntime *)gc->pvUltRuntime);
+
+FAILED_sceUltUlthreadRuntimeCreate:
+
+	if (gc->pvUNCHeap)
+	{
+		sceHeapDeleteHeap(gc->pvUNCHeap);
+	}
+	if (gc->pvCDRAMHeap)
+	{
+		sceHeapDeleteHeap(gc->pvCDRAMHeap);
+	}
+
 FAILED_CreateSharedState:
 
 	return IMG_FALSE;
@@ -1246,6 +1307,17 @@ static IMG_BOOL DeInitContext(GLES1Context *gc)
 			CBUF_DestroyBuffer(gc->ps3DDevData, gc->apsBuffers[i]);
 		}
 	}
+
+	if (gc->pvUNCHeap)
+	{
+		sceHeapDeleteHeap(gc->pvUNCHeap);
+	}
+	if (gc->pvCDRAMHeap)
+	{
+		sceHeapDeleteHeap(gc->pvCDRAMHeap);
+	}
+
+	sceUltUlthreadRuntimeDestroy((SceUltUlthreadRuntime *)gc->pvUltRuntime);
 
 	return bPass;
 }

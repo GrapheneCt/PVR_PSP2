@@ -116,7 +116,6 @@ typedef struct GLESMipMapLevelRec
 
 	/* These are the texels for this mipmap level */
 	IMG_UINT8 *pui8Buffer;
-	PVRSRV_CLIENT_MEM_INFO *psMemInfo;
 
 	/* Image dimensions */
 	IMG_UINT32 ui32Width, ui32Height, ui32ImageSize;
@@ -152,7 +151,6 @@ typedef struct GLESSubTextureInfoRec
     IMG_UINT32     ui32SubTexHeight;
 
     IMG_UINT8     *pui8SubTexBuffer;
-	PPVRSRV_CLIENT_MEM_INFO *psMemInfo;
 
 } GLESSubTextureInfo;
 

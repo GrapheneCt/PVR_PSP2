@@ -299,7 +299,7 @@ static IMG_VOID ReclaimTextureMemKRM(IMG_VOID *pvContext, KRMResource *psResourc
 					/* This code was copied from glTexSubImage */
 					IMG_UINT32 ui32Stride     = psLevel->ui32Width * psLevel->psTexFormat->ui32TotalBytesPerTexel;
 					IMG_UINT32 ui32BufferSize = ui32Stride * psLevel->ui32Height;
-					IMG_UINT8  *pui8Src       = GLES1Malloc(gc, ui32BufferSize);
+					IMG_UINT8  *pui8Src       = GLES1MallocHeapUNC(gc, ui32BufferSize);
 
 					if(!pui8Src)
 					{
@@ -1094,7 +1094,7 @@ IMG_INTERNAL IMG_BOOL TextureMakeResident(GLES1Context *gc, GLESTexture *psTex)
 #if (defined(DEBUG) || defined(TIMING))
 					ui32TextureMemCurrent -= psMipLevel->ui32ImageSize;
 #endif					
-					GLES1Free(gc, psMipLevel->pui8Buffer);
+					GLES1FreeHeapUNC(gc, psMipLevel->pui8Buffer);
 
 					psMipLevel->pui8Buffer = GLES1_LOADED_LEVEL;
 				}
@@ -1153,7 +1153,7 @@ IMG_INTERNAL IMG_BOOL UnloadInconsistentTexture(GLES1Context *gc, GLESTexture *p
 
 			if(psMipLevel->pui8Buffer == GLES1_LOADED_LEVEL)
 			{
-				psMipLevel->pui8Buffer = GLES1Malloc(gc, psMipLevel->ui32ImageSize);
+				psMipLevel->pui8Buffer = GLES1MallocHeapUNC(gc, psMipLevel->ui32ImageSize);
 
 				if (psMipLevel->pui8Buffer == IMG_NULL) 
 				{
@@ -1532,7 +1532,7 @@ IMG_INTERNAL IMG_BOOL TextureCreatePBufferLevel(GLES1Context *gc, GLESTexture *p
 		if (psMipLevel->pui8Buffer != NULL && psMipLevel->pui8Buffer != GLES1_LOADED_LEVEL)
 		{
 			PVR_UNREFERENCED_PARAMETER(gc);
-			GLES1Free(gc, psMipLevel->pui8Buffer);
+			GLES1FreeHeapUNC(gc, psMipLevel->pui8Buffer);
 		}
 
 		psMipLevel->pui8Buffer		 = IMG_NULL;
@@ -1650,7 +1650,7 @@ IMG_INTERNAL IMG_BOOL TextureCreateImageLevel(GLES1Context *gc, GLESTexture *psT
 		if (psMipLevel->pui8Buffer != NULL && psMipLevel->pui8Buffer != GLES1_LOADED_LEVEL)
 		{
 			PVR_UNREFERENCED_PARAMETER(gc);
-			GLES1Free(gc, psMipLevel->pui8Buffer);
+			GLES1FreeHeapUNC(gc, psMipLevel->pui8Buffer);
 		}
 
 		psMipLevel->pui8Buffer		 = IMG_NULL;
@@ -2084,7 +2084,7 @@ no_memory:
 		}
 		else
 		{
-			pui8Buffer = (IMG_UINT8 *) GLES1Malloc(gc, ui32BufferSize);
+			pui8Buffer = (IMG_UINT8 *) GLES1MallocHeapUNC(gc, ui32BufferSize);
 
 			if (pui8Buffer == IMG_NULL) 
 			{
@@ -2123,7 +2123,7 @@ no_memory:
 #if (defined(DEBUG) || defined(TIMING))
 			ui32TextureMemCurrent -= psMipLevel->ui32ImageSize;
 #endif
-			GLES1Free(gc, psMipLevel->pui8Buffer);
+			GLES1FreeHeapUNC(gc, psMipLevel->pui8Buffer);
 		}
 
 		psMipLevel->pui8Buffer = IMG_NULL;
@@ -2290,7 +2290,7 @@ static IMG_VOID FreeTexture(GLES1Context *gc, GLESTexture *psTex)
 #if (defined(DEBUG) || defined(TIMING))
 			ui32TextureMemCurrent -= psMipLevel->ui32ImageSize;
 #endif
-			GLES1Free(gc, psMipLevel->pui8Buffer);
+			GLES1FreeHeapUNC(gc, psMipLevel->pui8Buffer);
 
 			psMipLevel->pui8Buffer = IMG_NULL;
 		}

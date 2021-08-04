@@ -20,7 +20,9 @@
  *******************************************************************************/
 
 #include <GLES/gl.h>
+#include <GLES/glext.h>
 #include <EGL/egl.h>
+#include <EGL/eglext.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -39,7 +41,7 @@ SCE_USER_MODULE_LIST("app0:libgpu_es4_ext.suprx", "app0:libIMGEGL.suprx");
 #include "eglhelper.h"
 #endif
 
-#define TEX_SIZE 256
+#define TEX_SIZE 128
 
 static int handle_events(void);
 
@@ -157,6 +159,8 @@ static void init(void)
 
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
                  TEX_SIZE, TEX_SIZE, 0, GL_RGBA, GL_UNSIGNED_BYTE, texdata);
+
+	//glGenerateMipmapOES(GL_TEXTURE_2D);
 
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 }
@@ -388,6 +392,9 @@ int main(int argc, char *argv[])
 	hint.ui32OGLES1CDRAMTexHeapSize = 256 * 1024;
 	hint.bOGLES1EnableUNCAutoExtend = IMG_TRUE;
 	hint.bOGLES1EnableCDRAMAutoExtend = IMG_TRUE;
+	hint.ui32OGLES1SwTexOpThreadNum = 1;
+	hint.ui32OGLES1SwTexOpThreadPriority = 70;
+	hint.ui32OGLES1SwTexOpThreadAffinity = 0;
 
 	PVRSRVCreateVirtualAppHint(&hint);
 

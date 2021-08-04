@@ -515,6 +515,8 @@ struct GLES1Context_TAG
 
 	IMG_PVOID pvUNCHeap;
 	IMG_PVOID pvCDRAMHeap;
+	IMG_PVOID pvUltRuntime;
+	IMG_UINT32 ui32AsyncTexOpNum;
 };
 
 

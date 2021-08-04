@@ -19,9 +19,13 @@
  *  --- Revision Logs Removed --- 
  **************************************************************************/
 
+#include <kernel/dmacmgr.h>
+#include <ult.h>
+
 #include "context.h"
 #include "twiddle.h"
 #include "texformat.h"
+#include "psp2/swtexop.h"
 
 #define ABSVALUE(X)  ( X >= 0 ? X : 0 - X)
 
@@ -449,7 +453,9 @@ IMG_INTERNAL IMG_BOOL PrepareHWTQTextureUpload(GLES1Context       *gc,
 				return IMG_FALSE;
 			}
 
+			// PSP2: we probably don't need this check since we use PTLA instead of 3D core
 			/* Check HWTQ texture upload subtile twiddling restriction */
+#if !defined(__psp2__)
 #if (EURASIA_ISPREGION_SIZEX != 16) || (EURASIA_ISPREGION_SIZEY != 16) || (EURASIA_TAPDSSTATE_PIPECOUNT != 2) || \
 	(defined(FIX_HW_BRN_23615) && defined(FIX_HW_BRN_23070)) || defined(FIX_HW_BRN_26361) || defined(FIX_HW_BRN_28825)
 			if ((ui32DstRoundedWidth < EURASIA_ISPREGION_SIZEX) || (ui32DstRoundedHeight < EURASIA_ISPREGION_SIZEY))
@@ -457,6 +463,7 @@ IMG_INTERNAL IMG_BOOL PrepareHWTQTextureUpload(GLES1Context       *gc,
 				PVR_DPF((PVR_DBG_MESSAGE, "PrepareHWTQTextureUpload: HWTQ subtile twiddling failure can be predicted!"));
 				return IMG_FALSE;
 			}
+#endif
 #endif
 
 			break;
@@ -584,10 +591,20 @@ IMG_INTERNAL IMG_BOOL HWTQTextureUpload(GLES1Context *gc,
 										SGX_QUEUETRANSFER *psQueueTransfer)
 {
   
-	PVRSRV_ERROR eResult = 3;
+	PVRSRV_ERROR eResult;
+
+#if defined(DEBUG)
+	SceKernelMemBlockInfo sMemInfo;
+	sMemInfo.size = sizeof(SceKernelMemBlockInfo);
+	sMemInfo.memoryType = 0;
+	sceKernelGetMemBlockInfoByAddr(psQueueTransfer->asSources[0].sDevVAddr.uiAddr, &sMemInfo);
+	if (sMemInfo.memoryType == SCE_KERNEL_MEMBLOCK_TYPE_USER_RW)
+	{
+		PVR_DPF((PVR_DBG_WARNING, "HWTQTextureUpload: Texture upload source is cached memory. Performance will be negatively affected"));
+	}
+#endif
 
 	eResult = SGXQueueTransfer(&gc->psSysContext->s3D, gc->psSysContext->hTransferContext, psQueueTransfer);
-	SGXWaitTransfer(&gc->psSysContext->s3D, gc->psSysContext->hTransferContext);
 
 	if(eResult != PVRSRV_OK)
 	{
@@ -1273,7 +1290,7 @@ IMG_INTERNAL IMG_BOOL HWTQTextureNormalBlit(GLES1Context      *gc,
 
 }
 
-
+#if !defined(__psp2__)
 /***********************************************************************************
  Function Name      : PrepareHWTQTextureBufferBlit
  Inputs             : gc, 
@@ -1453,6 +1470,7 @@ static IMG_BOOL HWTQTextureBufferBlit(GLES1Context           *gc,
 	return IMG_TRUE;
 
 }
+#endif
 
 
 /***********************************************************************************
@@ -1565,8 +1583,6 @@ IMG_INTERNAL IMG_UINT32 GetCompressedMipMapOffset(IMG_UINT32 ui32MapLevel, IMG_U
 
 	return ui32MapOffset;
 }
-
-
 
 /***********************************************************************************
  Function Name      : TranslateLevel
@@ -1740,7 +1756,7 @@ IMG_INTERNAL IMG_VOID TranslateLevel(GLES1Context *gc, GLESTexture *psTex, IMG_U
 				return;
 			}
 #endif /* defined(GLES1_EXTENSION_EGL_IMAGE) */
-			IMG_UINT32 time1 = sceKernelGetProcessTimeLow();
+
 			if ( (!gc->sAppHints.bDisableHWTQTextureUpload) &&
 				 (PrepareHWTQTextureUpload(gc, psTex, ui32OffsetInBytes, psMipLevel,
 										   IMG_NULL, IMG_NULL, 0, IMG_NULL, &sQueueTransfer)) )
@@ -1752,10 +1768,17 @@ IMG_INTERNAL IMG_VOID TranslateLevel(GLES1Context *gc, GLESTexture *psTex, IMG_U
 			{
 				pvDest = (IMG_UINT8 *)psTex->psMemInfo->pvLinAddr + ui32OffsetInBytes;
 
-				psTex->pfnTextureTwiddle(pvDest, psMipLevel->pui8Buffer, psMipLevel->ui32Width, 
-										 psMipLevel->ui32Height, psMipLevel->ui32Width);
+				if (psMipLevel->ui32Width >= 128 && psMipLevel->ui32Height >= 128)
+				{
+					SWTextureUpload(gc, psTex, pvDest, psMipLevel->pui8Buffer, psMipLevel->ui32Width,
+						psMipLevel->ui32Height, psMipLevel->ui32Width);
+				}
+				else
+				{
+					psTex->pfnTextureTwiddle(pvDest, psMipLevel->pui8Buffer, psMipLevel->ui32Width,
+						psMipLevel->ui32Height, psMipLevel->ui32Width);
+				}
 			}
-			sceClibPrintf("OP time: %u\n", sceKernelGetProcessTimeLow() - time1);
 		}
 	}
 
@@ -2005,29 +2028,23 @@ IMG_INTERNAL IMG_VOID CopyTextureData(GLES1Context           *gc,
 {
 	/***************** Two paths ********************/
 
-	/* PATH 1: using HWTQ buffer blit */
-    if (!gc->sAppHints.bDisableHWTQBufferBlit) 
-	{
-		SGX_QUEUETRANSFER sQueueTransfer;
-
-		if (PrepareHWTQTextureBufferBlit(gc, 
-										 psDstTex, ui32DstOffsetInBytes,
-										 psSrcInfo, ui32SrcOffsetInBytes,
-										 ui32SizeInBytes, &sQueueTransfer))
-		{
-			if (HWTQTextureBufferBlit (gc, psDstTex, psSrcInfo, &sQueueTransfer))
-			{
-				return;
-			}
-		}
-	}
-
-	/* PATH 2: using SW */
 	{
 	    GLES1_ASSERT(psDstTex->psMemInfo);
-	    GLES1MemCopy((IMG_PVOID)((IMG_UINTPTR_T)(psDstTex->psMemInfo->pvLinAddr) + ui32DstOffsetInBytes), 
-					 (IMG_PVOID)((IMG_UINTPTR_T)psSrcInfo->pvLinAddr + ui32SrcOffsetInBytes), 
-					 psSrcInfo->uAllocSize);
+
+		/* PATH 1: using DMAC */
+		if (psSrcInfo->uAllocSize > 6400)
+		{
+			sceDmacMemcpy((IMG_PVOID)((IMG_UINTPTR_T)(psDstTex->psMemInfo->pvLinAddr) + ui32DstOffsetInBytes),
+				(IMG_PVOID)((IMG_UINTPTR_T)psSrcInfo->pvLinAddr + ui32SrcOffsetInBytes),
+				psSrcInfo->uAllocSize);
+		}
+		/* PATH 2: using SW */
+		else
+		{
+			GLES1MemCopy((IMG_PVOID)((IMG_UINTPTR_T)(psDstTex->psMemInfo->pvLinAddr) + ui32DstOffsetInBytes),
+				(IMG_PVOID)((IMG_UINTPTR_T)psSrcInfo->pvLinAddr + ui32SrcOffsetInBytes),
+				psSrcInfo->uAllocSize);
+		}
 	}
 
 }

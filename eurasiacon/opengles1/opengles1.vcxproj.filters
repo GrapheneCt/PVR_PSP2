@@ -392,6 +392,9 @@
     <ClCompile Include="psp2\heap.c">
       <Filter>Source Files\psp2</Filter>
     </ClCompile>
+    <ClCompile Include="psp2\swtexop.c">
+      <Filter>Source Files\psp2</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bufobj.h">
@@ -506,6 +509,9 @@
       <Filter>Header Files\psp2</Filter>
     </ClInclude>
     <ClInclude Include="psp2\libheap_custom.h">
+      <Filter>Header Files\psp2</Filter>
+    </ClInclude>
+    <ClInclude Include="psp2\swtexop.h">
       <Filter>Header Files\psp2</Filter>
     </ClInclude>
   </ItemGroup>

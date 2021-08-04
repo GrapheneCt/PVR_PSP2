@@ -92,6 +92,9 @@ extern "C" {
 		IMG_UINT32 ui32OGLES1CDRAMTexHeapSize;
 		IMG_BOOL bOGLES1EnableUNCAutoExtend;
 		IMG_BOOL bOGLES1EnableCDRAMAutoExtend;
+		IMG_UINT32 ui32OGLES1SwTexOpThreadNum;
+		IMG_UINT32 ui32OGLES1SwTexOpThreadPriority;
+		IMG_UINT32 ui32OGLES1SwTexOpThreadAffinity;
 
 	} PVRSRV_PSP2_APPHINT;
 #endif

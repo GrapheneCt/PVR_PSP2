@@ -332,6 +332,21 @@ IMG_EXPORT IMG_BOOL PVRSRVGetAppHint(IMG_VOID		*pvHintState,
 			*(IMG_UINT32 *)pvReturn = s_appHint.bOGLES1EnableCDRAMAutoExtend;
 			bFound = IMG_TRUE;
 		}
+		else if (!sceClibStrncasecmp(pszHintName, "OGLES1SwTexOpThreadNum", 23))
+		{
+			*(IMG_UINT32 *)pvReturn = s_appHint.ui32OGLES1SwTexOpThreadNum;
+			bFound = IMG_TRUE;
+		}
+		else if (!sceClibStrncasecmp(pszHintName, "OGLES1SwTexOpThreadPriority", 28))
+		{
+			*(IMG_UINT32 *)pvReturn = s_appHint.ui32OGLES1SwTexOpThreadPriority;
+			bFound = IMG_TRUE;
+		}
+		else if (!sceClibStrncasecmp(pszHintName, "OGLES1SwTexOpThreadAffinity", 28))
+		{
+			*(IMG_UINT32 *)pvReturn = s_appHint.ui32OGLES1SwTexOpThreadAffinity;
+			bFound = IMG_TRUE;
+		}
 	}
 
 	if (!bFound)

@@ -40,7 +40,7 @@ extern "C" {
 #if defined(__linux__)
 #	define GL_API_EXT __attribute__((visibility("hidden")))
 #else
-#	define GL_API_EXT
+#	define GL_API_EXT	KHRONOS_APICALL
 #endif
 
 #ifdef __cplusplus

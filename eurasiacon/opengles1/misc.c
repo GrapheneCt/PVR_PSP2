@@ -730,10 +730,7 @@ IMG_INTERNAL IMG_BOOL GetApplicationHints(GLESAppHints *psAppHints, EGLcontextMo
 	PVRSRVGetAppHint(pvHintState, "DisableHWTQTextureUpload", IMG_UINT_TYPE, &ui32Default, &psAppHints->bDisableHWTQTextureUpload);
 
 	ui32Default = 0;
-	PVRSRVGetAppHint(pvHintState, "DisableHWTQNormalBlit", IMG_UINT_TYPE, &ui32Default, &psAppHints->bDisableHWTQNormalBlit);	
-
-	ui32Default = 0;
-	PVRSRVGetAppHint(pvHintState, "DisableHWTQBufferBlit", IMG_UINT_TYPE, &ui32Default, &psAppHints->bDisableHWTQBufferBlit);	
+	PVRSRVGetAppHint(pvHintState, "DisableHWTQNormalBlit", IMG_UINT_TYPE, &ui32Default, &psAppHints->bDisableHWTQNormalBlit);		
 
 	ui32Default = 0;
 	PVRSRVGetAppHint(pvHintState, "DisableHWTQMipGen", IMG_UINT_TYPE, &ui32Default, &psAppHints->bDisableHWTQMipGen);
@@ -745,7 +742,6 @@ IMG_INTERNAL IMG_BOOL GetApplicationHints(GLESAppHints *psAppHints, EGLcontextMo
 	{
 		psAppHints->bDisableHWTQTextureUpload = IMG_TRUE;
 		psAppHints->bDisableHWTQNormalBlit = IMG_TRUE;
-		psAppHints->bDisableHWTQBufferBlit = IMG_TRUE;
 		psAppHints->bDisableHWTQMipGen = IMG_TRUE;
 	}
 
@@ -848,6 +844,15 @@ IMG_INTERNAL IMG_BOOL GetApplicationHints(GLESAppHints *psAppHints, EGLcontextMo
 
 	ui32Default = 1;
 	PVRSRVGetAppHint(pvHintState, "OGLES1EnableCDRAMAutoExtend", IMG_UINT_TYPE, &ui32Default, &psAppHints->bOGLES1EnableCDRAMAutoExtend);
+
+	ui32Default = 1;
+	PVRSRVGetAppHint(pvHintState, "OGLES1SwTexOpThreadNum", IMG_UINT_TYPE, &ui32Default, &psAppHints->ui32OGLES1SwTexOpThreadNum);
+
+	ui32Default = 70;
+	PVRSRVGetAppHint(pvHintState, "OGLES1SwTexOpThreadPriority", IMG_UINT_TYPE, &ui32Default, &psAppHints->ui32OGLES1SwTexOpThreadPriority);
+
+	ui32Default = 0;
+	PVRSRVGetAppHint(pvHintState, "OGLES1SwTexOpThreadAffinity", IMG_UINT_TYPE, &ui32Default, &psAppHints->ui32OGLES1SwTexOpThreadAffinity);
 
 	PVRSRVFreeAppHintState(IMG_OPENGLES1, pvHintState);
 
