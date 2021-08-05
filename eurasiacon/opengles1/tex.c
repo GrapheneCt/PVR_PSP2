@@ -22,6 +22,8 @@
 #include "spanpack.h"
 #include "drveglext.h"
 
+#include "psp2/swtexop.h"
+
 #if defined(GLES1_EXTENSION_PVRTC)
 /***********************************************************************************
  Function Name      : CopyTexturePVRTC
@@ -3148,7 +3150,7 @@ bad_op:
 	
 	if(level == 0 && psTex->sState.bGenerateMipmap)
 	{
-		MakeTextureMipmapLevels(gc, psTex, ui32Face);
+		SWMakeTextureMipmapLevels(gc, psTex, ui32Face);
 	}
 
 	/* 
@@ -3886,7 +3888,7 @@ bad_op:
 
 	if(level == 0 && psTex->sState.bGenerateMipmap)
 	{
-		MakeTextureMipmapLevels(gc, psTex, ui32Face);
+		SWMakeTextureMipmapLevels(gc, psTex, ui32Face);
 	}
 
 
@@ -5144,7 +5146,7 @@ bad_op:
 
 		if(level == 0 && psTex->sState.bGenerateMipmap)
 		{
-			MakeTextureMipmapLevels(gc, psTex, ui32Face);
+			SWMakeTextureMipmapLevels(gc, psTex, ui32Face);
 		}
 
 		/* 
@@ -6245,7 +6247,7 @@ bad_op:
 
 	if(level == 0 && psTex->sState.bGenerateMipmap)
 	{
-		MakeTextureMipmapLevels(gc, psTex, ui32Face);
+		SWMakeTextureMipmapLevels(gc, psTex, ui32Face);
 	}
 
 

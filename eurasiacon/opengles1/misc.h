@@ -94,6 +94,7 @@ typedef struct GLESAppHintsRec
 	IMG_UINT32 ui32OGLES1SwTexOpThreadNum;
 	IMG_UINT32 ui32OGLES1SwTexOpThreadPriority;
 	IMG_UINT32 ui32OGLES1SwTexOpThreadAffinity;
+	IMG_UINT32 ui32OGLES1SwTexOpMaxUltNum;
 } GLESAppHints;
 
 IMG_BOOL GetApplicationHints(GLESAppHints *psAppHints, EGLcontextMode *psMode);

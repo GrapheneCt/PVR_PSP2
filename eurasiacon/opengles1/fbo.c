@@ -21,6 +21,8 @@
 
 #include "context.h"
 
+#include "psp2/swtexop.h"
+
 #if defined(SGX_FEATURE_HYBRID_TWIDDLING)
 #include "twiddle.h"
 #endif
@@ -3636,7 +3638,7 @@ GL_API_EXT void GL_APIENTRY glGenerateMipmapOES(GLenum eTarget)
 #if defined(GLES1_EXTENSION_TEX_CUBE_MAP)
 		do
 		{
-			if(!MakeTextureMipmapLevels(gc, psTex, ui32Face))
+			if(!SWMakeTextureMipmapLevels(gc, psTex, ui32Face))
 			{
 				/* Something is wrong in the driver, but let's blame the app. */
 				eErrorCode = GL_OUT_OF_MEMORY;
@@ -3647,7 +3649,7 @@ GL_API_EXT void GL_APIENTRY glGenerateMipmapOES(GLenum eTarget)
 
 #else /* defined(GLES1_EXTENSION_TEX_CUBE_MAP) */
 
-		if(!MakeTextureMipmapLevels(gc, psTex, ui32Face))
+		if(!SWMakeTextureMipmapLevels(gc, psTex, ui32Face))
 		{
 			/* Something is wrong in the driver, but let's blame the app. */
 			eErrorCode = GL_OUT_OF_MEMORY;

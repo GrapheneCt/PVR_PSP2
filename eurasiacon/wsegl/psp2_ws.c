@@ -432,13 +432,11 @@ static WSEGLError WSEGL_GetDrawableParameters(WSEGLDrawableHandle hDrawable,
 
 static WSEGLError WSEGL_ConnectDrawable(WSEGLDrawableHandle hDrawable)
 {
-	PVR_DPF((PVR_DBG_ERROR, "%s: Unimplemented", __func__));
 	return WSEGL_SUCCESS;
 }
 
 static WSEGLError WSEGL_DisconnectDrawable(WSEGLDrawableHandle hDrawable)
 {
-	PVR_DPF((PVR_DBG_ERROR, "%s: Unimplemented", __func__));
 	return WSEGL_SUCCESS;
 }
 

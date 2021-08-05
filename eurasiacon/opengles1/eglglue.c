@@ -587,7 +587,7 @@ static IMG_BOOL InitContext(GLES1Context *gc, GLES1Context *psShareContext, EGLc
 
 	sceSysmoduleLoadModuleInternal(SCE_SYSMODULE_INTERNAL_ULT);
 
-	IMG_UINT32 ui32UltRuntimeWorkAreaSize = sceUltUlthreadRuntimeGetWorkAreaSize(2, 1);
+	IMG_UINT32 ui32UltRuntimeWorkAreaSize = sceUltUlthreadRuntimeGetWorkAreaSize(gc->sAppHints.ui32OGLES1SwTexOpMaxUltNum, gc->sAppHints.ui32OGLES1SwTexOpThreadNum);
 	IMG_PVOID pvUltRuntimeWorkArea = GLES1Malloc(gc, ui32UltRuntimeWorkAreaSize);
 	gc->pvUltRuntime = GLES1Malloc(gc, _SCE_ULT_ULTHREAD_RUNTIME_SIZE);
 
@@ -595,20 +595,20 @@ static IMG_BOOL InitContext(GLES1Context *gc, GLES1Context *psShareContext, EGLc
 	sceUltUlthreadRuntimeOptParamInitialize(&sUltOptParam);
 	sUltOptParam.oneShotThreadStackSize = 16 * 1024;
 	sUltOptParam.workerThreadAttr = 0;
-	sUltOptParam.workerThreadCpuAffinityMask = 0;
+	sUltOptParam.workerThreadCpuAffinityMask = gc->sAppHints.ui32OGLES1SwTexOpThreadAffinity;
 	sUltOptParam.workerThreadOptParam = 0;
-	sUltOptParam.workerThreadPriority = 64;
+	sUltOptParam.workerThreadPriority = gc->sAppHints.ui32OGLES1SwTexOpThreadPriority;
 
 	i = sceUltUlthreadRuntimeCreate(gc->pvUltRuntime,
 		"OGLES1UltRuntime",
-		2,
-		1,
+		gc->sAppHints.ui32OGLES1SwTexOpMaxUltNum,
+		gc->sAppHints.ui32OGLES1SwTexOpThreadNum,
 		pvUltRuntimeWorkArea,
 		&sUltOptParam);
 
 	if (i != SCE_OK)
 	{
-		PVR_DPF((PVR_DBG_ERROR, "InitContext: Couldn't create ULT runtime"));
+		PVR_DPF((PVR_DBG_ERROR, "InitContext: Couldn't create ULT runtime: 0x%X", i));
 
 		goto FAILED_sceUltUlthreadRuntimeCreate;
 	}

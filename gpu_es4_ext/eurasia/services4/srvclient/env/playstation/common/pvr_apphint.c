@@ -347,13 +347,17 @@ IMG_EXPORT IMG_BOOL PVRSRVGetAppHint(IMG_VOID		*pvHintState,
 			*(IMG_UINT32 *)pvReturn = s_appHint.ui32OGLES1SwTexOpThreadAffinity;
 			bFound = IMG_TRUE;
 		}
+		else if (!sceClibStrncasecmp(pszHintName, "OGLES1SwTexOpMaxUltNum", 23))
+		{
+			*(IMG_UINT32 *)pvReturn = s_appHint.ui32OGLES1SwTexOpMaxUltNum;
+			bFound = IMG_TRUE;
+		}
 	}
 
 	if (!bFound)
 	{
 		uDefault.pvData = pvDefault;
 		uReturn.pvData = pvReturn;
-		sceClibPrintf("apphint not found\n");
 
 		switch(eDataType)
 		{

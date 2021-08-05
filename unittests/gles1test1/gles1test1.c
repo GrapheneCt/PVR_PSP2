@@ -41,7 +41,7 @@ SCE_USER_MODULE_LIST("app0:libgpu_es4_ext.suprx", "app0:libIMGEGL.suprx");
 #include "eglhelper.h"
 #endif
 
-#define TEX_SIZE 128
+#define TEX_SIZE 256
 
 static int handle_events(void);
 
@@ -160,7 +160,7 @@ static void init(void)
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
                  TEX_SIZE, TEX_SIZE, 0, GL_RGBA, GL_UNSIGNED_BYTE, texdata);
 
-	//glGenerateMipmapOES(GL_TEXTURE_2D);
+	glGenerateMipmapOES(GL_TEXTURE_2D);
 
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 }
@@ -357,8 +357,8 @@ int main(int argc, char *argv[])
 	sceClibStrncpy(hint.szWindowSystem, "app0:libpvrPSP2_WSEGL.suprx", 256);
 	hint.bDisableMetricsOutput = IMG_TRUE;
 	hint.bDumpProfileData = IMG_FALSE;
-	hint.ui32ProfileStartFrame = 50;
-	hint.ui32ProfileEndFrame = 60;
+	hint.ui32ProfileStartFrame = 0;
+	hint.ui32ProfileEndFrame = 0;
 	hint.ui32ExternalZBufferMode = IMG_FALSE;
 	hint.ui32ExternalZBufferXSize = 0;
 	hint.ui32ExternalZBufferYSize = 0;
@@ -368,7 +368,7 @@ int main(int argc, char *argv[])
 
 	hint.bDisableHWTextureUpload = IMG_FALSE;
 	hint.bDisableHWTQBufferBlit = IMG_FALSE;
-	hint.bDisableHWTQMipGen = IMG_FALSE;
+	hint.bDisableHWTQMipGen = IMG_TRUE;
 	hint.bDisableHWTQNormalBlit = IMG_FALSE;
 	hint.bDisableHWTQTextureUpload = IMG_FALSE;
 	hint.bDisableStaticPDSPixelSAProgram = IMG_FALSE;
@@ -395,6 +395,7 @@ int main(int argc, char *argv[])
 	hint.ui32OGLES1SwTexOpThreadNum = 1;
 	hint.ui32OGLES1SwTexOpThreadPriority = 70;
 	hint.ui32OGLES1SwTexOpThreadAffinity = 0;
+	hint.ui32OGLES1SwTexOpMaxUltNum = 16;
 
 	PVRSRVCreateVirtualAppHint(&hint);
 

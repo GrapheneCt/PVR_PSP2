@@ -730,6 +730,8 @@ IMG_INTERNAL IMG_BOOL HardwareMakeTextureMipmapLevels(GLES1Context *gc, GLESText
 	{
 		return IMG_FALSE;
 	}
+
+
 	
 	/*********** Set max face count ***********/
 	switch(ui32TexTarget)

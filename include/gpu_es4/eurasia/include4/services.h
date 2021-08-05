@@ -95,6 +95,7 @@ extern "C" {
 		IMG_UINT32 ui32OGLES1SwTexOpThreadNum;
 		IMG_UINT32 ui32OGLES1SwTexOpThreadPriority;
 		IMG_UINT32 ui32OGLES1SwTexOpThreadAffinity;
+		IMG_UINT32 ui32OGLES1SwTexOpMaxUltNum;
 
 	} PVRSRV_PSP2_APPHINT;
 #endif
