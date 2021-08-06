@@ -120,7 +120,8 @@
       <AdditionalOptions>--no-required-files</AdditionalOptions>
     </Link>
     <PreBuildEvent>
-      <Command>"$(SCE_PSP2_SDK_DIR)\host_tools\build\bin\armlibgen.exe" --dump "$(SolutionDir)lib\SceGpuEs4User.emd" --stub-archive</Command>
+      <Command>"$(SCE_PSP2_SDK_DIR)\host_tools\build\bin\armlibgen.exe" --dump "$(SolutionDir)lib\SceGpuEs4User.emd" --stub-archive
+"$(SCE_PSP2_SDK_DIR)\host_tools\build\bin\armlibgen.exe" --dump "$(SolutionDir)lib\SceGpuEs4UserForVsh.emd" --stub-archive</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|PSVita'">
@@ -137,8 +138,12 @@
       <InfoStripping>StripSymsAndDebug</InfoStripping>
     </Link>
     <PreBuildEvent>
-      <Command>"$(SCE_PSP2_SDK_DIR)\host_tools\build\bin\armlibgen.exe" --dump "$(SolutionDir)lib\SceGpuEs4User.emd" --stub-archive</Command>
+      <Command>"$(SCE_PSP2_SDK_DIR)\host_tools\build\bin\armlibgen.exe" --dump "$(SolutionDir)lib\SceGpuEs4User.emd" --stub-archive
+"$(SCE_PSP2_SDK_DIR)\host_tools\build\bin\armlibgen.exe" --dump "$(SolutionDir)lib\SceGpuEs4UserForVsh.emd" --stub-archive</Command>
     </PreBuildEvent>
+    <PostBuildEvent>
+      <Command>"$(SCE_PSP2_SDK_DIR)\host_tools\build\bin\vdsuite-libgen.exe" --output-kind VitasdkStub "$(SolutionDir)lib\vitasdk_out\gpu_es4_ext.yml" "$(OutDir)libgpu_es4_ext_stub_vitasdk.a"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Condition="'$(ConfigurationType)' == 'Makefile' and Exists('$(VCTargetsPath)\Platforms\$(Platform)\SCE.Makefile.$(Platform).targets')" Project="$(VCTargetsPath)\Platforms\$(Platform)\SCE.Makefile.$(Platform).targets" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

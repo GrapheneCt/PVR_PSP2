@@ -360,6 +360,21 @@ void	*sceHeapAllocHeapMemoryWithOption(void *heap, unsigned int nbytes, const Sc
 	head->info.ordblks++;
 #endif	/* USE_HEAPINFO */
 	sceKernelUnlockLwMutex(&head->lwmtx, 1);
+
+#if defined(DEBUG)
+	res = PVRSRVCheckMappedMemory(
+		head->psDevData,
+		head->hDevMemContext,
+		result,
+		nbytes,
+		PVRSRV_MEM_READ | PVRSRV_MEM_WRITE
+		);
+
+	sceClibPrintf("sceHeapAllocHeapMemoryWithOption check res: %d\n", res);
+	sceClibPrintf("base: 0x%X\n", result);
+	sceClibPrintf("size: 0x%X\n", nbytes);
+#endif
+
 	return (result);
 }
 

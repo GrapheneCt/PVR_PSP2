@@ -32,4 +32,8 @@ IMG_INTERNAL IMG_VOID SWTextureUpload(
 
 IMG_INTERNAL IMG_BOOL SWMakeTextureMipmapLevels(GLES1Context *gc, GLESTexture *psTex, IMG_UINT32 ui32Face);
 
+IMG_INT32 texOpAsyncCleanupThread(IMG_UINT32 argSize, IMG_VOID *pArgBlock);
+
+IMG_VOID texOpAsyncAddForCleanup(GLES1Context *gc, IMG_PVOID pvPtr);
+
 #endif /* _PSP2_SWTEXOP_ */

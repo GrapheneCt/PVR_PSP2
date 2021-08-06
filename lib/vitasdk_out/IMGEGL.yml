@@ -1,0 +1,95 @@
+version: 0x2
+firmware: 3.60
+modules:
+  libIMGEGL:
+    nid: 0
+    libraries:
+      libIMGEGL:
+        nid: 0xB4B37D2D
+        kernel: false
+        functions:
+          IMGeglBindAPI: 0x49DCB307
+          IMGeglBindTexImage: 0x01A095F5
+          IMGeglChooseConfig: 0xA887CFAF
+          IMGeglCopyBuffers: 0x1EA49EB5
+          IMGeglCreateContext: 0xAE934FE5
+          IMGeglCreatePbufferFromClientBuffer: 0x6520938C
+          IMGeglCreatePbufferSurface: 0xFC0DF4EA
+          IMGeglCreatePixmapSurface: 0xD344E8D8
+          IMGeglCreateWindowSurface: 0x69F6FE0A
+          IMGeglDestroyContext: 0xDDE42105
+          IMGeglDestroySurface: 0xEE21F943
+          IMGeglGetConfigAttrib: 0x04C85308
+          IMGeglGetConfigs: 0xFDF499BD
+          IMGeglGetCurrentContext: 0x6B5D22D8
+          IMGeglGetCurrentDisplay: 0xD69EE47D
+          IMGeglGetCurrentSurface: 0x1F272E76
+          IMGeglGetDisplay: 0xEB786B4B
+          IMGeglGetError: 0x2EEF6FA3
+          IMGeglGetProcAddress: 0x012D4AA0
+          IMGeglInitialize: 0x88AF93FA
+          IMGeglMakeCurrent: 0x8A618229
+          IMGeglQueryAPI: 0xD3C5018A
+          IMGeglQueryContext: 0x78B8E060
+          IMGeglQueryString: 0xC406C272
+          IMGeglQuerySurface: 0xB55621FA
+          IMGeglReleaseTexImage: 0xC4A3BF2F
+          IMGeglReleaseThread: 0x31BC3808
+          IMGeglSurfaceAttrib: 0x15CC589F
+          IMGeglSwapBuffers: 0xD98730D3
+          IMGeglSwapInterval: 0x3070C153
+          IMGeglTerminate: 0xEB01D7A5
+          IMGeglWaitClient: 0x3558F3D7
+          IMGeglWaitGL: 0x91693C10
+          IMGeglWaitNative: 0x19CAC7D7
+          KEGLAllocDeviceMemPsp2: 0x88F206C3
+          KEGLAllocDeviceMemTrack: 0x4DEF8BDA
+          KEGLAwakeRenderSurface: 0x77207022
+          KEGLBindImage: 0x6DF10614
+          KEGLCreateRenderSurface: 0xFB83F0F9
+          KEGLDestroyRenderSurface: 0xDA83AF68
+          KEGLFreeDeviceMemPsp2: 0x66396384
+          KEGLFreeDeviceMemTrack: 0x81E71C5A
+          KEGLGetDrawableParameters: 0x299BE19D
+          KEGLGetImageSource: 0x2AA2E56B
+          KEGLHibernateRenderSurface: 0x766D79E8
+          KEGLResizeRenderSurface: 0x2B4BF221
+          KEGLSurfaceBind: 0x64249F63
+          KEGLSurfaceUnbind: 0x4336B55B
+          KEGLUnbindImage: 0x5EF2D629
+          eglBindAPI: 0x37C31BA8
+          eglBindTexImage: 0xA9E4D04C
+          eglChooseConfig: 0xC99B47E7
+          eglCopyBuffers: 0x6F33D405
+          eglCreateContext: 0xA1037C4E
+          eglCreatePbufferFromClientBuffer: 0x6637B29B
+          eglCreatePbufferSurface: 0x24806915
+          eglCreatePixmapSurface: 0x37DB8FB3
+          eglCreateWindowSurface: 0x4B86317A
+          eglDestroyContext: 0x48327C18
+          eglDestroySurface: 0xBF950D4F
+          eglGetConfigAttrib: 0x33A55EAB
+          eglGetConfigs: 0x376A1FAC
+          eglGetCurrentContext: 0xC0B5E867
+          eglGetCurrentDisplay: 0xD37F0094
+          eglGetCurrentSurface: 0xC0846221
+          eglGetDisplay: 0x1AC9217F
+          eglGetError: 0x05B99654
+          eglGetProcAddress: 0x249A431A
+          eglInitialize: 0xFA375DB4
+          eglMakeCurrent: 0xDE064245
+          eglQueryAPI: 0x5EF4C0F1
+          eglQueryContext: 0x08DA40FE
+          eglQueryString: 0x3A566D7A
+          eglQuerySurface: 0xE996DE60
+          eglReleaseTexImage: 0xA15242AE
+          eglReleaseThread: 0xF0594F9E
+          eglSurfaceAttrib: 0x668A8D7A
+          eglSwapBuffers: 0x02AB000E
+          eglSwapInterval: 0x2A1D182B
+          eglTerminate: 0xEB997F00
+          eglWaitClient: 0xB7659551
+          eglWaitGL: 0x6B8A24F6
+          eglWaitNative: 0x75A03EDD
+
+

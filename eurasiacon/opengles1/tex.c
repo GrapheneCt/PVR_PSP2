@@ -3578,7 +3578,7 @@ bad_op:
 						      ui32SrcRowSize, psMipLevel, IMG_TRUE);
 			TranslateLevel(gc, psTex, 0, 0);
 
-			GLES1FreeHeapUNC(gc, psMipLevel->pui8Buffer);
+			GLES1FreeHeapAsyncUNC(gc, psMipLevel->pui8Buffer);
 
 			psMipLevel->pui8Buffer = GLES1_LOADED_LEVEL;
 
@@ -3819,7 +3819,7 @@ bad_op:
 					}
 				}
 					
-				GLES1FreeHeapUNC(gc, pui8SubTexBuffer);
+				GLES1FreeHeapAsyncUNC(gc, pui8SubTexBuffer);
 			}
 		}
 
@@ -5716,7 +5716,7 @@ bad_op:
 
 		TranslateLevel(gc, psTex, 0, 0);
 
-		GLES1FreeHeapUNC(gc, psMipLevel->pui8Buffer);
+		GLES1FreeHeapAsyncUNC(gc, psMipLevel->pui8Buffer);
 
 		psMipLevel->pui8Buffer = GLES1_LOADED_LEVEL;
 
@@ -6161,7 +6161,7 @@ bad_op:
 					}
 				}
 
-				GLES1FreeHeapUNC(gc, pui8SubTexBuffer);
+				GLES1FreeHeapAsyncUNC(gc, pui8SubTexBuffer);
 			}
 
 			/* otherwise, use the software copy subtexture uploading:

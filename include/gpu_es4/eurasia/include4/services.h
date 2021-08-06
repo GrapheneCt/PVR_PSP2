@@ -96,6 +96,7 @@ extern "C" {
 		IMG_UINT32 ui32OGLES1SwTexOpThreadPriority;
 		IMG_UINT32 ui32OGLES1SwTexOpThreadAffinity;
 		IMG_UINT32 ui32OGLES1SwTexOpMaxUltNum;
+		IMG_UINT32 ui32OGLES1SwTexOpCleanupDelay;
 
 	} PVRSRV_PSP2_APPHINT;
 #endif
@@ -1663,6 +1664,7 @@ IMG_IMPORT IMG_BOOL IMG_CALLCONV PVRSRVGetAppHint(IMG_VOID			*pvHintState,
 												  IMG_VOID			*pvReturn);
 
 #if defined(__psp2__)
+IMG_IMPORT IMG_BOOL IMG_CALLCONV PVRSRVInitializeAppHint(PVRSRV_PSP2_APPHINT *psAppHint);
 IMG_IMPORT IMG_BOOL IMG_CALLCONV PVRSRVCreateVirtualAppHint(PVRSRV_PSP2_APPHINT *psAppHint);
 #endif
 

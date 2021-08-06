@@ -614,6 +614,7 @@ __inline IMG_VOID *GLES1CallocHeapUNC(GLES1Context *gc, unsigned int size)
 }
 #define GLES1ReallocHeapUNC(X,Y,Z)	(IMG_VOID*)sceHeapReallocHeapMemory(X->pvUNCHeap, Y, Z)
 #define GLES1FreeHeapUNC(X,Y)				   sceHeapFreeHeapMemory(X->pvUNCHeap, Y)
+#define GLES1FreeHeapAsyncUNC(X,Y)			   texOpAsyncAddForCleanup(X, Y)
 
 
 #define GLES1MallocHeapCDRAM(X,Y)	(IMG_VOID*)sceHeapAllocHeapMemory(X->pvCDRAMHeap, Y)

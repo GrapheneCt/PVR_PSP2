@@ -1,0 +1,8 @@
+emd: 1
+
+Library: SceGpuEs4UserForVsh attr: auto_export
+Library: SceGpuEs4UserForVsh version: 1
+Library: SceGpuEs4UserForVsh stubfile: "libSceGpuEs4UserForVsh_stub"
+Library: SceGpuEs4UserForVsh nidsuffix: ""
+Library: SceGpuEs4UserForVsh libnamenid: 0x9E3C99D4
+Library: SceGpuEs4UserForVsh function: PVRSRVCheckMappedMemory nidvalue: 0x3DC96093

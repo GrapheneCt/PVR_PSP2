@@ -1094,7 +1094,7 @@ IMG_INTERNAL IMG_BOOL TextureMakeResident(GLES1Context *gc, GLESTexture *psTex)
 #if (defined(DEBUG) || defined(TIMING))
 					ui32TextureMemCurrent -= psMipLevel->ui32ImageSize;
 #endif					
-					GLES1FreeHeapUNC(gc, psMipLevel->pui8Buffer);
+					GLES1FreeHeapAsyncUNC(gc, psMipLevel->pui8Buffer);
 
 					psMipLevel->pui8Buffer = GLES1_LOADED_LEVEL;
 				}
@@ -1532,7 +1532,7 @@ IMG_INTERNAL IMG_BOOL TextureCreatePBufferLevel(GLES1Context *gc, GLESTexture *p
 		if (psMipLevel->pui8Buffer != NULL && psMipLevel->pui8Buffer != GLES1_LOADED_LEVEL)
 		{
 			PVR_UNREFERENCED_PARAMETER(gc);
-			GLES1FreeHeapUNC(gc, psMipLevel->pui8Buffer);
+			GLES1FreeHeapAsyncUNC(gc, psMipLevel->pui8Buffer);
 		}
 
 		psMipLevel->pui8Buffer		 = IMG_NULL;
@@ -1650,7 +1650,7 @@ IMG_INTERNAL IMG_BOOL TextureCreateImageLevel(GLES1Context *gc, GLESTexture *psT
 		if (psMipLevel->pui8Buffer != NULL && psMipLevel->pui8Buffer != GLES1_LOADED_LEVEL)
 		{
 			PVR_UNREFERENCED_PARAMETER(gc);
-			GLES1FreeHeapUNC(gc, psMipLevel->pui8Buffer);
+			GLES1FreeHeapAsyncUNC(gc, psMipLevel->pui8Buffer);
 		}
 
 		psMipLevel->pui8Buffer		 = IMG_NULL;
@@ -2062,7 +2062,7 @@ IMG_INTERNAL IMG_UINT8*  TextureCreateLevel(GLES1Context *gc, GLESTexture *psTex
 	{
 		if (psMipLevel->pui8Buffer != GLES1_LOADED_LEVEL)
 		{
-			pui8Buffer = (IMG_UINT8 *) GLES1Realloc(gc, psMipLevel->pui8Buffer, ui32BufferSize);
+			pui8Buffer = (IMG_UINT8 *) GLES1ReallocHeapUNC(gc, psMipLevel->pui8Buffer, ui32BufferSize);
 		
 			if (pui8Buffer == IMG_NULL) 
 			{
@@ -2123,7 +2123,7 @@ no_memory:
 #if (defined(DEBUG) || defined(TIMING))
 			ui32TextureMemCurrent -= psMipLevel->ui32ImageSize;
 #endif
-			GLES1FreeHeapUNC(gc, psMipLevel->pui8Buffer);
+			GLES1FreeHeapAsyncUNC(gc, psMipLevel->pui8Buffer);
 		}
 
 		psMipLevel->pui8Buffer = IMG_NULL;
@@ -2290,7 +2290,7 @@ static IMG_VOID FreeTexture(GLES1Context *gc, GLESTexture *psTex)
 #if (defined(DEBUG) || defined(TIMING))
 			ui32TextureMemCurrent -= psMipLevel->ui32ImageSize;
 #endif
-			GLES1FreeHeapUNC(gc, psMipLevel->pui8Buffer);
+			GLES1FreeHeapAsyncUNC(gc, psMipLevel->pui8Buffer);
 
 			psMipLevel->pui8Buffer = IMG_NULL;
 		}

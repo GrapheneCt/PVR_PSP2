@@ -458,7 +458,7 @@ IMG_INTERNAL IMG_BOOL _TlsInit(TLS psTls)
 		PVRSRVGetAppHint(pvHintState, "ParamBufferSize", IMG_UINT_TYPE,
 						&ui32DefaultParamBufferSize, &psGlobalData->sAppHints.ui32ParamBufferSize);
 
-		PVRSRVGetAppHint(pvHintState, "DriverMemorySizeSize", IMG_UINT_TYPE,
+		PVRSRVGetAppHint(pvHintState, "DriverMemorySize", IMG_UINT_TYPE,
 			&ui32DefaultDriverMemorySize, &psGlobalData->sAppHints.ui32DriverMemorySize);
 
 		ui32Default = EXTERNAL_ZBUFFER_MODE_DEFAULT;
@@ -4921,7 +4921,7 @@ IMG_EXPORT EGLContext IMGeglCreateContext(EGLDisplay eglDpy,
 	KEGL_CONFIG_INDEX		configIndex = (KEGL_CONFIG_INDEX)eglCfg;
 
 #if defined(SUPPORT_SGX_LOW_LATENCY_SCHEDULING)
-	SGX_CONTEXT_PRIORITY	eContextPriority = SGX_CONTEXT_PRIORITY_MEDIUM;
+	SGX_CONTEXT_PRIORITY	eContextPriority = SGX_CONTEXT_PRIORITY_HIGH;
 #endif
 
 #if defined(EGL_EXTENSION_IMG_EGL_HIBERNATION)

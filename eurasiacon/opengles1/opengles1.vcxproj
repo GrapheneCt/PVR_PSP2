@@ -204,7 +204,7 @@
       <AdditionalIncludeDirectories>$(SCE_PSP2_SDK_DIR)\target\include\vdsuite\user;$(SCE_PSP2_SDK_DIR)\target\include\vdsuite\common;$(SolutionDir)include\gpu_es4;$(SolutionDir)include\gpu_es4\eurasia\include4;$(SolutionDir)include\gpu_es4\eurasia\hwdefs;$(SolutionDir)include\gpu_es4\eurasia\services4\include;$(SolutionDir)include\gpu_es4\eurasia\services4\system\psp2;$(SolutionDir)codegen\pds;$(SolutionDir)codegen\pixevent;$(SolutionDir)codegen\usegen;$(SolutionDir)eurasiacon\include;$(SolutionDir)eurasiacon\common;$(SolutionDir)common\tls;$(SolutionDir)common\dmscalc;$(SolutionDir)include\gpu_es4\eurasia\services4\srvclient\devices\sgx;$(SolutionDir)codegen\ffgen;$(SolutionDir)tools\intern\useasm;$(SolutionDir)codegen\pixfmts;$(SolutionDir)intermediates\pds_mte_state_copy;$(SolutionDir)intermediates\pds_aux_vtx;$(SolutionDir)intermediates\pixelevent;$(SolutionDir)intermediates\pixelevent_tilexy;$(SolutionDir)intermediates\sgxsupport;$(SolutionDir)intermediates\errata;$(SolutionDir)tools\intern\usc2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>$(OutDir)libgpu_es4_ext_stub.a;$(OutDir)libpvrPSP2_WSEGL_stub.a;$(OutDir)libIMGEGL_stub.a;$(SolutionDir)gpu_es4_ext\libSceGpuEs4User_stub.a;-lSceGxm_stub;-lSceGpuEs4ForUser_stub;-lSceDmacmgr_stub;-lSceSysmodule_stub;-lSceUlt_stub_weak;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(OutDir)libgpu_es4_ext_stub.a;$(OutDir)libpvrPSP2_WSEGL_stub.a;$(OutDir)libIMGEGL_stub.a;$(SolutionDir)gpu_es4_ext\libSceGpuEs4User_stub.a;$(SolutionDir)gpu_es4_ext\libSceGpuEs4UserForVsh_stub.a;-lSceGxm_stub;-lSceGpuEs4ForUser_stub;-lSceDmacmgr_stub;-lSceSysmodule_stub;-lSceUlt_stub_weak;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SCE_PSP2_SDK_DIR)\target\lib\vdsuite;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -217,10 +217,13 @@
       <FastMath>true</FastMath>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>$(OutDir)libgpu_es4_ext_stub.a;$(OutDir)libpvrPSP2_WSEGL_stub.a;$(OutDir)libIMGEGL_stub.a;$(SolutionDir)gpu_es4_ext\libSceGpuEs4User_stub.a;-lSceGxm_stub;-lSceGpuEs4ForUser_stub;-lSceDmacmgr_stub;-lSceSysmodule_stub;-lSceUlt_stub_weak;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(OutDir)libgpu_es4_ext_stub.a;$(OutDir)libpvrPSP2_WSEGL_stub.a;$(OutDir)libIMGEGL_stub.a;$(SolutionDir)gpu_es4_ext\libSceGpuEs4User_stub.a;$(SolutionDir)gpu_es4_ext\libSceGpuEs4UserForVsh_stub.a;-lSceGxm_stub;-lSceGpuEs4ForUser_stub;-lSceDmacmgr_stub;-lSceSysmodule_stub;-lSceUlt_stub_weak;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SCE_PSP2_SDK_DIR)\target\lib\vdsuite;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <InfoStripping>StripSymsAndDebug</InfoStripping>
     </Link>
+    <PostBuildEvent>
+      <Command>"$(SCE_PSP2_SDK_DIR)\host_tools\build\bin\vdsuite-libgen.exe" --output-kind VitasdkStub "$(SolutionDir)lib\vitasdk_out\GLESv1_CM.yml" "$(OutDir)libGLESv1_CM_stub_vitasdk.a"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Condition="'$(ConfigurationType)' == 'Makefile' and Exists('$(VCTargetsPath)\Platforms\$(Platform)\SCE.Makefile.$(Platform).targets')" Project="$(VCTargetsPath)\Platforms\$(Platform)\SCE.Makefile.$(Platform).targets" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

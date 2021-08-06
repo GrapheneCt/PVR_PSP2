@@ -352,6 +352,11 @@ IMG_EXPORT IMG_BOOL PVRSRVGetAppHint(IMG_VOID		*pvHintState,
 			*(IMG_UINT32 *)pvReturn = s_appHint.ui32OGLES1SwTexOpMaxUltNum;
 			bFound = IMG_TRUE;
 		}
+		else if (!sceClibStrncasecmp(pszHintName, "OGLES1SwTexOpCleanupDelay", 26))
+		{
+			*(IMG_UINT32 *)pvReturn = s_appHint.ui32OGLES1SwTexOpCleanupDelay;
+			bFound = IMG_TRUE;
+		}
 	}
 
 	if (!bFound)
@@ -400,6 +405,68 @@ IMG_EXPORT IMG_BOOL PVRSRVCreateVirtualAppHint(PVRSRV_PSP2_APPHINT *psAppHint)
 
 	sceClibMemcpy(&s_appHint, psAppHint, sizeof(PVRSRV_PSP2_APPHINT));
 	s_appHintCreated = IMG_TRUE;
+
+	return IMG_TRUE;
+}
+
+/******************************************************************************
+ Function Name      : PVRSRVInitializeAppHint
+ Inputs             : *psAppHint
+ Outputs            :
+ Returns            : Boolean - True if hint struct created, False if error
+ Description        : Sets default values for apphint struct
+******************************************************************************/
+IMG_EXPORT IMG_BOOL PVRSRVInitializeAppHint(PVRSRV_PSP2_APPHINT *psAppHint)
+{
+	if (!psAppHint)
+		return IMG_FALSE;
+
+	sceClibMemset(psAppHint, 0, sizeof(PVRSRV_PSP2_APPHINT));
+
+	sceClibStrncpy(psAppHint->szGLES1, "app0:libGLESv1_CM.suprx", 256);
+	sceClibStrncpy(psAppHint->szWindowSystem, "app0:libpvrPSP2_WSEGL.suprx", 256);
+	psAppHint->bDisableMetricsOutput = IMG_TRUE;
+	psAppHint->bDumpProfileData = IMG_FALSE;
+	psAppHint->ui32ProfileStartFrame = 0;
+	psAppHint->ui32ProfileEndFrame = 0;
+	psAppHint->ui32ExternalZBufferMode = IMG_FALSE;
+	psAppHint->ui32ExternalZBufferXSize = 0;
+	psAppHint->ui32ExternalZBufferYSize = 0;
+	psAppHint->ui32ParamBufferSize = 16 * 1024 * 1024;
+	psAppHint->ui32PDSFragBufferSize = 50 * 1024;
+	psAppHint->ui32DriverMemorySize = 4 * 1024 * 1024;
+
+	psAppHint->bDisableHWTextureUpload = IMG_FALSE;
+	psAppHint->bDisableHWTQBufferBlit = IMG_FALSE;
+	psAppHint->bDisableHWTQMipGen = IMG_TRUE;
+	psAppHint->bDisableHWTQNormalBlit = IMG_FALSE;
+	psAppHint->bDisableHWTQTextureUpload = IMG_FALSE;
+	psAppHint->bDisableStaticPDSPixelSAProgram = IMG_FALSE;
+	psAppHint->bDisableUSEASMOPT = IMG_FALSE;
+	psAppHint->bDumpShaders = IMG_FALSE;
+	psAppHint->bEnableAppTextureDependency = IMG_FALSE;
+	psAppHint->bEnableMemorySpeedTest = IMG_TRUE;
+	psAppHint->bEnableStaticMTECopy = IMG_TRUE;
+	psAppHint->bEnableStaticPDSVertex = IMG_TRUE;
+	psAppHint->bFBODepthDiscard = IMG_TRUE;
+	psAppHint->bOptimisedValidation = IMG_TRUE;
+	psAppHint->ui32DefaultIndexBufferSize = 200 * 1024;
+	psAppHint->ui32DefaultPDSVertBufferSize = 50 * 1024;
+	psAppHint->ui32DefaultPregenMTECopyBufferSize = 50 * 1024;
+	psAppHint->ui32DefaultPregenPDSVertBufferSize = 80 * 1024;
+	psAppHint->ui32DefaultVDMBufferSize = 20 * 1024;
+	psAppHint->ui32DefaultVertexBufferSize = 200 * 1024;
+	psAppHint->ui32FlushBehaviour = 0;
+	psAppHint->ui32MaxVertexBufferSize = 800 * 1024;
+	psAppHint->ui32OGLES1UNCTexHeapSize = 4 * 1024;
+	psAppHint->ui32OGLES1CDRAMTexHeapSize = 256 * 1024;
+	psAppHint->bOGLES1EnableUNCAutoExtend = IMG_TRUE;
+	psAppHint->bOGLES1EnableCDRAMAutoExtend = IMG_TRUE;
+	psAppHint->ui32OGLES1SwTexOpThreadNum = 1;
+	psAppHint->ui32OGLES1SwTexOpThreadPriority = 70;
+	psAppHint->ui32OGLES1SwTexOpThreadAffinity = 0;
+	psAppHint->ui32OGLES1SwTexOpMaxUltNum = 16;
+	psAppHint->ui32OGLES1SwTexOpCleanupDelay = 10000000;
 
 	return IMG_TRUE;
 }

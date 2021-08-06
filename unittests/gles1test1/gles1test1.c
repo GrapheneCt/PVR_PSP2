@@ -19,13 +19,6 @@
  *
  *******************************************************************************/
 
-#include <GLES/gl.h>
-#include <GLES/glext.h>
-#include <EGL/egl.h>
-#include <EGL/eglext.h>
-#include <stdio.h>
-#include <stdlib.h>
-
 #if defined(__psp2__)
 
 #include <kernel.h>
@@ -36,6 +29,13 @@ SCE_USER_MODULE_LIST("app0:libgpu_es4_ext.suprx", "app0:libIMGEGL.suprx");
 
 #include <services.h>
 #endif
+
+#include <GLES/gl.h>
+#include <GLES/glext.h>
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #if defined(SUPPORT_ANDROID_PLATFORM)
 #include "eglhelper.h"
@@ -351,52 +351,8 @@ int main(int argc, char *argv[])
 #if defined(__psp2__)
 
 	PVRSRV_PSP2_APPHINT hint;
-	sceClibMemset(&hint, 0, sizeof(PVRSRV_PSP2_APPHINT));
-
-	sceClibStrncpy(hint.szGLES1, "app0:libGLESv1_CM.suprx", 256);
-	sceClibStrncpy(hint.szWindowSystem, "app0:libpvrPSP2_WSEGL.suprx", 256);
-	hint.bDisableMetricsOutput = IMG_TRUE;
-	hint.bDumpProfileData = IMG_FALSE;
-	hint.ui32ProfileStartFrame = 0;
-	hint.ui32ProfileEndFrame = 0;
-	hint.ui32ExternalZBufferMode = IMG_FALSE;
-	hint.ui32ExternalZBufferXSize = 0;
-	hint.ui32ExternalZBufferYSize = 0;
-	hint.ui32ParamBufferSize = 16 * 1024 * 1024;
-	hint.ui32PDSFragBufferSize = 50 * 1024;
-	hint.ui32DriverMemorySize = 16 * 1024 * 1024;
-
-	hint.bDisableHWTextureUpload = IMG_FALSE;
-	hint.bDisableHWTQBufferBlit = IMG_FALSE;
-	hint.bDisableHWTQMipGen = IMG_TRUE;
-	hint.bDisableHWTQNormalBlit = IMG_FALSE;
-	hint.bDisableHWTQTextureUpload = IMG_FALSE;
-	hint.bDisableStaticPDSPixelSAProgram = IMG_FALSE;
-	hint.bDisableUSEASMOPT = IMG_FALSE;
-	hint.bDumpShaders = IMG_FALSE;
-	hint.bEnableAppTextureDependency = IMG_FALSE;
-	hint.bEnableMemorySpeedTest = IMG_TRUE;
-	hint.bEnableStaticMTECopy = IMG_TRUE;
-	hint.bEnableStaticPDSVertex = IMG_TRUE;
-	hint.bFBODepthDiscard = IMG_TRUE;
-	hint.bOptimisedValidation = IMG_TRUE;
-	hint.ui32DefaultIndexBufferSize = 200 * 1024;
-	hint.ui32DefaultPDSVertBufferSize = 50 * 1024;
-	hint.ui32DefaultPregenMTECopyBufferSize = 50 * 1024;
-	hint.ui32DefaultPregenPDSVertBufferSize = 80 * 1024;
-	hint.ui32DefaultVDMBufferSize = 20 * 1024;
-	hint.ui32DefaultVertexBufferSize = 200 * 1024;
-	hint.ui32FlushBehaviour = 0;
-	hint.ui32MaxVertexBufferSize = 800 * 1024;
-	hint.ui32OGLES1UNCTexHeapSize = 4 * 1024;
-	hint.ui32OGLES1CDRAMTexHeapSize = 256 * 1024;
-	hint.bOGLES1EnableUNCAutoExtend = IMG_TRUE;
-	hint.bOGLES1EnableCDRAMAutoExtend = IMG_TRUE;
-	hint.ui32OGLES1SwTexOpThreadNum = 1;
-	hint.ui32OGLES1SwTexOpThreadPriority = 70;
-	hint.ui32OGLES1SwTexOpThreadAffinity = 0;
-	hint.ui32OGLES1SwTexOpMaxUltNum = 16;
-
+	
+	PVRSRVInitializeAppHint(&hint);
 	PVRSRVCreateVirtualAppHint(&hint);
 
 	frameStop = 50000;

@@ -95,6 +95,9 @@
       <AdditionalOptions>--no-required-files</AdditionalOptions>
       <GenerateSnMapFile>None</GenerateSnMapFile>
     </Link>
+    <PostBuildEvent>
+      <Command>"$(SCE_PSP2_SDK_DIR)\host_tools\build\bin\vdsuite-libgen.exe" --output-kind VitasdkStub "$(SolutionDir)lib\vitasdk_out\IMGEGL.yml" "$(OutDir)libIMGEGL_stub_vitasdk.a"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|PSVita'">
     <ClCompile>

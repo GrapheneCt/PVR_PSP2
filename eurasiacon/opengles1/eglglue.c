@@ -19,6 +19,7 @@
 
 #include "context.h"
 #include "pvrversion.h"
+#include "psp2/swtexop.h"
 #include "psp2/libheap_custom.h"
 #include <string.h>
 #include <ult.h>
@@ -612,6 +613,9 @@ static IMG_BOOL InitContext(GLES1Context *gc, GLES1Context *psShareContext, EGLc
 
 		goto FAILED_sceUltUlthreadRuntimeCreate;
 	}
+
+	SceUID swTexCl = sceKernelCreateThread("OGLES1AsyncTexOpCl", texOpAsyncCleanupThread, 190, 256 * 1024, 0, 0, SCE_NULL);
+	sceKernelStartThread(swTexCl, 4, &gc);
 
 #if defined(GLES1_EXTENSION_VERTEX_ARRAY_OBJECT)
 	/* Initialize the unshareable names arrays */

@@ -1,0 +1,60 @@
+version: 0x2
+firmware: 3.60
+modules:
+  libgpu_es4_ext:
+    nid: 0
+    libraries:
+      libgpu_es4_ext:
+        nid: 0x34C4AB62
+        kernel: false
+        functions:
+          OSEventObjectClose: 0x8B0BF0B3
+          OSEventObjectOpen: 0x9BCBA80B
+          OSEventObjectWait: 0x2085EE60
+          OSFlushCPUCacheRange: 0x0C4A9AD0
+          OSIsProcessPrivileged: 0xDED484F0
+          OSTermClient: 0xD1DCE742
+          PVRSRVAllocUserModeMem: 0xFB7B4F6E
+          PVRSRVCallocUserModeMem: 0x3CD0680B
+          PVRSRVClockus: 0xD7F54BAC
+          PVRSRVCloseDCDevice: 0x1E388085
+          PVRSRVCreateAppHintState: 0xDCEA1BFF
+          PVRSRVCreateDCSwapChain: 0xDE928DE0
+          PVRSRVCreateMutex: 0xCEC15A53
+          PVRSRVCreateVirtualAppHint: 0x90FD340D
+          PVRSRVDebugAssertFail: 0x08583939
+          PVRSRVDebugPrintf: 0x67EB0C16
+          PVRSRVDestroyDCSwapChain: 0x4725F564
+          PVRSRVDestroyMutex: 0x0675D0DA
+          PVRSRVEnumDCDims: 0x0DA34852
+          PVRSRVEnumDCFormats: 0xC7007C5B
+          PVRSRVEnumerateDeviceClass: 0xB99CDD65
+          PVRSRVFreeAppHintState: 0x1BD61601
+          PVRSRVFreeUserModeMem: 0x74477E5E
+          PVRSRVGetAppHint: 0x9BA741A7
+          PVRSRVGetCurrentProcessID: 0x845DC6F1
+          PVRSRVGetDCBuffers: 0x4B431FA4
+          PVRSRVGetDCInfo: 0xD48203ED
+          PVRSRVGetDeviceMemHeapInfo: 0x9BE48029
+          PVRSRVGetErrorString: 0xF6838343
+          PVRSRVGetLibFuncAddr: 0xCAFED83C
+          PVRSRVInitializeAppHint: 0x1DEFDAB5
+          PVRSRVLoadLibrary: 0x7B87CE7D
+          PVRSRVLockMutex: 0xA133C1D5
+          PVRSRVMapDeviceClassMemory: 0x43C4030D
+          PVRSRVMemCopy: 0xD417DF3C
+          PVRSRVMemSet: 0xD01604BF
+          PVRSRVOpenDCDevice: 0xAE60F417
+          PVRSRVReallocUserModeMem: 0x104FF86E
+          PVRSRVReleaseThreadQuanta: 0xE961644A
+          PVRSRVSetLocale: 0xC1A91F26
+          PVRSRVSwapToDCBuffer: 0xA7D1D94E
+          PVRSRVSwapToDCSystem: 0xD47595C7
+          PVRSRVUnloadLibrary: 0x62215029
+          PVRSRVUnlockMutex: 0xDA0BA0BF
+          PVRSRVUnmapDeviceClassMemory: 0xA84296D1
+          PVRSRVWaitus: 0x6132BA1F
+          SGX2DQueryBlitsComplete: 0x451DB5F3
+          SGXQueue2DTransfer: 0x3C7F0727
+          SGXQueueTransfer: 0x1B013EF8
+
