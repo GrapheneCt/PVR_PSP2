@@ -55,3 +55,54 @@ PVRSRV_ERROR IMG_CALLCONV SGX2DQueryBlitsComplete(PVRSRV_DEV_DATA *psDevData,
 	return sBridgeOut.eError;
 }
 
+/*!
+*******************************************************************************
+ @Function	SGXSetContextPriority
+ @Description	Sets the scheduling priority for contexts
+ @Input		psDevData :
+ @Input		ePriority :
+ @Input		hRenderContext :
+ @Input		hTransferContext :
+ @Return	PVRSRV_ERROR :
+******************************************************************************/
+IMG_EXPORT
+PVRSRV_ERROR IMG_CALLCONV SGXSetContextPriority(PVRSRV_DEV_DATA *psDevData,
+	SGX_CONTEXT_PRIORITY *pePriority,
+	IMG_HANDLE hRenderContext,
+	IMG_HANDLE hTransferContext)
+{
+	PVRSRV_BRIDGE_IN_SGX_SET_CONTEXT_PRIORITY sBridgeIn;
+	PVRSRV_BRIDGE_OUT_SGX_SET_CONTEXT_PRIORITY sBridgeOut;
+
+	PVR_UNREFERENCED_PARAMETER(hTransferContext);
+
+	if (!psDevData || !pePriority)
+	{
+		PVR_DPF((PVR_DBG_ERROR, "SGXSetContextPriority: Invalid parameters."));
+		return PVRSRV_ERROR_INVALID_PARAMS;
+	}
+
+	PVRSRVMemSet(&sBridgeIn, 0x00, sizeof(sBridgeIn));
+	PVRSRVMemSet(&sBridgeOut, 0x00, sizeof(sBridgeOut));
+
+	if (hRenderContext != IMG_NULL)
+	{
+		sBridgeIn.ePriority = *pePriority;
+		sBridgeIn.hRenderContext = hRenderContext;
+
+		if (PVRSRVBridgeCall(psDevData->psConnection->hServices,
+			PVRSRV_BRIDGE_SGX_SET_CONTEXT_PRIORITY,
+			&sBridgeIn,
+			sizeof(sBridgeIn),
+			&sBridgeOut,
+			sizeof(sBridgeOut)))
+		{
+			PVR_DPF((PVR_DBG_ERROR, "SGXSetContextPriority: BridgeCall failed"));
+			return PVRSRV_ERROR_BRIDGE_CALL_FAILED;
+		}
+
+		*pePriority = sBridgeOut.ePriority;
+	}
+
+	return sBridgeOut.eError;
+}

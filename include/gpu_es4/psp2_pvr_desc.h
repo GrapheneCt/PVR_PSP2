@@ -13,9 +13,9 @@
 #define SGX_FAST_DPM_INIT
 #define SUPPORT_PERCONTEXT_PB
 #define SUPPORT_SGX_PRIORITY_SCHEDULING
+#define SUPPORT_SGX_LOW_LATENCY_SCHEDULING
 #define SUPPORT_SGX_NEW_STATUS_VALS
 #define SUPPORT_SID_INTERFACE
-#define SUPPORT_MEMORY_TILING
 #define TRANSFER_QUEUE
 #define SGX_CORE_REV 113 //Actual revision on Vita is 117, but there is no support for it in this driver version
 

@@ -102,6 +102,9 @@ extern "C" {
 #define PVRSRV_BRIDGE_SGX_PDUMP_SAVEMEM					PVRSRV_IOWR(PVRSRV_BRIDGE_SGX_CMD_BASE+37)
 #endif
 
+#if defined(__psp2__)
+#define PVRSRV_BRIDGE_SGX_SET_CONTEXT_PRIORITY      PVRSRV_IOWR(PVRSRV_BRIDGE_SGX_CMD_BASE+37)
+#endif
 
 
 /* *REMEMBER* to update PVRSRV_BRIDGE_LAST_SGX_CMD if you add/remove a command! 
@@ -781,6 +784,29 @@ typedef struct PVRSRV_BRIDGE_OUT_SGX_READ_HWPERF_CB_TAG
 	IMG_UINT32			ui32ClockSpeed;
 	IMG_UINT32			ui32HostTimeStamp;
 } PVRSRV_BRIDGE_OUT_SGX_READ_HWPERF_CB;
+
+#if defined(__psp2__)
+/*!
+ *****************************************************************************
+ *	`bridge in' set context priority
+ *****************************************************************************/
+typedef struct PVRSRV_BRIDGE_IN_SGX_SET_CONTEXT_PRIORITY_TAG
+{
+	IMG_UINT32				ui32BridgeFlags; /* Must be first member of structure */
+	IMG_HANDLE				hRenderContext;
+	SGX_CONTEXT_PRIORITY    ePriority;
+}PVRSRV_BRIDGE_IN_SGX_SET_CONTEXT_PRIORITY;
+
+/*!
+ *****************************************************************************
+ *	`bridge out' set render context priority
+ *****************************************************************************/
+typedef struct PVRSRV_BRIDGE_OUT_SGX_SET_CONTEXT_PRIORITY_TAG
+{
+	PVRSRV_ERROR		    eError;
+	SGX_CONTEXT_PRIORITY    ePriority;
+}PVRSRV_BRIDGE_OUT_SGX_SET_CONTEXT_PRIORITY;
+#endif
 
 #if defined (__cplusplus)
 }
