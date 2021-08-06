@@ -114,13 +114,13 @@ PVRSRV_ERROR PVRSRVMapMemoryToGpu(
 	IMG_UINT32 ui32GpuDevVaddr,
 	IMG_PVOID pMemBase,
 	IMG_UINT32 ui32Flags,
-	IMG_UINT32 *pui32InternalOffset);
+	IMG_DEV_VIRTADDR *psMappedDevVAddr);
 
 PVRSRV_ERROR PVRSRVUnmapMemoryFromGpu(
 	PVRSRV_DEV_DATA *psDevData,
 	IMG_PVOID pMemBase,
 	IMG_SID hHeapHandle,
-	IMG_BOOL bUnk4);
+	IMG_BOOL bSync);
 
 PVRSRV_ERROR PVRSRVGetMemInfo(PVRSRV_DEV_DATA *psDevData, IMG_PVOID pMemBase, PVRSRV_MEM_INFO *psMemInfo);
 
