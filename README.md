@@ -9,7 +9,10 @@ Driver layer GPU libraries and tests for PSP2
  - Lowlevel USE codegen code;
  - OS and kernel bridge extensions.
 3. PVR2D port for PSP2.
-4. Various unittests to check basic driver features.
+4. IMGEGL port for PSP2.
+5. WSEGL port for PSP2.
+6. OpenGL ES v1.1 port for PSP2.
+7. Various unittests to check basic driver features.
 
 # Unittest status
 
