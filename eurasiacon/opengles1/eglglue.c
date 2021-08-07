@@ -594,7 +594,7 @@ static IMG_BOOL InitContext(GLES1Context *gc, GLES1Context *psShareContext, EGLc
 
 	SceUltUlthreadRuntimeOptParam sUltOptParam;
 	sceUltUlthreadRuntimeOptParamInitialize(&sUltOptParam);
-	sUltOptParam.oneShotThreadStackSize = 16 * 1024;
+	sUltOptParam.oneShotThreadStackSize = 4 * 1024 + (4 * 1024 * (IMG_UINT32)((IMG_FLOAT)gc->sAppHints.ui32OGLES1SwTexOpMaxUltNum / 4.0f));
 	sUltOptParam.workerThreadAttr = 0;
 	sUltOptParam.workerThreadCpuAffinityMask = gc->sAppHints.ui32OGLES1SwTexOpThreadAffinity;
 	sUltOptParam.workerThreadOptParam = 0;
@@ -614,8 +614,9 @@ static IMG_BOOL InitContext(GLES1Context *gc, GLES1Context *psShareContext, EGLc
 		goto FAILED_sceUltUlthreadRuntimeCreate;
 	}
 
-	SceUID swTexCl = sceKernelCreateThread("OGLES1AsyncTexOpCl", texOpAsyncCleanupThread, 190, 256 * 1024, 0, 0, SCE_NULL);
-	sceKernelStartThread(swTexCl, 4, &gc);
+	gc->bSwTexOpFin = IMG_FALSE;
+	gc->hSwTexOpThrd = sceKernelCreateThread("OGLES1AsyncTexOpCl", texOpAsyncCleanupThread, SCE_KERNEL_LOWEST_PRIORITY_USER, SCE_KERNEL_4KiB, 0, 0, SCE_NULL);
+	sceKernelStartThread(gc->hSwTexOpThrd, 4, &gc);
 
 #if defined(GLES1_EXTENSION_VERTEX_ARRAY_OBJECT)
 	/* Initialize the unshareable names arrays */
@@ -1311,6 +1312,10 @@ static IMG_BOOL DeInitContext(GLES1Context *gc)
 			CBUF_DestroyBuffer(gc->ps3DDevData, gc->apsBuffers[i]);
 		}
 	}
+
+	gc->bSwTexOpFin = IMG_TRUE;
+
+	sceKernelWaitThreadEnd(gc->hSwTexOpThrd, SCE_NULL, SCE_NULL);
 
 	if (gc->pvUNCHeap)
 	{

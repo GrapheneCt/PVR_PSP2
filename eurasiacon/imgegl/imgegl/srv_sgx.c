@@ -519,7 +519,7 @@ IMG_INTERNAL IMG_BOOL KEGL_SGXCreateRenderSurface(SrvSysContext *psSysContext,
 	{
 		ui32MultiSample = 2;
 		ui32RTIndex = EGL_RENDER_TARGET_AA_INDEX;
-		sRtTmpParam.multisampleMode = SCE_GXM_MULTISAMPLE_2X;
+		sRtTmpParam.multisampleMode = SCE_GXM_MULTISAMPLE_4X;
 	}
 	else
 	{

@@ -8,7 +8,6 @@
 int32_t sceKernelAtomicAddAndGet32(volatile int32_t* ptr, int32_t value);
 
 static IMG_VOID *pvAsDstPtr[1024];
-static IMG_UINT32 ui32AsDstReqTime[1024];
 
 static IMG_INT32 _SWTextureUploadEntry(IMG_UINT32 arg)
 {
@@ -175,11 +174,12 @@ IMG_VOID texOpAsyncAddForCleanup(GLES1Context *gc, IMG_PVOID pvPtr)
 	{
 		if (pvAsDstPtr[i] == IMG_NULL)
 		{
-			ui32AsDstReqTime[i] = sceKernelGetProcessTimeLow();
 			pvAsDstPtr[i] = pvPtr;
 			return;
 		}
 	}
+
+	PVR_DPF((PVR_DBG_WARNING, "texOpAsyncAddForCleanup: not enough space in free queue"));
 
 	GLES1FreeHeapUNC(gc, pvPtr);
 }
@@ -191,24 +191,23 @@ IMG_INT32 texOpAsyncCleanupThread(IMG_UINT32 argSize, IMG_VOID *pArgBlock)
 	GLES1Context *gc = *(GLES1Context **)pArgBlock;
 
 	sceClibMemset(pvAsDstPtr, 0, 1024 * 4);
-	sceClibMemset(&ui32AsDstReqTime[0], 0, 1024 * 4);
 
-	while (1)
+	while (!gc->bSwTexOpFin)
 	{
 		ui32TriggerTime = sceKernelGetProcessTimeLow();
 
 		for (i = 0; i < 1024; i++)
 		{
-			if (pvAsDstPtr[i] != IMG_NULL)
+			if (pvAsDstPtr[i] != IMG_NULL && !gc->ui32AsyncTexOpNum)
 			{
-				if ((ui32TriggerTime - ui32AsDstReqTime[i]) > gc->sAppHints.ui32OGLES1SwTexOpCleanupDelay)
-				{
-					GLES1FreeHeapUNC(gc, pvAsDstPtr[i]);
-					pvAsDstPtr[i] = IMG_NULL;
-				}
+				SGXWaitTransfer(gc->ps3DDevData, gc->psSysContext->hTransferContext);
+				GLES1FreeHeapUNC(gc, pvAsDstPtr[i]);
+				pvAsDstPtr[i] = IMG_NULL;
 			}
 		}
 
-		sceKernelDelayThread(100000);
+		sceKernelDelayThread(gc->sAppHints.ui32OGLES1SwTexOpCleanupDelay);
 	}
+
+	return sceKernelExitDeleteThread(0);
 }
