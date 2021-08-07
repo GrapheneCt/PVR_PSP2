@@ -1139,7 +1139,7 @@ IMG_INTERNAL IMG_BOOL KEGL_SGXResizeRenderSurface(SrvSysContext		*psSysContext,
 	{
 		sAddRenderTarget.ui16MSAASamplesInX = 2;
 		sAddRenderTarget.ui16MSAASamplesInY = 2;
-		sRtTmpParam.multisampleMode = SCE_GXM_MULTISAMPLE_2X;
+		sRtTmpParam.multisampleMode = SCE_GXM_MULTISAMPLE_4X;
 	}
 	else
 	{
@@ -1202,7 +1202,7 @@ IMG_INTERNAL IMG_BOOL KEGL_SGXResizeRenderSurface(SrvSysContext		*psSysContext,
 			sAddRenderTarget.ui16MSAASamplesInY = 2;
 			sAddRenderTarget.eForceScalingInX = SGX_SCALING_NONE;
 			sAddRenderTarget.eForceScalingInY = SGX_SCALING_NONE;
-			sRtTmpParam.multisampleMode = SCE_GXM_MULTISAMPLE_2X;
+			sRtTmpParam.multisampleMode = SCE_GXM_MULTISAMPLE_4X;
 
 			ui32RTIndex = EGL_RENDER_TARGET_AA_INDEX;
 		}
@@ -1394,7 +1394,7 @@ IMG_INTERNAL IMG_BOOL KEGL_SGXAwakeRenderSurface(SrvSysContext		*psSysContext,
 		ui32MultiSample = 2;
 
 		ui32RTIndex = EGL_RENDER_TARGET_AA_INDEX;
-		sRtTmpParam.multisampleMode = SCE_GXM_MULTISAMPLE_2X;
+		sRtTmpParam.multisampleMode = SCE_GXM_MULTISAMPLE_4X;
 	}
 	else
 	{
@@ -1473,7 +1473,7 @@ IMG_INTERNAL IMG_BOOL KEGL_SGXAwakeRenderSurface(SrvSysContext		*psSysContext,
 			sAddRenderTarget.ui16MSAASamplesInY = 2;
 			sAddRenderTarget.eForceScalingInX = SGX_SCALING_NONE;
 			sAddRenderTarget.eForceScalingInY = SGX_SCALING_NONE;
-			sRtTmpParam.multisampleMode = SCE_GXM_MULTISAMPLE_2X;
+			sRtTmpParam.multisampleMode = SCE_GXM_MULTISAMPLE_4X;
 
 			ui32RTIndex = EGL_RENDER_TARGET_AA_INDEX;
 		}
