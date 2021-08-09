@@ -226,7 +226,7 @@ static IMG_VOID FreeVertexArrayObjectInternalPointers(GLES1Context *gc, GLES1Ver
 	/* Free VAO's psPDSVertexState */
 	if (psVAO->psPDSVertexState != IMG_NULL)
 	{
-	    GLES1Free(gc, psVAO->psPDSVertexState);
+	    GLES1Free(IMG_NULL, psVAO->psPDSVertexState);
 
 		psVAO->psPDSVertexState = IMG_NULL;
 	}
@@ -234,7 +234,7 @@ static IMG_VOID FreeVertexArrayObjectInternalPointers(GLES1Context *gc, GLES1Ver
 	/* Free VAO's psPDSVertexShaderProgram */
 	if (psVAO->psPDSVertexShaderProgram != IMG_NULL)
 	{
-	    GLES1Free(gc, psVAO->psPDSVertexShaderProgram);
+	    GLES1Free(IMG_NULL, psVAO->psPDSVertexShaderProgram);
 
 		psVAO->psPDSVertexShaderProgram = IMG_NULL;
 	}
@@ -325,7 +325,7 @@ static IMG_VOID FreeVertexArrayObject(GLES1Context *gc, GLES1VertexArrayObject *
 	/* Remove VAO's KRM resource */
 	KRM_RemoveResourceFromAllLists(&gc->sVAOKRM, &psVAO->sResource);
 	
-	GLES1Free(gc, psVAO);
+	GLES1Free(IMG_NULL, psVAO);
 }
 
 

@@ -80,7 +80,7 @@ IMG_INTERNAL IMG_VOID StartUpMemSpeedTest(GLES1Context *gc)
 
 	if (!pui32RealHostBuffer2)
 	{
-		GLES1Free(gc, pui32RealHostBuffer1);
+		GLES1Free(IMG_NULL, pui32RealHostBuffer1);
 		PVR_DPF((PVR_DBG_ERROR,"StartUpMemSpeedTest: Failed host alloc 2 - aborting test"));
 		return;
 	}
@@ -176,8 +176,8 @@ IMG_INTERNAL IMG_VOID StartUpMemSpeedTest(GLES1Context *gc)
 
 	PVR_TRACE((szTempBuffer));
 
-	GLES1Free(gc, pui32RealHostBuffer1);
-	GLES1Free(gc, pui32RealHostBuffer2);
+	GLES1Free(IMG_NULL, pui32RealHostBuffer1);
+	GLES1Free(IMG_NULL, pui32RealHostBuffer2);
 }
 
 #endif /* #if defined(TIMING) */

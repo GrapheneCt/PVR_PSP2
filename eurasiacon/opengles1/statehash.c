@@ -108,7 +108,7 @@ IMG_INTERNAL IMG_VOID HashTableDestroy(GLES1Context *gc, HashTable *psHashTable)
 	}
 
 	/* Finally free the table of HashEntry pointers */
-	GLES1Free(gc, psHashTable->psTable);
+	GLES1Free(IMG_NULL, psHashTable->psTable);
 }
 
 
@@ -242,10 +242,10 @@ static IMG_VOID HashTableDeleteUnsafe(GLES1Context *gc, HashTable *psHashTable, 
 
 	if(psHashEntry->pui32HashKey)
 	{
-		GLES1Free(gc, psHashEntry->pui32HashKey);
+		GLES1Free(IMG_NULL, psHashEntry->pui32HashKey);
 	}
 
-	GLES1Free(gc, psHashEntry);
+	GLES1Free(IMG_NULL, psHashEntry);
 
 	psHashTable->ui32NumEntries--;
 }

@@ -57,7 +57,6 @@
 		#define GLES1Malloc(X,Y)	(IMG_VOID*)malloc(Y)
 		#define GLES1Calloc(X,Y)	(IMG_VOID*)calloc(1, Y)
 		#define GLES1Realloc(X,Y,Z)	(IMG_VOID*)realloc(Y, Z)
-		#define GLES1Free(X,Y)				   free(Y)
 
 	#endif /* DEBUG */
 

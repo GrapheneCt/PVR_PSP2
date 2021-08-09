@@ -273,7 +273,7 @@ static IMG_VOID FreeBufferObject(GLES1Context *gc, GLESBufferObject *psBufObj, I
 
 	KRM_RemoveResourceFromAllLists(&gc->psSharedState->sBufferObjectKRM, &psBufObj->sResource);
 
-	GLES1Free(gc, psBufObj);
+	GLES1Free(IMG_NULL, psBufObj);
 }
 
 

@@ -49,7 +49,13 @@ IMG_INTERNAL IMG_VOID WaitForTA(GLES1Context *gc)
 
 	GLES1_TIME_START(GLES1_TIMER_WAITING_FOR_TA_TIME);
 
-	sceGpuSignalWait(sceKernelGetTLSAddr(0x44), 1000 * GLES1_DEFAULT_WAIT_RETRIES);
+	PVRSRVPollForValue(	gc->psSysContext->psConnection,
+						gc->psSysContext->sHWInfo.sMiscInfo.hOSGlobalEvent,
+						pui32ReadOffset,
+						gc->apsBuffers[CBUF_TYPE_VDM_CTRL_BUFFER]->ui32CommittedHWOffsetInBytes,
+						0xFFFFFFFF,
+						1000,
+						GLES1_DEFAULT_WAIT_RETRIES);
 
 #if defined(PDUMP)
 
@@ -96,7 +102,6 @@ static IMG_VOID WaitForRender(GLES1Context *gc, PVRSRV_CLIENT_SYNC_INFO *psRende
 	
     GLES1_TIME_START(GLES1_TIMER_WAITING_FOR_3D_TIME);
 
-	// TODOPSP2: will this even work?
 	while(SGX2DQueryBlitsComplete(&gc->psSysContext->s3D, psRenderSurfaceSyncInfo, IMG_FALSE) != PVRSRV_OK)
 	{
 		if(!ui32TriesLeft)
@@ -2025,7 +2030,7 @@ skip_zs_alloc:
 
 						*ppsFlushList = (*ppsFlushList)->psNext;
 
-						GLES1Free(gc, psItem);
+						GLES1Free(IMG_NULL, psItem);
 
 						bFound = IMG_TRUE;
 					}

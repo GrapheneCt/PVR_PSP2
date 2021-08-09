@@ -81,7 +81,7 @@ IMG_INTERNAL PVRSRV_ERROR FreeTexStreamState(GLES1Context *gc)
 		
 		if(psBufferDevice->psBuffer)
 		{
-			GLES1Free(gc, psBufferDevice->psBuffer);
+			GLES1Free(IMG_NULL, psBufferDevice->psBuffer);
 		}
 
 		/* close the 3rd party buffer API */
@@ -96,8 +96,8 @@ IMG_INTERNAL PVRSRV_ERROR FreeTexStreamState(GLES1Context *gc)
 		psPreviousDevice = psBufferDevice;
 		psBufferDevice = psBufferDevice->psNext;
 
-		GLES1Free(gc, psPreviousDevice->psExtTexState);
-		GLES1Free(gc, psPreviousDevice);
+		GLES1Free(IMG_NULL, psPreviousDevice->psExtTexState);
+		GLES1Free(IMG_NULL, psPreviousDevice);
 	}
 
 	return PVRSRV_OK;
@@ -271,7 +271,7 @@ static IMG_BOOL AddBufferDevice(GLES1Context *gc, IMG_UINT32 device, GLES1Stream
 		}
 	}
 
-	GLES1Free(gc, pui32DeviceID);
+	GLES1Free(IMG_NULL, pui32DeviceID);
 
 	pui32DeviceID = IMG_NULL;
 
@@ -368,20 +368,20 @@ ErrorCase:
 			}
 		}
 
-		GLES1Free(gc, psBufferDevice->psBuffer);
+		GLES1Free(IMG_NULL, psBufferDevice->psBuffer);
 	}	
 
 	if (pui32DeviceID)
 	{
-		GLES1Free(gc,pui32DeviceID);
+		GLES1Free(IMG_NULL,pui32DeviceID);
 	}
 	if (psBufferDevice->psExtTexState)
 	{
-		GLES1Free(gc, psBufferDevice->psExtTexState);
+		GLES1Free(IMG_NULL, psBufferDevice->psExtTexState);
 		psBufferDevice->psExtTexState = IMG_NULL;
 	}
 
-	GLES1Free(gc, psBufferDevice);
+	GLES1Free(IMG_NULL, psBufferDevice);
 
 	return IMG_FALSE;
 }

@@ -92,7 +92,7 @@ static IMG_VOID IMG_CALLCONV FFGENFree(IMG_HANDLE hHandle, IMG_VOID *pvData)
 {
 	PVR_UNREFERENCED_PARAMETER(hHandle);
 
-	GLES1Free((GLES1Context *) hHandle, pvData);
+	GLES1Free(IMG_NULL, pvData);
 }
 
 
@@ -140,12 +140,12 @@ IMG_INTERNAL IMG_VOID DestroyFFTNLCode(GLES1Context *gc, IMG_UINT32 ui32Item)
 #if defined(FFGEN_UNIFLEX)
 	if(psFFTNLProgram->pui32UFConstantData)
 	{
-		GLES1Free(gc, psFFTNLProgram->pui32UFConstantData);
+		GLES1Free(IMG_NULL, psFFTNLProgram->pui32UFConstantData);
 	}
 
 	if(psFFTNLProgram->pui32UFConstantDest)
 	{
-		GLES1Free(gc, psFFTNLProgram->pui32UFConstantDest);
+		GLES1Free(IMG_NULL, psFFTNLProgram->pui32UFConstantDest);
 	}
 #endif /* defined(FFGEN_UNIFLEX) */
 
@@ -1997,7 +1997,7 @@ static IMG_BOOL CompileFFGenUniFlexCode(GLES1Context *gc, FFGenProgram *psFFTNLP
 		psInstructionToFree  = psUniFlexInstruction;
 		psUniFlexInstruction = psUniFlexInstruction->psILink;
 
-		GLES1Free(gc, psInstructionToFree);
+		GLES1Free(IMG_NULL, psInstructionToFree);
 	}
 
 	psFFTNLProgram->psUniFlexInst = IMG_NULL;
@@ -2773,7 +2773,7 @@ IMG_INTERNAL GLES1_MEMERROR SetupFFTNLShader(GLES1Context *gc)
 	
 		if(!psVertexShader)
 		{
-			GLES1Free(gc, psFFTNLGenDesc);
+			GLES1Free(IMG_NULL, psFFTNLGenDesc);
 
 			PVR_DPF((PVR_DBG_FATAL,"SetupUSEVertexShader: Failed to allocate shader memory"));
 
@@ -2783,9 +2783,9 @@ IMG_INTERNAL GLES1_MEMERROR SetupFFTNLShader(GLES1Context *gc)
 		/* gets program code, constants and outputselects  */
 		if(SetupFFTNLShaderCode(gc, psVertexShader, (IMG_UINT32) tFFTNLHashValue, psFFTNLGenDesc) != GLES1_NO_ERROR)
 		{
-			GLES1Free(gc, psVertexShader);
+			GLES1Free(IMG_NULL, psVertexShader);
 
-			GLES1Free(gc, psFFTNLGenDesc);
+			GLES1Free(IMG_NULL, psFFTNLGenDesc);
 
 			PVR_DPF((PVR_DBG_FATAL,"SetupFFTNLShader: Failed to create FFTNL shader code"));
 

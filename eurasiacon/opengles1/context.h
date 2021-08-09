@@ -615,8 +615,24 @@ __inline IMG_VOID *GLES1CallocHeapUNC(GLES1Context *gc, unsigned int size)
 	return ret;
 }
 #define GLES1ReallocHeapUNC(X,Y,Z)	(IMG_VOID*)sceHeapReallocHeapMemory(X->pvUNCHeap, Y, Z)
-#define GLES1FreeHeapUNC(X,Y)				   sceHeapFreeHeapMemory(X->pvUNCHeap, Y)
-#define GLES1FreeHeapAsyncUNC(X,Y)			   texOpAsyncAddForCleanup(X, Y)
+#define GLES1FreeAsync(X,Y)					   texOpAsyncAddForCleanup(X, Y)
+__inline IMG_VOID GLES1Free(GLES1Context *gc, void *mem)
+{
+	if (gc)
+	{
+		if (sceHeapFreeHeapMemory(gc->pvUNCHeap, mem) == SCE_HEAP_ERROR_INVALID_POINTER)
+		{
+			if (sceHeapFreeHeapMemory(gc->pvCDRAMHeap, mem) == SCE_HEAP_ERROR_INVALID_POINTER)
+			{
+				free(mem);
+			}
+		}
+	}
+	else
+	{
+		free(mem);
+	}
+}
 
 
 #define GLES1MallocHeapCDRAM(X,Y)	(IMG_VOID*)sceHeapAllocHeapMemory(X->pvCDRAMHeap, Y)
@@ -634,7 +650,6 @@ __inline IMG_VOID *GLES1CallocHeapCDRAM(GLES1Context *gc, unsigned int size)
 	return ret;
 }
 #define GLES1ReallocHeapCDRAM(X,Y,Z)	(IMG_VOID*)sceHeapReallocHeapMemory(X->pvCDRAMHeap, Y, Z)
-#define GLES1FreeHeapCDRAM(X,Y)				   sceHeapFreeHeapMemory(X->pvCDRAMHeap, Y)
 
 
 __inline PVRSRV_ERROR GLES1ALLOCDEVICEMEM_HEAP(GLES1Context *gc, IMG_UINT32 ui32Attribs, IMG_UINT32 ui32Size, IMG_UINT32 ui32Alignment, PVRSRV_CLIENT_MEM_INFO **ppsMemInfo)
@@ -652,10 +667,10 @@ __inline PVRSRV_ERROR GLES1ALLOCDEVICEMEM_HEAP(GLES1Context *gc, IMG_UINT32 ui32
 		return PVRSRV_ERROR_OUT_OF_MEMORY;
 	}
 
-	psMemInfo = GLES1Malloc(gc, sizeof(PVRSRV_CLIENT_MEM_INFO));
+	psMemInfo = GLES1Calloc(gc, sizeof(PVRSRV_CLIENT_MEM_INFO));
 	if (!psMemInfo)
 	{
-		GLES1FreeHeapCDRAM(gc, mem);
+		GLES1Free(gc, mem);
 		return PVRSRV_ERROR_OUT_OF_MEMORY;
 	}
 
@@ -688,12 +703,8 @@ __inline PVRSRV_ERROR GLES1FREEDEVICEMEM_HEAP(GLES1Context *gc, PVRSRV_CLIENT_ME
 		PVRSRVFreeSyncInfo(gc->ps3DDevData, psMemInfo->psClientSyncInfo);
 	}
 
-	if (psMemInfo->ui32Flags & PVRSRV_MAP_GC_MMU)
-		GLES1FreeHeapCDRAM(gc, psMemInfo->pvLinAddr);
-	else
-		GLES1FreeHeapUNC(gc, psMemInfo->pvLinAddr);
-
-	GLES1Free(gc, psMemInfo);
+	GLES1Free(gc, psMemInfo->pvLinAddr);
+	GLES1Free(IMG_NULL, psMemInfo);
 
 	return PVRSRV_OK;
 }

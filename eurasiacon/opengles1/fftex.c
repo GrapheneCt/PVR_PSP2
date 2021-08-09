@@ -455,15 +455,15 @@ IMG_INTERNAL IMG_VOID DestroyHashedBlendState(GLES1Context *gc, IMG_UINT32 ui32I
 		{
 			if(psFFTBProgramDesc->psFFGENProgramDetails->pui32Instructions)
 			{
-				GLES1Free(gc, psFFTBProgramDesc->psFFGENProgramDetails->pui32Instructions);
+				GLES1Free(IMG_NULL, psFFTBProgramDesc->psFFGENProgramDetails->pui32Instructions);
 			}
 
-			GLES1Free(gc, psFFTBProgramDesc->psFFGENProgramDetails);
+			GLES1Free(IMG_NULL, psFFTBProgramDesc->psFFGENProgramDetails);
 		}
 
 		FreeUSEASMInstructionList(gc, &psFFTBProgramDesc->sUSEASMInfo);
 
-		GLES1Free(gc, psFFTBProgramDesc);
+		GLES1Free(IMG_NULL, psFFTBProgramDesc);
 	}
 
 	/* Unlink shader */
@@ -555,7 +555,7 @@ static GLES1_MEMERROR ReuseHashedBlendState(GLES1Context			*gc,
 
 		if(!psFFTBProgramDesc)
 		{
-			GLES1Free(gc, pui32HashData);
+			GLES1Free(IMG_NULL, pui32HashData);
 
 			PVR_DPF((PVR_DBG_ERROR,"ReuseHashedBlendState: malloc() failed"));
 
@@ -568,7 +568,7 @@ static GLES1_MEMERROR ReuseHashedBlendState(GLES1Context			*gc,
 		{
 			PVR_DPF((PVR_DBG_ERROR,"ReuseHashedBlendState: malloc() failed"));
 
-			GLES1Free(gc, psFFTBProgramDesc);
+			GLES1Free(IMG_NULL, psFFTBProgramDesc);
 
 			return GLES1_GENERAL_MEM_ERROR;
 		}
@@ -582,8 +582,8 @@ static GLES1_MEMERROR ReuseHashedBlendState(GLES1Context			*gc,
 		{
 			PVR_DPF((PVR_DBG_ERROR,"ReuseHashedBlendState: CreateIntegerFragmentProgramFromFF failed"));
 
-			GLES1Free(gc, psFFTBProgramDesc);
-			GLES1Free(gc, psFragmentShader);
+			GLES1Free(IMG_NULL, psFFTBProgramDesc);
+			GLES1Free(IMG_NULL, psFragmentShader);
 			return GLES1_GENERAL_MEM_ERROR;
 		}
 

@@ -1843,7 +1843,7 @@ IMG_INTERNAL GLES1_MEMERROR SetupUSEVertexShader(GLES1Context *gc, IMG_BOOL *pbP
 
 		if(eError != GLES1_NO_ERROR)
 		{
-			GLES1Free(gc, psVertexVariant);
+			GLES1Free(IMG_NULL, psVertexVariant);
 
 			return eError;
 		}
@@ -3011,7 +3011,7 @@ IMG_INTERNAL GLES1_MEMERROR SetupUSEFragmentShader(GLES1Context *gc, IMG_BOOL *p
 			
 			if(!psFragmentVariant->psCodeBlock)
 			{
-				GLES1Free(gc, psFragmentVariant);
+				GLES1Free(IMG_NULL, psFragmentVariant);
 
 				return GLES1_3D_USECODE_ERROR;
 			}

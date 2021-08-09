@@ -1733,7 +1733,7 @@ IMG_INTERNAL IMG_VOID FreeTransformState(GLES1Context *gc)
 
 	if(gc->sTransform.psModelViewStack)
 	{
-		GLES1Free(gc, gc->sTransform.psModelViewStack);
+		GLES1Free(IMG_NULL, gc->sTransform.psModelViewStack);
 
 		gc->sTransform.psModelViewStack = IMG_NULL;
 	}
@@ -1741,7 +1741,7 @@ IMG_INTERNAL IMG_VOID FreeTransformState(GLES1Context *gc)
 #if defined(GLES1_EXTENSION_MATRIX_PALETTE)
 	if (gc->sTransform.psMatrixPalette)
 	{
-		GLES1Free(gc, gc->sTransform.psMatrixPalette);
+		GLES1Free(IMG_NULL, gc->sTransform.psMatrixPalette);
 
 		gc->sTransform.psMatrixPalette = IMG_NULL;
 	}
@@ -1749,7 +1749,7 @@ IMG_INTERNAL IMG_VOID FreeTransformState(GLES1Context *gc)
 
 	if(gc->sTransform.psProjectionStack)
 	{
-		GLES1Free(gc, gc->sTransform.psProjectionStack);
+		GLES1Free(IMG_NULL, gc->sTransform.psProjectionStack);
 
 		gc->sTransform.psProjectionStack = IMG_NULL;
 	}
@@ -1758,7 +1758,7 @@ IMG_INTERNAL IMG_VOID FreeTransformState(GLES1Context *gc)
 	{
 		if(gc->sTransform.apsTextureStack[i])
 		{
-			GLES1Free(gc, gc->sTransform.apsTextureStack[i]);
+			GLES1Free(IMG_NULL, gc->sTransform.apsTextureStack[i]);
 
 			gc->sTransform.apsTextureStack[i] = IMG_NULL;
 		}

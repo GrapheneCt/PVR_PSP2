@@ -3578,7 +3578,7 @@ bad_op:
 						      ui32SrcRowSize, psMipLevel, IMG_TRUE);
 			TranslateLevel(gc, psTex, 0, 0);
 
-			GLES1FreeHeapAsyncUNC(gc, psMipLevel->pui8Buffer);
+			GLES1FreeAsync(gc, psMipLevel->pui8Buffer);
 
 			psMipLevel->pui8Buffer = GLES1_LOADED_LEVEL;
 
@@ -3819,7 +3819,7 @@ bad_op:
 					}
 				}
 					
-				GLES1FreeHeapAsyncUNC(gc, pui8SubTexBuffer);
+				GLES1FreeAsync(gc, pui8SubTexBuffer);
 			}
 		}
 
@@ -5140,7 +5140,7 @@ bad_op:
 
 			if(pvSurfacePointer!=psReadParams->pvLinSurfaceAddress)
 			{
-				GLES1Free(gc, pvSurfacePointer);
+				GLES1Free(IMG_NULL, pvSurfacePointer);
 			}
 		}
 
@@ -5716,13 +5716,13 @@ bad_op:
 
 		TranslateLevel(gc, psTex, 0, 0);
 
-		GLES1FreeHeapAsyncUNC(gc, psMipLevel->pui8Buffer);
+		GLES1FreeAsync(gc, psMipLevel->pui8Buffer);
 
 		psMipLevel->pui8Buffer = GLES1_LOADED_LEVEL;
 
 		if(pvSurfacePointer!=psReadParams->pvLinSurfaceAddress)
 		{
-			GLES1Free(gc, pvSurfacePointer);
+			GLES1Free(IMG_NULL, pvSurfacePointer);
 		}
 
 		PVRSRVUnlockMutex(gc->psSharedState->hTertiaryLock);
@@ -6161,7 +6161,7 @@ bad_op:
 					}
 				}
 
-				GLES1FreeHeapAsyncUNC(gc, pui8SubTexBuffer);
+				GLES1FreeAsync(gc, pui8SubTexBuffer);
 			}
 
 			/* otherwise, use the software copy subtexture uploading:
@@ -6260,7 +6260,7 @@ bad_op:
 
 	if(pvSurfacePointer!=psReadParams->pvLinSurfaceAddress)
 	{
-		GLES1Free(gc, pvSurfacePointer);
+		GLES1Free(IMG_NULL, pvSurfacePointer);
 	}
 
 	GLES1_INC_PIXEL_COUNT(GLES1_TIMES_glCopyTexSubImage2D, width*height);

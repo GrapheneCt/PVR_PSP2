@@ -1416,7 +1416,7 @@ static IMG_VOID DrawBatchOnVBuffer(GLES1Context *gc, GLenum eMode, IMG_UINT32 ui
 
 			} while(ui32IndexStart + ui32RewindCount < ui32CountIn);
 
-			GLES1Free(gc, pui16Tmpindex);
+			GLES1Free(IMG_NULL, pui16Tmpindex);
 
 			break;
 		}
@@ -1585,7 +1585,7 @@ static PFNDrawVArray PickDrawElementsProc(GLES1Context *gc, GLenum eMode, GLenum
 			{
 				PVR_DPF((PVR_DBG_WARNING,"PickDrawElementsProc: Resized dynamic vertex buffer. Was %u bytes, now %u bytes", 
 					gc->apsBuffers[CBUF_TYPE_VERTEX_DATA_BUFFER]->ui32BufferLimitInBytes, psBuffer->ui32BufferLimitInBytes));
-				
+
 				CBUF_DestroyBuffer(gc->ps3DDevData, gc->apsBuffers[CBUF_TYPE_VERTEX_DATA_BUFFER]);
 
 				gc->apsBuffers[CBUF_TYPE_VERTEX_DATA_BUFFER] = psBuffer;	
@@ -1811,7 +1811,7 @@ static IMG_UINT16* TransformIndicesTo16Bits(GLES1Context *gc, IMG_UINT32 ui32Cou
 	else
 	{
 		PVR_DPF((PVR_DBG_MESSAGE,"TransformIndicesTo16Bits: Unsupported index type 0x%X", eType));
-		GLES1Free(gc, pui16OutIndices);
+		GLES1Free(IMG_NULL, pui16OutIndices);
 		pui16OutIndices = IMG_NULL;
 	}
 
@@ -2610,7 +2610,7 @@ bad_enum:
 
 	if(bIndicesWerePromoted) 
 	{
-		GLES1Free(gc, pui16NewElements);
+		GLES1Free(IMG_NULL, pui16NewElements);
 	}
 
 	/*
@@ -2984,7 +2984,7 @@ static IMG_VOID MultiDrawBatchOnVBuffer(GLES1Context *gc, GLenum eMode, IMG_UINT
 
 				} while(ui32IndexStart + ui32RewindCount < pui32CountIn[i]);
 
-				GLES1Free(gc, pui16Tmpindex);
+				GLES1Free(IMG_NULL, pui16Tmpindex);
 
 				break;
 			}
@@ -3175,7 +3175,7 @@ static IMG_VOID MultiDrawElementsDeindex(GLES1Context *gc, GLenum eMode, IMG_UIN
 		ui32Offset += pui32Count[i];
 	}
 
-	GLES1Free(gc, pui16DeIndices);
+	GLES1Free(IMG_NULL, pui16DeIndices);
 }
 
 
@@ -3624,7 +3624,7 @@ bad_value:
 						  ui32MinFirst, ui32MaxCount, (IMG_UINT32)primcount);
 
 
-	GLES1Free(gc, pui32ActualCount);		
+	GLES1Free(IMG_NULL, pui32ActualCount);
 
 	/*
 		Update vertex and index buffers committed primitive offset
@@ -3949,7 +3949,7 @@ bad_value:
 		
 		for(i = 0; i < ui32ActualPrimCount; i++)
 		{
-			GLES1Free(gc, (IMG_VOID *)((IMG_UINTPTR_T)(ppvElements[i])));
+			GLES1Free(IMG_NULL, (IMG_VOID *)((IMG_UINTPTR_T)(ppvElements[i])));
 		}
 	}
 	else if ((VAO_INDEX_BUFFER_OBJECT(gc)) && (pfnMultiDrawElements != MultiDrawElementsIndexBO))
@@ -3999,17 +3999,17 @@ StopTimerAndReturn:
 
 	if(ppvElements)
 	{
-		GLES1Free(gc, (IMG_VOID*) ppvElements);		
+		GLES1Free(IMG_NULL, (IMG_VOID*) ppvElements);
 	}
 
 	if(ppvActualIndices)
 	{
-		GLES1Free(gc, (IMG_VOID*) ppvActualIndices);		
+		GLES1Free(IMG_NULL, (IMG_VOID*) ppvActualIndices);
 	}
 
 	if(pui32ActualCount)
 	{
-		GLES1Free(gc, pui32ActualCount);		
+		GLES1Free(IMG_NULL, pui32ActualCount);
 	}
 
 	GLES1_TIME_STOP(GLES1_TIMER_ELEMENT_POINTS_TIME+mode);

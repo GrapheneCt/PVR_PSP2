@@ -87,7 +87,7 @@ static IMG_BOOL FlushUnflushedTextureRenders(GLES1Context *gc, GLESTexture *psTe
 			{
 				*ppsFlushList = psFlushItem->psNext;
 
-				GLES1Free(gc, psFlushItem);
+				GLES1Free(IMG_NULL, psFlushItem);
 
 				/*
 				 * Remove remaining references to the same render surface
@@ -100,7 +100,7 @@ static IMG_BOOL FlushUnflushedTextureRenders(GLES1Context *gc, GLESTexture *psTe
 					{
 						*ppsFlushList = psFlushItem->psNext;
 
-						GLES1Free(gc, psFlushItem);
+						GLES1Free(IMG_NULL, psFlushItem);
 					}
 					else
 					{
@@ -203,7 +203,7 @@ static IMG_VOID TexStreamUnbindBufferDevice(GLES1Context *gc, IMG_VOID *hBufferD
 
 			if (psBufferDevice->psBuffer)
 			{
-				GLES1Free(gc, psBufferDevice->psBuffer);
+				GLES1Free(IMG_NULL, psBufferDevice->psBuffer);
 			}
 
 			eError = PVRSRVCloseBCDevice(gc->psSysContext->psConnection, psBufferDevice->hBufferDevice);
@@ -237,11 +237,11 @@ static IMG_VOID TexStreamUnbindBufferDevice(GLES1Context *gc, IMG_VOID *hBufferD
 			}
 			gc->psBufferDevice = psHeadGCBufferDevice;
 
-			GLES1Free(gc, psBufferDevice->psExtTexState);
+			GLES1Free(IMG_NULL, psBufferDevice->psExtTexState);
 
 
 			/* Free and reinitialise this buffer device node */
-			GLES1Free(gc, psBufferDevice);		
+			GLES1Free(IMG_NULL, psBufferDevice);
 				
 			psBufferDevice = IMG_NULL;
 		}
@@ -380,7 +380,7 @@ static IMG_VOID DestroyTextureGhostKRM(IMG_VOID *pvContext, KRMResource *psResou
 	
 	gc->psSharedState->psTextureManager->ui32GhostMem -= psGhost->ui32Size;
 
-	GLES1Free(gc, psGhost);
+	GLES1Free(IMG_NULL, psGhost);
 }
 
 
@@ -1094,7 +1094,7 @@ IMG_INTERNAL IMG_BOOL TextureMakeResident(GLES1Context *gc, GLESTexture *psTex)
 #if (defined(DEBUG) || defined(TIMING))
 					ui32TextureMemCurrent -= psMipLevel->ui32ImageSize;
 #endif					
-					GLES1FreeHeapAsyncUNC(gc, psMipLevel->pui8Buffer);
+					GLES1FreeAsync(gc, psMipLevel->pui8Buffer);
 
 					psMipLevel->pui8Buffer = GLES1_LOADED_LEVEL;
 				}
@@ -1532,7 +1532,7 @@ IMG_INTERNAL IMG_BOOL TextureCreatePBufferLevel(GLES1Context *gc, GLESTexture *p
 		if (psMipLevel->pui8Buffer != NULL && psMipLevel->pui8Buffer != GLES1_LOADED_LEVEL)
 		{
 			PVR_UNREFERENCED_PARAMETER(gc);
-			GLES1FreeHeapAsyncUNC(gc, psMipLevel->pui8Buffer);
+			GLES1FreeAsync(gc, psMipLevel->pui8Buffer);
 		}
 
 		psMipLevel->pui8Buffer		 = IMG_NULL;
@@ -1650,7 +1650,7 @@ IMG_INTERNAL IMG_BOOL TextureCreateImageLevel(GLES1Context *gc, GLESTexture *psT
 		if (psMipLevel->pui8Buffer != NULL && psMipLevel->pui8Buffer != GLES1_LOADED_LEVEL)
 		{
 			PVR_UNREFERENCED_PARAMETER(gc);
-			GLES1FreeHeapAsyncUNC(gc, psMipLevel->pui8Buffer);
+			GLES1FreeAsync(gc, psMipLevel->pui8Buffer);
 		}
 
 		psMipLevel->pui8Buffer		 = IMG_NULL;
@@ -2004,6 +2004,7 @@ IMG_INTERNAL IMG_UINT8*  TextureCreateLevel(GLES1Context *gc, GLESTexture *psTex
 	IMG_UINT32 ui32BufferWidth, ui32BufferHeight;
 	GLESMipMapLevel *psMipLevel = &psTex->psMipLevel[ui32Level];
 	IMG_UINT32 ui32Lod = (ui32Level % GLES1_MAX_TEXTURE_MIPMAP_LEVELS);
+	IMG_BOOL bUseCachedMemory = IMG_FALSE;
 
 	ui32BaseWidth = ui32Width * (1UL << ui32Lod);
 	ui32BaseHeight = ui32Height * (1UL << ui32Lod);
@@ -2022,6 +2023,7 @@ IMG_INTERNAL IMG_UINT8*  TextureCreateLevel(GLES1Context *gc, GLESTexture *psTex
 		{
 			ui32BufferWidth = MAX(ui32BufferWidth >> 3, 1);
 			ui32BufferHeight = MAX(ui32BufferHeight >> 2, 1);
+			bUseCachedMemory = IMG_TRUE;
 
 			break;
 		}
@@ -2030,6 +2032,7 @@ IMG_INTERNAL IMG_UINT8*  TextureCreateLevel(GLES1Context *gc, GLESTexture *psTex
 		{
 			ui32BufferWidth = MAX(ui32BufferWidth >> 2, 1);
 			ui32BufferHeight = MAX(ui32BufferHeight >> 2, 1);
+			bUseCachedMemory = IMG_TRUE;
 
 			break;
 		}
@@ -2039,6 +2042,7 @@ IMG_INTERNAL IMG_UINT8*  TextureCreateLevel(GLES1Context *gc, GLESTexture *psTex
 		{
 			ui32BufferWidth = MAX(ui32BufferWidth >> 2, 1);
 			ui32BufferHeight = MAX(ui32BufferHeight >> 2, 1);
+			bUseCachedMemory = IMG_TRUE;
 
 			break;
 		}
@@ -2062,7 +2066,14 @@ IMG_INTERNAL IMG_UINT8*  TextureCreateLevel(GLES1Context *gc, GLESTexture *psTex
 	{
 		if (psMipLevel->pui8Buffer != GLES1_LOADED_LEVEL)
 		{
-			pui8Buffer = (IMG_UINT8 *) GLES1ReallocHeapUNC(gc, psMipLevel->pui8Buffer, ui32BufferSize);
+			if (!bUseCachedMemory)
+			{
+				pui8Buffer = (IMG_UINT8 *)GLES1ReallocHeapUNC(gc, psMipLevel->pui8Buffer, ui32BufferSize);
+			}
+			else
+			{
+				pui8Buffer = (IMG_UINT8 *)GLES1Realloc(gc, psMipLevel->pui8Buffer, ui32BufferSize);
+			}
 		
 			if (pui8Buffer == IMG_NULL) 
 			{
@@ -2084,7 +2095,14 @@ no_memory:
 		}
 		else
 		{
-			pui8Buffer = (IMG_UINT8 *) GLES1MallocHeapUNC(gc, ui32BufferSize);
+			if (!bUseCachedMemory)
+			{
+				pui8Buffer = (IMG_UINT8 *)GLES1MallocHeapUNC(gc, ui32BufferSize);
+			}
+			else
+			{
+				pui8Buffer = (IMG_UINT8 *)GLES1Malloc(gc, ui32BufferSize);
+			}
 
 			if (pui8Buffer == IMG_NULL) 
 			{
@@ -2123,7 +2141,7 @@ no_memory:
 #if (defined(DEBUG) || defined(TIMING))
 			ui32TextureMemCurrent -= psMipLevel->ui32ImageSize;
 #endif
-			GLES1FreeHeapAsyncUNC(gc, psMipLevel->pui8Buffer);
+			GLES1FreeAsync(gc, psMipLevel->pui8Buffer);
 		}
 
 		psMipLevel->pui8Buffer = IMG_NULL;
@@ -2234,7 +2252,7 @@ IMG_INTERNAL GLESTexture *CreateTexture(GLES1Context *gc, IMG_UINT32 ui32Name,
 
 	if(psTex->psMipLevel == IMG_NULL)
 	{
-		GLES1Free(gc, psTex);
+		GLES1Free(IMG_NULL, psTex);
 		return IMG_NULL;
 	}
 
@@ -2290,13 +2308,13 @@ static IMG_VOID FreeTexture(GLES1Context *gc, GLESTexture *psTex)
 #if (defined(DEBUG) || defined(TIMING))
 			ui32TextureMemCurrent -= psMipLevel->ui32ImageSize;
 #endif
-			GLES1FreeHeapAsyncUNC(gc, psMipLevel->pui8Buffer);
+			GLES1FreeAsync(gc, psMipLevel->pui8Buffer);
 
 			psMipLevel->pui8Buffer = IMG_NULL;
 		}
 	}
 
-	GLES1Free(gc, psTex->psMipLevel);
+	GLES1Free(IMG_NULL, psTex->psMipLevel);
 
 	psTex->psMipLevel = IMG_NULL;
 
@@ -2376,13 +2394,13 @@ static IMG_VOID FreeTexture(GLES1Context *gc, GLESTexture *psTex)
 	/*FIXME: Ghosting? */
 	if (psTex->psExtTexState)
 	{
-		GLES1Free(gc, psTex->psExtTexState);
+		GLES1Free(IMG_NULL, psTex->psExtTexState);
 		psTex->psExtTexState = IMG_NULL;
 	}
 #endif
 
 
-	GLES1Free(gc, psTex);
+	GLES1Free(IMG_NULL, psTex);
 }
 
 /***********************************************************************************
@@ -2780,7 +2798,7 @@ IMG_INTERNAL IMG_VOID ReleaseTextureManager(GLES1Context *gc, GLES1TextureManage
 
 	/* Destroy the manager itself */
 	KRM_Destroy(gc, &psTexMgr->sKRM);
-	GLES1Free(gc, psTexMgr);
+	GLES1Free(IMG_NULL, psTexMgr);
 }
 
 

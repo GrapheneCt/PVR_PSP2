@@ -881,7 +881,13 @@ IMG_INTERNAL IMG_BOOL KEGL_SGXDestroyRenderSurface(SrvSysContext *psSysContext, 
 	IMG_BOOL bUnused;
 
 	/* Wait for operations on the surface to complete */
-	if(sceGpuSignalWait(sceKernelGetTLSAddr(0x44), 1000000) != PVRSRV_OK)
+	if(PVRSRVPollForValue(psSysContext->psConnection,
+							psSysContext->sHWInfo.sMiscInfo.hOSGlobalEvent,
+							psSurface->sPDSBuffer.pui32ReadOffset,
+							psSurface->sPDSBuffer.ui32CommittedHWOffsetInBytes,
+							0xFFFFFFFF,
+							1000,
+							1000) != PVRSRV_OK)
 	{
 		bSuccess = IMG_FALSE;
 	}

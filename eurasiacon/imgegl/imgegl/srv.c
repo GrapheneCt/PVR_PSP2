@@ -504,14 +504,14 @@ IMG_EXPORT PVRSRV_ERROR IMG_CALLCONV KEGLAllocDeviceMemTrack(SrvSysContext *psSy
 	eError = PVRSRVAllocDeviceMem(psDevData, hDevMemHeap, ui32Attribs, ui32Size, ui32Alignment, psSysContext->hPerProcRef, ppsMemInfo);
 	if(eError == PVRSRV_OK)
 	{
-		PVR_DPF((PVR_DBG_VERBOSE, "KEGLAllocDeviceMemTrack: PVRSRVAllocDeviceMem\n\nHeap handle 0x%X\nAllocation size: 0x%X\nAllocation attrib: 0x%X\n\n", hDevMemHeap, ui32Size, ui32Attribs));
-
 		psAllocation = &psSysContext->psDevMemAllocations[psSysContext->ui32CurrentAllocations];
 
 		psAllocation->psMemInfo = *ppsMemInfo;
 		psAllocation->psDevData = psDevData;
 		psAllocation->u32Line   = u32Line;
 		psAllocation->pszFile   = pszFile;
+
+		PVR_DPF((PVR_DBG_VERBOSE, "KEGLAllocDeviceMemTrack: PVRSRVAllocDeviceMem\n\nHeap handle 0x%X\nAllocation size: 0x%X\nAllocation attrib: 0x%X\nDev vaddr: 0x%X\n\n", hDevMemHeap, ui32Size, ui32Attribs, psAllocation->psMemInfo->sDevVAddr.uiAddr));
 
 		psSysContext->ui32CurrentAllocations++;
 	}
@@ -691,6 +691,8 @@ IMG_EXPORT PVRSRV_ERROR IMG_CALLCONV KEGLAllocDeviceMemPsp2(SrvSysContext *psSys
 	{
 		psMemInfo = *ppsMemInfo;
 
+		psMemInfo->psClientSyncInfo = IMG_NULL;
+
 		if (bNeedSync)
 		{
 			eError = PVRSRVAllocSyncInfo(psDevData, &psMemInfo->psClientSyncInfo);
@@ -700,10 +702,6 @@ IMG_EXPORT PVRSRV_ERROR IMG_CALLCONV KEGLAllocDeviceMemPsp2(SrvSysContext *psSys
 				ppsMemInfo = IMG_NULL;
 				return eError;
 			}
-		}
-		else
-		{
-			psMemInfo->psClientSyncInfo = IMG_NULL;
 		}
 	}
 

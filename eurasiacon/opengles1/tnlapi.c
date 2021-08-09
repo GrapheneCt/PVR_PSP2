@@ -52,7 +52,7 @@ IMG_INTERNAL IMG_BOOL InitLightingState(GLES1Context *gc)
 
 		if(!gc->sLight.psSource)
 		{
-			GLES1Free(gc, gc->sState.sLight.psSource);
+			GLES1Free(IMG_NULL, gc->sState.sLight.psSource);
 
 			return IMG_FALSE;
 		}
@@ -133,14 +133,14 @@ IMG_INTERNAL IMG_VOID FreeLightingState(GLES1Context *gc)
 {
 	if(gc->sState.sLight.psSource)
 	{
-		GLES1Free(gc, gc->sState.sLight.psSource);
+		GLES1Free(IMG_NULL, gc->sState.sLight.psSource);
 
 		gc->sState.sLight.psSource = NULL;
 	}
 
 	if(gc->sLight.psSource)
 	{
-		GLES1Free(gc, gc->sLight.psSource);
+		GLES1Free(IMG_NULL, gc->sLight.psSource);
 
 		gc->sLight.psSource = NULL;
 	}

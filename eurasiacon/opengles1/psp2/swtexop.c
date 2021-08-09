@@ -20,10 +20,10 @@ static IMG_INT32 _SWTextureUploadEntry(IMG_UINT32 arg)
 	PVRSRVModifyCompleteSyncOps(psArg->gc->psSysContext->psConnection, psArg->hOpSyncObj);
 	PVRSRVDestroySyncInfoModObj(psArg->gc->psSysContext->psConnection, psArg->hOpSyncObj);
 
-	GLES1Free(psArg->gc, psArg);
+	GLES1Free(IMG_NULL, psArg);
 	SceUltUlthread *psSelf;
 	sceUltUlthreadGetSelf(&psSelf);
-	GLES1Free(0, psSelf);
+	GLES1Free(IMG_NULL, psSelf);
 
 	return 0;
 }
@@ -41,10 +41,10 @@ static IMG_INT32 _SWTextureMipGenEntry(IMG_UINT32 arg)
 		PVRSRVDestroySyncInfoModObj(psArg->gc->psSysContext->psConnection, psArg->hOpSyncObj);
 	}
 
-	GLES1Free(psArg->gc, psArg);
+	GLES1Free(IMG_NULL, psArg);
 	SceUltUlthread *psSelf;
 	sceUltUlthreadGetSelf(&psSelf);
-	GLES1Free(0, psSelf);
+	GLES1Free(IMG_NULL, psSelf);
 
 	return 0;
 }
@@ -181,7 +181,7 @@ IMG_VOID texOpAsyncAddForCleanup(GLES1Context *gc, IMG_PVOID pvPtr)
 
 	PVR_DPF((PVR_DBG_WARNING, "texOpAsyncAddForCleanup: not enough space in free queue"));
 
-	GLES1FreeHeapUNC(gc, pvPtr);
+	GLES1Free(gc, pvPtr);
 }
 
 IMG_INT32 texOpAsyncCleanupThread(IMG_UINT32 argSize, IMG_VOID *pArgBlock)
@@ -201,7 +201,7 @@ IMG_INT32 texOpAsyncCleanupThread(IMG_UINT32 argSize, IMG_VOID *pArgBlock)
 			if (pvAsDstPtr[i] != IMG_NULL && !gc->ui32AsyncTexOpNum)
 			{
 				SGXWaitTransfer(gc->ps3DDevData, gc->psSysContext->hTransferContext);
-				GLES1FreeHeapUNC(gc, pvAsDstPtr[i]);
+				GLES1Free(gc, pvAsDstPtr[i]);
 				pvAsDstPtr[i] = IMG_NULL;
 			}
 		}

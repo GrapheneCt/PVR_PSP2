@@ -45,7 +45,7 @@ IMG_INTERNAL IMG_VOID DestroyHashedPDSVariant(GLES1Context *gc, IMG_UINT32 ui32I
 			*ppsPDSVariantList = psPDSVariant->psNext;
 			
 			UCH_CodeHeapFree(psPDSVariant->psCodeBlock);
-			GLES1Free(gc, psPDSVariant);
+			GLES1Free(IMG_NULL, psPDSVariant);
 			return;
 		}
 			
@@ -110,7 +110,7 @@ static IMG_VOID DestroyUSEShaderVariant(GLES1Context *gc, GLES1ShaderVariant *ps
 		if(psPDSVertexVariant->psCodeBlock)
 			UCH_CodeHeapFree(psPDSVertexVariant->psCodeBlock);
 
-		GLES1Free(gc, psPDSVertexVariant);
+		GLES1Free(IMG_NULL, psPDSVertexVariant);
 
 		psPDSVertexVariant = psPDSVertexVariantNext;
 	}
@@ -133,7 +133,7 @@ static IMG_VOID DestroyUSEShaderVariant(GLES1Context *gc, GLES1ShaderVariant *ps
 		psPDSVariant = psPDSVariantNext;
 	}
 
-	GLES1Free(gc, psUSEVariant);
+	GLES1Free(IMG_NULL, psUSEVariant);
 }
 
 
@@ -226,10 +226,10 @@ IMG_INTERNAL IMG_VOID FreeShader(GLES1Context *gc, GLES1Shader *psShader)
 
 	if(psShader->pfConstantData)
 	{
-		GLES1Free(gc, (IMG_VOID*) psShader->pfConstantData);
+		GLES1Free(IMG_NULL, (IMG_VOID*) psShader->pfConstantData);
 	}
 
-	GLES1Free(gc, psShader);
+	GLES1Free(IMG_NULL, psShader);
 }
 
 

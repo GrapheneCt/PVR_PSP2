@@ -234,7 +234,7 @@ IMG_INTERNAL GLES1NamesArray* CreateNamesArray(GLES1Context *gc, GLES1NameType e
 		{
 			PVR_DPF((PVR_DBG_ERROR,"CreateNamesArray: Invalid name type"));
 
-			GLES1Free(gc, psNamesArray);
+			GLES1Free(IMG_NULL, psNamesArray);
 			GLES1_TIME_STOP(GLES1_TIMER_NAMES_ARRAY);
 			return IMG_NULL;
 		}
@@ -401,7 +401,7 @@ IMG_INTERNAL IMG_VOID DestroyNamesArray(GLES1Context *gc, GLES1NamesArray *psNam
 	
 			if(psNamedItem->bGeneratedButUnused)
 			{
-				GLES1Free(gc, psNamedItem);
+				GLES1Free(IMG_NULL, psNamedItem);
 			}
 			else
 			{
@@ -414,7 +414,7 @@ IMG_INTERNAL IMG_VOID DestroyNamesArray(GLES1Context *gc, GLES1NamesArray *psNam
 		}
 	}
 
-	GLES1Free(gc, psNamesArray);
+	GLES1Free(IMG_NULL, psNamesArray);
 
 	GLES1_TIME_STOP(GLES1_TIMER_NAMES_ARRAY);
 }
@@ -497,7 +497,7 @@ IMG_INTERNAL IMG_BOOL InsertNamedItem(GLES1NamesArray *psNamesArray, GLES1NamedI
 				{
 					psNamesArray->apsEntry[ui32Position] = psNamedItemToInsert;
 				}
-				GLES1Free(gc, psNamedItem);
+				GLES1Free(IMG_NULL, psNamedItem);
 			}
 			else
 			{
@@ -678,7 +678,7 @@ IMG_INTERNAL IMG_VOID NamedItemDelRefByName(GLES1Context *gc, GLES1NamesArray *p
 		psNext = psDeadMan->psNext;
 		if(psDeadMan->bGeneratedButUnused)
 		{
-			GLES1Free(gc, psDeadMan);
+			GLES1Free(IMG_NULL, psDeadMan);
 		}
 		else
 		{

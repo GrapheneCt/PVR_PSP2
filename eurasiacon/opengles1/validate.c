@@ -1135,7 +1135,7 @@ static GLES1_MEMERROR WritePDSPixelShaderProgram(GLES1Context *gc, IMG_BOOL *pbC
 			{
 				PVR_DPF((PVR_DBG_WARNING,"WritePDSPixelShaderProgram: Failed to allocate PDS variant"));
 
-				GLES1Free(gc, psPDSVariant);
+				GLES1Free(IMG_NULL, psPDSVariant);
 
 				psPDSVariant = IMG_NULL;
 			}
@@ -1170,7 +1170,7 @@ static GLES1_MEMERROR WritePDSPixelShaderProgram(GLES1Context *gc, IMG_BOOL *pbC
 			{
 				PVR_DPF((PVR_DBG_ERROR,"WritePDSPixelShaderProgram: Failed to allocate hash compare structure"));
 				
-				GLES1Free(gc, psPDSVariant);
+				GLES1Free(IMG_NULL, psPDSVariant);
 				return GLES1_HOST_MEM_ERROR;
 			}
 
@@ -1514,7 +1514,7 @@ static GLES1_MEMERROR WritePDSStaticVertexShaderProgram(GLES1Context *gc, IMG_BO
 
 		if (psPDSVertexState == IMG_NULL)
 		{
-			GLES1Free(gc, psVAO);
+			GLES1Free(IMG_NULL, psVAO);
 				
 			return GLES1_GENERAL_MEM_ERROR;
 		}
@@ -1528,7 +1528,7 @@ static GLES1_MEMERROR WritePDSStaticVertexShaderProgram(GLES1Context *gc, IMG_BO
 
 		if (psPDSVertexShaderProgram == IMG_NULL)
 		{
-			GLES1Free(gc, psVAO);
+			GLES1Free(IMG_NULL, psVAO);
 
 			return GLES1_GENERAL_MEM_ERROR;
 		}
@@ -2066,7 +2066,7 @@ static GLES1_MEMERROR WritePDSVertexShaderProgramWithVAO(GLES1Context *gc, IMG_B
 
 			if (psPDSVertexShaderProgram == IMG_NULL)
 			{
-				GLES1Free(gc, psVAO);
+				GLES1Free(IMG_NULL, psVAO);
 
 				GLES1_TIME_STOP(GLES1_TIMER_WRITE_PDS_VERTEX_SHADER_PROGRAM_VAO_TIME);
 
@@ -3133,7 +3133,7 @@ IMG_INTERNAL IMG_VOID DestroyHashedPDSFragSA(GLES1Context *gc, IMG_UINT32 ui32It
 		UCH_CodeHeapFree(psPDSFragmentSAInfo->psCodeBlock);
 	}
 
-	GLES1Free(gc, psPDSFragmentSAInfo);
+	GLES1Free(IMG_NULL, psPDSFragmentSAInfo);
 }
 
 
@@ -3395,7 +3395,7 @@ static GLES1_MEMERROR WriteStaticPDSPixelSAProgram(GLES1Context *gc, IMG_BOOL *p
 				
 				if(!pui32BufferBase)
 				{
-					GLES1Free(gc, psNewPDSFragmentSAInfo);
+					GLES1Free(IMG_NULL, psNewPDSFragmentSAInfo);
 
 					return GLES1_3D_BUFFER_ERROR;
 				}
@@ -3446,7 +3446,7 @@ static GLES1_MEMERROR WriteStaticPDSPixelSAProgram(GLES1Context *gc, IMG_BOOL *p
 
 					UCH_CodeHeapFree(psNewPDSFragmentSAInfo->psCodeBlock);
 
-					GLES1Free(gc, psNewPDSFragmentSAInfo);
+					GLES1Free(IMG_NULL, psNewPDSFragmentSAInfo);
 
 					*pbChanged = IMG_FALSE;
 
@@ -3469,7 +3469,7 @@ static GLES1_MEMERROR WriteStaticPDSPixelSAProgram(GLES1Context *gc, IMG_BOOL *p
 
 				GLES1_INC_COUNT(GLES1_TIMER_PDS_FRAG_DATA_COUNT, ui32PDSProgramSizeInBytes>>2);
 
-				GLES1Free(gc, psNewPDSFragmentSAInfo);
+				GLES1Free(IMG_NULL, psNewPDSFragmentSAInfo);
 			}
 
 			*pbChanged = IMG_TRUE;

@@ -966,7 +966,7 @@ IMG_INTERNAL IMG_BOOL HardwareMakeTextureMipmapLevels(GLES1Context *gc, GLESText
 				{
 					bHWTexUploaded = IMG_TRUE;
 					
-					GLES1FreeHeapAsyncUNC(gc, psLevel->pui8Buffer);
+					GLES1FreeAsync(gc, psLevel->pui8Buffer);
 					
 					psLevel->pui8Buffer = GLES1_LOADED_LEVEL;
 				}
@@ -1068,7 +1068,7 @@ failed_hwmipgen:
 				/* The local data copy of the texture level is being freed */
 				if ((psLevel->pui8Buffer != IMG_NULL) && (psLevel->pui8Buffer != GLES1_LOADED_LEVEL)) 
 				{
-					GLES1FreeHeapAsyncUNC(gc, psLevel->pui8Buffer);
+					GLES1FreeAsync(gc, psLevel->pui8Buffer);
 				}
 				
 				if (i == 0)
@@ -1372,7 +1372,7 @@ IMG_INTERNAL IMG_BOOL MakeTextureMipmapLevels(GLES1Context *gc, GLESTexture *psT
 		/* Free memory if we read back the source level */
 		if(bWasSrcLevelReadBack)
 		{
-			GLES1FreeHeapUNC(gc, psSrcLevel->pui8Buffer);
+			GLES1FreeAsync(gc, psSrcLevel->pui8Buffer);
 
 			psSrcLevel->pui8Buffer = GLES1_LOADED_LEVEL;
 		}

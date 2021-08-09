@@ -116,7 +116,7 @@ IMG_INTERNAL IMG_VOID *GetStridedSurfaceData(GLES1Context *gc, EGLDrawableParams
 				{
 					PVR_DPF((PVR_DBG_ERROR,"GetStridedSurfaceData: Invalid BytesPerPixel (%d)", ui32BPP));
 
-					GLES1Free(gc, pvDeTwiddledSurface);
+					GLES1Free(IMG_NULL, pvDeTwiddledSurface);
 
 					return IMG_NULL;
 				}
@@ -1011,7 +1011,7 @@ GL_API void GL_APIENTRY glReadPixels(GLint x, GLint y, GLsizei width, GLsizei he
 
 	if(pvSurfacePointer!=psReadParams->pvLinSurfaceAddress)
 	{
-		GLES1Free(gc, pvSurfacePointer);
+		GLES1Free(IMG_NULL, pvSurfacePointer);
 	}
 
 	GLES1_INC_PIXEL_COUNT(GLES1_TIMES_glReadPixels, sSpanInfo.ui32Width * sSpanInfo.ui32Height);

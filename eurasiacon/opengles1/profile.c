@@ -803,7 +803,7 @@ static IMG_VOID DestroyStateMetricData(GLES1Context *gc)
 	{
 		psTemp1 = psTemp->psNext;
 
-		GLES1Free(gc, psTemp);
+		GLES1Free(IMG_NULL, psTemp);
 
 		psTemp = psTemp1;
 	}

@@ -299,7 +299,7 @@ IMG_INTERNAL IMG_BOOL FlushAllUnflushedFBO(GLES1Context *gc,
 			{
 				*ppsFlushList = psFlushItem->psNext;
 				
-				GLES1Free(gc, psFlushItem);
+				GLES1Free(IMG_NULL, psFlushItem);
 			}
 		}
 		else
@@ -379,7 +379,7 @@ static IMG_VOID FreeFrameBuffer(GLES1Context *gc, GLESFrameBuffer *psFrameBuffer
 		}
 	}
 
-	GLES1Free(gc, psFrameBuffer);
+	GLES1Free(IMG_NULL, psFrameBuffer);
 }
 
 
@@ -425,7 +425,7 @@ IMG_INTERNAL IMG_VOID DestroyFBOAttachableRenderSurface(GLES1Context *gc, GLES1F
 				gc->psRenderSurface = IMG_NULL;
 			}
 
-			GLES1Free(gc, psAttachment->psRenderSurface);
+			GLES1Free(IMG_NULL, psAttachment->psRenderSurface);
 		}
 
 		psAttachment->psRenderSurface = IMG_NULL;
@@ -468,7 +468,7 @@ static IMG_VOID FreeRenderBuffer(GLES1Context *gc, GLESRenderBuffer *psRenderBuf
 		GLES1FREEDEVICEMEM_HEAP(gc, psRenderBuffer->psMemInfo);
 	}
 
-	GLES1Free(gc, psRenderBuffer);
+	GLES1Free(IMG_NULL, psRenderBuffer);
 }
 
 /***********************************************************************************
@@ -973,7 +973,7 @@ CouldNotCreateRenderSurface:
 										IMG_FALSE,
 										psFrameBuffer->sDrawParams.psRenderSurface))
 			{
-				GLES1Free(gc, psAttachment->psRenderSurface);
+				GLES1Free(IMG_NULL, psAttachment->psRenderSurface);
 
 				psAttachment->psRenderSurface = 0;
 
@@ -1664,7 +1664,7 @@ CouldNotCreateRenderSurface:
 										IMG_FALSE,
 										psFrameBuffer->sDrawParams.psRenderSurface))
 			{
-				GLES1Free(gc, psAttachment->psRenderSurface);
+				GLES1Free(IMG_NULL, psAttachment->psRenderSurface);
 
 				psAttachment->psRenderSurface = 0;
 

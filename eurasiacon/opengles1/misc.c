@@ -937,7 +937,7 @@ IMG_INTERNAL IMG_VOID DestroyExtensionString(GLES1Context *gc)
 {
 	if ((gc->pszExtensions) && (gc->pszExtensions != &gszExtensions[0]))
 	{
-		GLES1Free(gc, gc->pszExtensions);
+		GLES1Free(IMG_NULL, gc->pszExtensions);
 	}
 }
 

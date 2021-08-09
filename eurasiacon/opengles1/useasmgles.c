@@ -161,7 +161,7 @@ IMG_INTERNAL IMG_VOID FreeUSEASMInstructionList(GLES1Context *gc, GLESUSEASMInfo
 	{
 		psNext = psInstruction->psNext;
 
-		GLES1Free(gc, psInstruction);
+		GLES1Free(IMG_NULL, psInstruction);
 
 		psInstruction = psNext;
 	}
@@ -173,7 +173,7 @@ IMG_INTERNAL IMG_VOID FreeUSEASMInstructionList(GLES1Context *gc, GLESUSEASMInfo
 	/* Free generated HW code */
 	if(psUSEASMInfo->pui32HWInstructions)
 	{
-		GLES1Free(gc, psUSEASMInfo->pui32HWInstructions);
+		GLES1Free(IMG_NULL, psUSEASMInfo->pui32HWInstructions);
 	}
 
 	psUSEASMInfo->pui32HWInstructions   = IMG_NULL;
@@ -219,7 +219,7 @@ IMG_INTERNAL IMG_VOID DuplicateUSEASMInstructionList(GLES1Context *gc, GLESUSEAS
 			{
 				psNext = psOutputInstruction->psNext;
 
-				GLES1Free(gc, psOutputInstruction);
+				GLES1Free(IMG_NULL, psOutputInstruction);
 
 				psOutputInstruction = psNext;
 			}
@@ -368,7 +368,7 @@ static IMG_VOID UseasmFree(IMG_PVOID pvContext, IMG_PVOID pvBlock)
 {
 	PVR_UNREFERENCED_PARAMETER(pvContext);
 
-	GLES1Free(((USEASM_CONTEXT *)pvContext)->pvContext, pvBlock);
+	GLES1Free(IMG_NULL, pvBlock);
 }
 
 
@@ -479,7 +479,7 @@ IMG_INTERNAL GLES1_MEMERROR AssembleUSEASMInstructions(GLES1Context *gc, GLESUSE
 		{
 			PVR_DPF((PVR_DBG_ERROR,"AssembleUSEASMInstructions(): UseoptProgram failed (%x)", sUseoptData.eStatus));
 
-			GLES1Free(gc, psUSEASMInfo->pui32HWInstructions);
+			GLES1Free(IMG_NULL, psUSEASMInfo->pui32HWInstructions);
 
 			psUSEASMInfo->pui32HWInstructions   = IMG_NULL;
 			psUSEASMInfo->ui32NumHWInstructions = 0;

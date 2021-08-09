@@ -951,7 +951,6 @@ IMG_INTERNAL CircularBuffer *CBUF_CreateBuffer(PVRSRV_DEV_DATA *ps3DDevData,
 		return IMG_NULL;
 	}
 
-
 	if (PVRSRVAllocSyncInfo(ps3DDevData, &psMemInfo->psClientSyncInfo))
 	{
 		PVR_DPF((PVR_DBG_ERROR, "CBUF_CreateBuffer: PVRSRVAllocSyncInfo failed for buffer %d", ui32BufferType));

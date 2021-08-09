@@ -51,7 +51,7 @@ static GLES1Context* _GLES1CreateContext(IMG_VOID)
 ************************************************************************************/
 static IMG_VOID _GLES1DestroyContext(GLES1Context *gc)
 {
-	GLES1Free(0, gc);
+	GLES1Free(IMG_NULL, gc);
 }
 
 
@@ -218,7 +218,7 @@ static IMG_VOID FreeContextSharedState(GLES1Context *gc)
 		/* Clear for safety */
 		GLES1MemSet(psSharedState, 0, sizeof(GLES1ContextSharedState));
 
-		GLES1Free(gc, psSharedState);
+		GLES1Free(IMG_NULL, psSharedState);
 	}
 
 	gc->psSharedState = IMG_NULL;
@@ -286,7 +286,7 @@ static IMG_BOOL CreateSharedState(GLES1Context *gc, GLES1Context *psShareContext
 			{
 				PVR_DPF((PVR_DBG_ERROR,"CreateSharedState: PVRSRVCreateMutex failed on hPrimaryLock (%d)", eError));
 
-				GLES1Free(gc, psSharedState);
+				GLES1Free(IMG_NULL, psSharedState);
 
 				return IMG_FALSE;
 			}
@@ -304,7 +304,7 @@ static IMG_BOOL CreateSharedState(GLES1Context *gc, GLES1Context *psShareContext
 					PVR_DPF((PVR_DBG_ERROR, "CreateSharedState: PVRSRVDestroyMutex failed on hPrimaryLock (%d)", eError));
 				}
 
-				GLES1Free(gc, psSharedState);
+				GLES1Free(IMG_NULL, psSharedState);
 
 				return IMG_FALSE;
 			}
@@ -329,7 +329,7 @@ static IMG_BOOL CreateSharedState(GLES1Context *gc, GLES1Context *psShareContext
 					PVR_DPF((PVR_DBG_ERROR, "CreateSharedState: PVRSRVDestroyMutex failed on hPrimaryLock (%d)", eError));
 				}
 
-				GLES1Free(gc, psSharedState);
+				GLES1Free(IMG_NULL, psSharedState);
 
 				return IMG_FALSE;
 			}
@@ -361,7 +361,7 @@ static IMG_BOOL CreateSharedState(GLES1Context *gc, GLES1Context *psShareContext
 					PVR_DPF((PVR_DBG_ERROR, "CreateSharedState: PVRSRVDestroyMutex failed on hPrimaryLock (%d)", eError));
 				}
 
-				GLES1Free(gc, psSharedState);
+				GLES1Free(IMG_NULL, psSharedState);
 
 				return IMG_FALSE;
 			}
@@ -1379,7 +1379,7 @@ static IMG_BOOL GLESCreateGC(SrvSysContext *psSysContext,
 	SceKernelMemBlockInfo sMbInfo;
 	sMbInfo.size = sizeof(SceKernelMemBlockInfo);
 	sceKernelGetMemBlockInfoByAddr(pvDummy, &sMbInfo);
-	int ret = PVRSRVMapMemoryToGpu(
+	PVRSRVMapMemoryToGpu(
 		gc->ps3DDevData,
 		gc->psSysContext->hDevMemContext,
 		0,
@@ -1388,7 +1388,7 @@ static IMG_BOOL GLESCreateGC(SrvSysContext *psSysContext,
 		sMbInfo.mappedBase,
 		PVRSRV_MEM_READ | PVRSRV_MEM_WRITE | PVRSRV_MEM_USER_SUPPLIED_DEVVADDR,
 		IMG_NULL);
-	GLES1Free(0, pvDummy);
+	GLES1Free(IMG_NULL, pvDummy);
 
 #if defined (TIMING) || defined (DEBUG)
 	if (!InitMetrics(gc))
