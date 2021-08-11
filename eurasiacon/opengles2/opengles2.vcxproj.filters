@@ -1,0 +1,578 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;cc;s;asm</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp</Extensions>
+    </Filter>
+    <Filter Include="Source Files\common">
+      <UniqueIdentifier>{d1614c24-99fb-4378-9b1e-032f80c4d176}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\common\dmscalc">
+      <UniqueIdentifier>{59c963b6-76ac-4dc9-8b57-5949682db733}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\common\tls">
+      <UniqueIdentifier>{13e9986b-9ae0-4fcf-9bee-e60606fb4936}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\psp2">
+      <UniqueIdentifier>{9ece7260-2293-4aad-b013-b278eaf8ce35}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\psp2">
+      <UniqueIdentifier>{ec0d59c0-b188-4940-a98e-4cf695506a2a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\codegen">
+      <UniqueIdentifier>{1cfe202f-f55b-40d6-8f77-5a2700891106}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\codegen\pds">
+      <UniqueIdentifier>{cec076ec-6438-4419-b4b2-5b3ccbc2dbcd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\codegen\pixevent">
+      <UniqueIdentifier>{8fdda348-4ae5-4cab-8d3c-f661bb213820}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\codegen\pixfmts">
+      <UniqueIdentifier>{58031d62-d46c-48bf-ad56-d2244a99807b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\codegen\usegen">
+      <UniqueIdentifier>{1d9e0e2b-ab8f-45fe-8bd0-5913f91304df}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\tools">
+      <UniqueIdentifier>{19ab8916-4576-4b19-882f-8230cf17b796}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\tools\intern">
+      <UniqueIdentifier>{f4549cf2-98f4-430c-b216-65c65f80c1be}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\tools\intern\usc2">
+      <UniqueIdentifier>{ea096410-4a7e-41a5-ae72-91b8acf50cc6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\tools\intern\usp">
+      <UniqueIdentifier>{7e4db21d-6551-422b-979e-75c2db954a94}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\tools\intern\useasm">
+      <UniqueIdentifier>{e3ff1dc3-ac03-4c41-94c2-58bfa2fd3c90}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\tools\intern\oglcompiler">
+      <UniqueIdentifier>{64a59323-2916-44df-94b3-4313bbaf67f5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\tools\intern\oglcompiler\powervr">
+      <UniqueIdentifier>{bcff6461-9958-4c7d-b80e-e078bd3bbe30}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\tools\intern\oglcompiler\parser">
+      <UniqueIdentifier>{7998f1dc-5521-4836-88da-1183daf23dd4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\tools\intern\oglcompiler\glsl">
+      <UniqueIdentifier>{1e2ba16e-09ae-4c22-a5c1-9323656cee71}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\tools\intern\oglcompiler\binshader">
+      <UniqueIdentifier>{e4a97f7f-2241-41d6-819d-9dbd73075e0f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\intermediates">
+      <UniqueIdentifier>{53b22b3b-2360-49c5-bf1a-5bd60901eb8a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\intermediates\glslparser">
+      <UniqueIdentifier>{77d8cb37-a13f-4441-bbfa-5c7d75caee45}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="accum.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="binshader.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="bufobj.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="clear.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="digest.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="drawvarray.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="eglglue.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="eglimage.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="fbo.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="get.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="gles2errata.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="makemips.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="metrics.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="misc.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="names.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pdump.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pixelop.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="profile.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="scissor.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="sgxif.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="shader.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="spanpack.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="state.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="statehash.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tex.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="texdata.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="texformat.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="texmgmt.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="texstream.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="texyuv.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="uniform.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="use.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="validate.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="vertex.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="vertexarrobj.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\buffers.c">
+      <Filter>Source Files\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\codeheap.c">
+      <Filter>Source Files\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\kickresource.c">
+      <Filter>Source Files\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\twiddle.c">
+      <Filter>Source Files\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\common\dmscalc\dmscalc.c">
+      <Filter>Source Files\common\dmscalc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\common\tls\psp2_tls.c">
+      <Filter>Source Files\common\tls</Filter>
+    </ClCompile>
+    <ClCompile Include="psp2\heap.c">
+      <Filter>Source Files\psp2</Filter>
+    </ClCompile>
+    <ClCompile Include="psp2\module.c">
+      <Filter>Source Files\psp2</Filter>
+    </ClCompile>
+    <ClCompile Include="psp2\swtexop.c">
+      <Filter>Source Files\psp2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\codegen\pds\pds.c">
+      <Filter>Source Files\codegen\pds</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\codegen\pixevent\pixevent.c">
+      <Filter>Source Files\codegen\pixevent</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\codegen\pixevent\pixeventpbesetup.c">
+      <Filter>Source Files\codegen\pixevent</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\codegen\pixfmts\sgxpixfmts.c">
+      <Filter>Source Files\codegen\pixfmts</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\codegen\usegen\usegen.c">
+      <Filter>Source Files\codegen\usegen</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\useasm\specialregs.c">
+      <Filter>Source Files\tools\intern\useasm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\useasm\specialregs_vec.c">
+      <Filter>Source Files\tools\intern\useasm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\useasm\useasm.c">
+      <Filter>Source Files\tools\intern\useasm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\useasm\usedisasm.c">
+      <Filter>Source Files\tools\intern\useasm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\useasm\useopt.c">
+      <Filter>Source Files\tools\intern\useasm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\useasm\usetab.c">
+      <Filter>Source Files\tools\intern\useasm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\useasm\utils.c">
+      <Filter>Source Files\tools\intern\useasm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\asm.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\cdg.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\cfa.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\data.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\dce.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\debug.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\dgraph.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\domcalc.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\dualissue.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\efo.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\execpred.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\f16opt.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\finalise.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\groupinst.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\hw.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\icvt_c10.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\icvt_core.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\icvt_f16.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\icvt_f16_vec.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\icvt_f32.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\icvt_f32_vec.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\icvt_i32.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\icvt_mem.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\indexreg.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\inst_usc.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\intcvt.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\iregalloc.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\iselect.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\layout.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\pconvert.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\precovr.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\pregalloc.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\regalloc.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\reggroup.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\regpack.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\reorder.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\ssa.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\usc.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\usc_utils.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\usedef.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\uspbin.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usc2\vec34.c">
+      <Filter>Source Files\tools\intern\usc2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usp\hwinst.c">
+      <Filter>Source Files\tools\intern\usp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usp\usp.c">
+      <Filter>Source Files\tools\intern\usp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usp\usp_inputdata.c">
+      <Filter>Source Files\tools\intern\usp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usp\usp_instblock.c">
+      <Filter>Source Files\tools\intern\usp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usp\usp_resultref.c">
+      <Filter>Source Files\tools\intern\usp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usp\usp_sample.c">
+      <Filter>Source Files\tools\intern\usp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usp\usp_texwrite.c">
+      <Filter>Source Files\tools\intern\usp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usp\uspshader.c">
+      <Filter>Source Files\tools\intern\usp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\usp\usp_finalise.c">
+      <Filter>Source Files\tools\intern\usp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\oglcompiler\powervr\bindingsym.c">
+      <Filter>Source Files\tools\intern\oglcompiler\powervr</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\oglcompiler\powervr\glsl2uf.c">
+      <Filter>Source Files\tools\intern\oglcompiler\powervr</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\oglcompiler\powervr\ic2uf.c">
+      <Filter>Source Files\tools\intern\oglcompiler\powervr</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\oglcompiler\glsl\astbuiltin.c">
+      <Filter>Source Files\tools\intern\oglcompiler\glsl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\oglcompiler\glsl\common.c">
+      <Filter>Source Files\tools\intern\oglcompiler\glsl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\oglcompiler\glsl\error.c">
+      <Filter>Source Files\tools\intern\oglcompiler\glsl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\oglcompiler\glsl\glsl.c">
+      <Filter>Source Files\tools\intern\oglcompiler\glsl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\oglcompiler\glsl\glslfns.c">
+      <Filter>Source Files\tools\intern\oglcompiler\glsl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\oglcompiler\glsl\glsltabs.c">
+      <Filter>Source Files\tools\intern\oglcompiler\glsl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\oglcompiler\glsl\glsltree.c">
+      <Filter>Source Files\tools\intern\oglcompiler\glsl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\oglcompiler\glsl\icbuiltin.c">
+      <Filter>Source Files\tools\intern\oglcompiler\glsl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\oglcompiler\glsl\icemul.c">
+      <Filter>Source Files\tools\intern\oglcompiler\glsl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\oglcompiler\glsl\icgen.c">
+      <Filter>Source Files\tools\intern\oglcompiler\glsl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\oglcompiler\glsl\icode.c">
+      <Filter>Source Files\tools\intern\oglcompiler\glsl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\oglcompiler\glsl\icunroll.c">
+      <Filter>Source Files\tools\intern\oglcompiler\glsl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\oglcompiler\glsl\prepro.c">
+      <Filter>Source Files\tools\intern\oglcompiler\glsl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\oglcompiler\glsl\semantic.c">
+      <Filter>Source Files\tools\intern\oglcompiler\glsl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\oglcompiler\binshader\esbinshader.c">
+      <Filter>Source Files\tools\intern\oglcompiler\binshader</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\oglcompiler\parser\glsldebug.c">
+      <Filter>Source Files\tools\intern\oglcompiler\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\oglcompiler\parser\lex.c">
+      <Filter>Source Files\tools\intern\oglcompiler\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\oglcompiler\parser\memmgr.c">
+      <Filter>Source Files\tools\intern\oglcompiler\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\oglcompiler\parser\metrics.c">
+      <Filter>Source Files\tools\intern\oglcompiler\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\oglcompiler\parser\parser.c">
+      <Filter>Source Files\tools\intern\oglcompiler\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\oglcompiler\parser\symtab.c">
+      <Filter>Source Files\tools\intern\oglcompiler\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\intermediates\glslparser\glsl_parser.tab.c">
+      <Filter>Source Files\intermediates\glslparser</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="attrib.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="binshader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="bufobj.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="constants.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="context.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="digest.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="drvgl2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="drvgl2ext.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="drvgl2platform.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="fbo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="gles2errata.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="metrics.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="misc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="names.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ogles2_types.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="osglue.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pdump.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="profile.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="shader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="spanpack.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="state.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="statehash.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="texformat.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="texstream.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="texture.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="texyuv.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="uniform.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="usegles2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="validate.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="vertexarrobj.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="psp2\heaplib_internal.h">
+      <Filter>Header Files\psp2</Filter>
+    </ClInclude>
+    <ClInclude Include="psp2\libheap_custom.h">
+      <Filter>Header Files\psp2</Filter>
+    </ClInclude>
+    <ClInclude Include="psp2\swtexop.h">
+      <Filter>Header Files\psp2</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

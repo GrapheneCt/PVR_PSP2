@@ -45,8 +45,8 @@
 #define PSP2_OGLES1_LIBNID						0xF675728E
 #define PSP2_OGLES1_GETSTRING_NID				0xF214B167
 
-#define PSP2_OGLES2_LIBNID						0
-#define PSP2_OGLES2_GETSTRING_NID				0
+#define PSP2_OGLES2_LIBNID						0x626F9AB6
+#define PSP2_OGLES2_GETSTRING_NID				0xF214B167
 
 typedef struct SceKernelLibraryInfo { // size is 0x1C
 	SceSize size; //!< sizeof(SceKernelLibraryInfo)

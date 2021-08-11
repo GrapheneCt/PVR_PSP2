@@ -544,15 +544,15 @@ static IMG_BOOL InitContext(GLES1Context *gc, GLES1Context *psShareContext, EGLc
 	heapOpt.size = sizeof(SceHeapOptParam);
 	heapOpt.memblockType = SCE_HEAP_OPT_MEMBLOCK_TYPE_USER;
 
-	if (gc->sAppHints.ui32OGLES1UNCTexHeapSize)
+	if (gc->sAppHints.ui32UNCTexHeapSize)
 	{
 		heapOpt.memblockType = SCE_HEAP_OPT_MEMBLOCK_TYPE_USER_NC;
 
 		gc->pvUNCHeap = sceHeapCreateHeap(gc->ps3DDevData,
 			gc->psSysContext->hDevMemContext,
 			"OGLES1UNCHeap",
-			gc->sAppHints.ui32OGLES1UNCTexHeapSize,
-			gc->sAppHints.bOGLES1EnableUNCAutoExtend ? SCE_HEAP_AUTO_EXTEND : 0,
+			gc->sAppHints.ui32UNCTexHeapSize,
+			gc->sAppHints.bEnableUNCAutoExtend ? SCE_HEAP_AUTO_EXTEND : 0,
 			&heapOpt);
 
 		if (!gc->pvUNCHeap)
@@ -563,15 +563,15 @@ static IMG_BOOL InitContext(GLES1Context *gc, GLES1Context *psShareContext, EGLc
 		}
 	}
 
-	if (gc->sAppHints.ui32OGLES1CDRAMTexHeapSize)
+	if (gc->sAppHints.ui32CDRAMTexHeapSize)
 	{
 		heapOpt.memblockType = SCE_HEAP_OPT_MEMBLOCK_TYPE_CDRAM;
 
 		gc->pvCDRAMHeap = sceHeapCreateHeap(gc->ps3DDevData,
 			gc->psSysContext->hDevMemContext,
 			"OGLES1CDRAMHeap",
-			gc->sAppHints.ui32OGLES1UNCTexHeapSize,
-			gc->sAppHints.bOGLES1EnableCDRAMAutoExtend ? SCE_HEAP_AUTO_EXTEND : 0,
+			gc->sAppHints.ui32UNCTexHeapSize,
+			gc->sAppHints.bEnableCDRAMAutoExtend ? SCE_HEAP_AUTO_EXTEND : 0,
 			&heapOpt);
 
 		if (!gc->pvCDRAMHeap)
@@ -588,22 +588,22 @@ static IMG_BOOL InitContext(GLES1Context *gc, GLES1Context *psShareContext, EGLc
 
 	sceSysmoduleLoadModuleInternal(SCE_SYSMODULE_INTERNAL_ULT);
 
-	IMG_UINT32 ui32UltRuntimeWorkAreaSize = sceUltUlthreadRuntimeGetWorkAreaSize(gc->sAppHints.ui32OGLES1SwTexOpMaxUltNum, gc->sAppHints.ui32OGLES1SwTexOpThreadNum);
+	IMG_UINT32 ui32UltRuntimeWorkAreaSize = sceUltUlthreadRuntimeGetWorkAreaSize(gc->sAppHints.ui32SwTexOpMaxUltNum, gc->sAppHints.ui32SwTexOpThreadNum);
 	IMG_PVOID pvUltRuntimeWorkArea = GLES1Malloc(gc, ui32UltRuntimeWorkAreaSize);
 	gc->pvUltRuntime = GLES1Malloc(gc, _SCE_ULT_ULTHREAD_RUNTIME_SIZE);
 
 	SceUltUlthreadRuntimeOptParam sUltOptParam;
 	sceUltUlthreadRuntimeOptParamInitialize(&sUltOptParam);
-	sUltOptParam.oneShotThreadStackSize = 4 * 1024 + (4 * 1024 * (IMG_UINT32)((IMG_FLOAT)gc->sAppHints.ui32OGLES1SwTexOpMaxUltNum / 4.0f));
+	sUltOptParam.oneShotThreadStackSize = 4 * 1024 + (4 * 1024 * (IMG_UINT32)((IMG_FLOAT)gc->sAppHints.ui32SwTexOpMaxUltNum / 4.0f));
 	sUltOptParam.workerThreadAttr = 0;
-	sUltOptParam.workerThreadCpuAffinityMask = gc->sAppHints.ui32OGLES1SwTexOpThreadAffinity;
+	sUltOptParam.workerThreadCpuAffinityMask = gc->sAppHints.ui32SwTexOpThreadAffinity;
 	sUltOptParam.workerThreadOptParam = 0;
-	sUltOptParam.workerThreadPriority = gc->sAppHints.ui32OGLES1SwTexOpThreadPriority;
+	sUltOptParam.workerThreadPriority = gc->sAppHints.ui32SwTexOpThreadPriority;
 
 	i = sceUltUlthreadRuntimeCreate(gc->pvUltRuntime,
 		"OGLES1UltRuntime",
-		gc->sAppHints.ui32OGLES1SwTexOpMaxUltNum,
-		gc->sAppHints.ui32OGLES1SwTexOpThreadNum,
+		gc->sAppHints.ui32SwTexOpMaxUltNum,
+		gc->sAppHints.ui32SwTexOpThreadNum,
 		pvUltRuntimeWorkArea,
 		&sUltOptParam);
 

@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|PSVita">
+      <Configuration>Debug</Configuration>
+      <Platform>PSVita</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|PSVita">
+      <Configuration>Release</Configuration>
+      <Platform>PSVita</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\codegen\pds\pds.c" />
+    <ClCompile Include="..\..\codegen\pixevent\pixevent.c" />
+    <ClCompile Include="..\..\codegen\pixevent\pixeventpbesetup.c" />
+    <ClCompile Include="..\..\codegen\pixfmts\sgxpixfmts.c" />
+    <ClCompile Include="..\..\codegen\usegen\usegen.c" />
+    <ClCompile Include="..\..\common\dmscalc\dmscalc.c" />
+    <ClCompile Include="..\..\common\tls\psp2_tls.c" />
+    <ClCompile Include="..\..\intermediates\glslparser\glsl_parser.tab.c" />
+    <ClCompile Include="..\..\tools\intern\oglcompiler\binshader\esbinshader.c" />
+    <ClCompile Include="..\..\tools\intern\oglcompiler\glsl\astbuiltin.c" />
+    <ClCompile Include="..\..\tools\intern\oglcompiler\glsl\common.c" />
+    <ClCompile Include="..\..\tools\intern\oglcompiler\glsl\error.c" />
+    <ClCompile Include="..\..\tools\intern\oglcompiler\glsl\glsl.c" />
+    <ClCompile Include="..\..\tools\intern\oglcompiler\glsl\glslfns.c" />
+    <ClCompile Include="..\..\tools\intern\oglcompiler\glsl\glsltabs.c" />
+    <ClCompile Include="..\..\tools\intern\oglcompiler\glsl\glsltree.c" />
+    <ClCompile Include="..\..\tools\intern\oglcompiler\glsl\icbuiltin.c" />
+    <ClCompile Include="..\..\tools\intern\oglcompiler\glsl\icemul.c" />
+    <ClCompile Include="..\..\tools\intern\oglcompiler\glsl\icgen.c" />
+    <ClCompile Include="..\..\tools\intern\oglcompiler\glsl\icode.c" />
+    <ClCompile Include="..\..\tools\intern\oglcompiler\glsl\icunroll.c" />
+    <ClCompile Include="..\..\tools\intern\oglcompiler\glsl\prepro.c" />
+    <ClCompile Include="..\..\tools\intern\oglcompiler\glsl\semantic.c" />
+    <ClCompile Include="..\..\tools\intern\oglcompiler\parser\glsldebug.c" />
+    <ClCompile Include="..\..\tools\intern\oglcompiler\parser\lex.c" />
+    <ClCompile Include="..\..\tools\intern\oglcompiler\parser\memmgr.c" />
+    <ClCompile Include="..\..\tools\intern\oglcompiler\parser\metrics.c" />
+    <ClCompile Include="..\..\tools\intern\oglcompiler\parser\parser.c" />
+    <ClCompile Include="..\..\tools\intern\oglcompiler\parser\symtab.c" />
+    <ClCompile Include="..\..\tools\intern\oglcompiler\powervr\bindingsym.c" />
+    <ClCompile Include="..\..\tools\intern\oglcompiler\powervr\glsl2uf.c" />
+    <ClCompile Include="..\..\tools\intern\oglcompiler\powervr\ic2uf.c" />
+    <ClCompile Include="..\..\tools\intern\usc2\asm.c" />
+    <ClCompile Include="..\..\tools\intern\usc2\cdg.c" />
+    <ClCompile Include="..\..\tools\intern\usc2\cfa.c" />
+    <ClCompile Include="..\..\tools\intern\usc2\data.c" />
+    <ClCompile Include="..\..\tools\intern\usc2\dce.c" />
+    <ClCompile Include="..\..\tools\intern\usc2\debug.c" />
+    <ClCompile Include="..\..\tools\intern\usc2\dgraph.c" />
+    <ClCompile Include="..\..\tools\intern\usc2\domcalc.c" />
+    <ClCompile Include="..\..\tools\intern\usc2\dualissue.c" />
+    <ClCompile Include="..\..\tools\intern\usc2\efo.c" />
+    <ClCompile Include="..\..\tools\intern\usc2\execpred.c" />
+    <ClCompile Include="..\..\tools\intern\usc2\f16opt.c" />
+    <ClCompile Include="..\..\tools\intern\usc2\finalise.c" />
+    <ClCompile Include="..\..\tools\intern\usc2\groupinst.c" />
+    <ClCompile Include="..\..\tools\intern\usc2\hw.c" />
+    <ClCompile Include="..\..\tools\intern\usc2\icvt_c10.c" />
+    <ClCompile Include="..\..\tools\intern\usc2\icvt_core.c" />
+    <ClCompile Include="..\..\tools\intern\usc2\icvt_f16.c" />
+    <ClCompile Include="..\..\tools\intern\usc2\icvt_f16_vec.c" />
+    <ClCompile Include="..\..\tools\intern\usc2\icvt_f32.c" />
+    <ClCompile Include="..\..\tools\intern\usc2\icvt_f32_vec.c" />
+    <ClCompile Include="..\..\tools\intern\usc2\icvt_i32.c" />
+    <ClCompile Include="..\..\tools\intern\usc2\icvt_mem.c" />
+    <ClCompile Include="..\..\tools\intern\usc2\indexreg.c" />
+    <ClCompile Include="..\..\tools\intern\usc2\inst_usc.c" />
+    <ClCompile Include="..\..\tools\intern\usc2\intcvt.c" />
+    <ClCompile Include="..\..\tools\intern\usc2\iregalloc.c" />
+    <ClCompile Include="..\..\tools\intern\usc2\iselect.c" />
+    <ClCompile Include="..\..\tools\intern\usc2\layout.c" />
+    <ClCompile Include="..\..\tools\intern\usc2\pconvert.c" />
+    <ClCompile Include="..\..\tools\intern\usc2\precovr.c" />
+    <ClCompile Include="..\..\tools\intern\usc2\pregalloc.c" />
+    <ClCompile Include="..\..\tools\intern\usc2\regalloc.c" />
+    <ClCompile Include="..\..\tools\intern\usc2\reggroup.c" />
+    <ClCompile Include="..\..\tools\intern\usc2\regpack.c" />
+    <ClCompile Include="..\..\tools\intern\usc2\reorder.c" />
+    <ClCompile Include="..\..\tools\intern\usc2\ssa.c" />
+    <ClCompile Include="..\..\tools\intern\usc2\usc.c" />
+    <ClCompile Include="..\..\tools\intern\usc2\usc_utils.c" />
+    <ClCompile Include="..\..\tools\intern\usc2\usedef.c" />
+    <ClCompile Include="..\..\tools\intern\usc2\uspbin.c" />
+    <ClCompile Include="..\..\tools\intern\usc2\vec34.c" />
+    <ClCompile Include="..\..\tools\intern\useasm\specialregs.c" />
+    <ClCompile Include="..\..\tools\intern\useasm\specialregs_vec.c" />
+    <ClCompile Include="..\..\tools\intern\useasm\useasm.c" />
+    <ClCompile Include="..\..\tools\intern\useasm\usedisasm.c" />
+    <ClCompile Include="..\..\tools\intern\useasm\useopt.c" />
+    <ClCompile Include="..\..\tools\intern\useasm\usetab.c" />
+    <ClCompile Include="..\..\tools\intern\useasm\utils.c" />
+    <ClCompile Include="..\..\tools\intern\usp\usp_finalise.c" />
+    <ClCompile Include="..\..\tools\intern\usp\hwinst.c" />
+    <ClCompile Include="..\..\tools\intern\usp\usp.c" />
+    <ClCompile Include="..\..\tools\intern\usp\uspshader.c" />
+    <ClCompile Include="..\..\tools\intern\usp\usp_inputdata.c" />
+    <ClCompile Include="..\..\tools\intern\usp\usp_instblock.c" />
+    <ClCompile Include="..\..\tools\intern\usp\usp_resultref.c" />
+    <ClCompile Include="..\..\tools\intern\usp\usp_sample.c" />
+    <ClCompile Include="..\..\tools\intern\usp\usp_texwrite.c" />
+    <ClCompile Include="..\common\buffers.c" />
+    <ClCompile Include="..\common\codeheap.c" />
+    <ClCompile Include="..\common\kickresource.c" />
+    <ClCompile Include="..\common\twiddle.c" />
+    <ClCompile Include="accum.c" />
+    <ClCompile Include="binshader.c" />
+    <ClCompile Include="bufobj.c" />
+    <ClCompile Include="clear.c" />
+    <ClCompile Include="digest.c" />
+    <ClCompile Include="drawvarray.c" />
+    <ClCompile Include="eglglue.c" />
+    <ClCompile Include="eglimage.c" />
+    <ClCompile Include="fbo.c" />
+    <ClCompile Include="get.c" />
+    <ClCompile Include="gles2errata.c" />
+    <ClCompile Include="makemips.c" />
+    <ClCompile Include="metrics.c" />
+    <ClCompile Include="misc.c" />
+    <ClCompile Include="names.c" />
+    <ClCompile Include="pdump.c" />
+    <ClCompile Include="pixelop.c" />
+    <ClCompile Include="profile.c" />
+    <ClCompile Include="psp2\heap.c" />
+    <ClCompile Include="psp2\module.c" />
+    <ClCompile Include="psp2\swtexop.c" />
+    <ClCompile Include="scissor.c" />
+    <ClCompile Include="sgxif.c" />
+    <ClCompile Include="shader.c" />
+    <ClCompile Include="spanpack.c" />
+    <ClCompile Include="state.c" />
+    <ClCompile Include="statehash.c" />
+    <ClCompile Include="tex.c" />
+    <ClCompile Include="texdata.c" />
+    <ClCompile Include="texformat.c" />
+    <ClCompile Include="texmgmt.c" />
+    <ClCompile Include="texstream.c" />
+    <ClCompile Include="texyuv.c" />
+    <ClCompile Include="uniform.c" />
+    <ClCompile Include="use.c" />
+    <ClCompile Include="validate.c" />
+    <ClCompile Include="vertex.c" />
+    <ClCompile Include="vertexarrobj.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="attrib.h" />
+    <ClInclude Include="binshader.h" />
+    <ClInclude Include="bufobj.h" />
+    <ClInclude Include="constants.h" />
+    <ClInclude Include="context.h" />
+    <ClInclude Include="digest.h" />
+    <ClInclude Include="drvgl2.h" />
+    <ClInclude Include="drvgl2ext.h" />
+    <ClInclude Include="drvgl2platform.h" />
+    <ClInclude Include="fbo.h" />
+    <ClInclude Include="gles2errata.h" />
+    <ClInclude Include="metrics.h" />
+    <ClInclude Include="misc.h" />
+    <ClInclude Include="names.h" />
+    <ClInclude Include="ogles2_types.h" />
+    <ClInclude Include="osglue.h" />
+    <ClInclude Include="pdump.h" />
+    <ClInclude Include="profile.h" />
+    <ClInclude Include="psp2\heaplib_internal.h" />
+    <ClInclude Include="psp2\libheap_custom.h" />
+    <ClInclude Include="psp2\swtexop.h" />
+    <ClInclude Include="shader.h" />
+    <ClInclude Include="spanpack.h" />
+    <ClInclude Include="state.h" />
+    <ClInclude Include="statehash.h" />
+    <ClInclude Include="texformat.h" />
+    <ClInclude Include="texstream.h" />
+    <ClInclude Include="texture.h" />
+    <ClInclude Include="texyuv.h" />
+    <ClInclude Include="uniform.h" />
+    <ClInclude Include="usegles2.h" />
+    <ClInclude Include="validate.h" />
+    <ClInclude Include="vertexarrobj.h" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{8C24A25E-2B07-4367-B3FA-6B3B570CEA26}</ProjectGuid>
+    <ProjectName>libGLESv2</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|PSVita'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|PSVita'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <PropertyGroup Condition="'$(DebuggerFlavor)'=='PSVitaDebugger'" Label="OverrideDebuggerDefaults">
+    <!--LocalDebuggerCommand>$(TargetPath)</LocalDebuggerCommand-->
+    <!--LocalDebuggerReboot>false</LocalDebuggerReboot-->
+    <!--LocalDebuggerCommandArguments></LocalDebuggerCommandArguments-->
+    <!--LocalDebuggerTarget></LocalDebuggerTarget-->
+    <!--LocalDebuggerWorkingDirectory>$(ProjectDir)</LocalDebuggerWorkingDirectory-->
+    <!--LocalMappingFile></LocalMappingFile-->
+    <!--LocalRunCommandLine></LocalRunCommandLine-->
+  </PropertyGroup>
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|PSVita'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|PSVita'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|PSVita'">
+    <ClCompile>
+      <PreprocessorDefinitions>NDEBUG;GLSL_ES;GEN_HW_CODE;INCLUDE_SGX_FEATURE_TABLE;INCLUDE_SGX_BUG_TABLE;OUTPUT_USPBIN;OGLES_PSP2_PRX_EXPORT;USER;PDS_BUILD_OPENGLES;USE_GCC__thread_KEYWORD;OGLES2_MODULE;SUPPORT_SGX;SUPPORT_SGX543;SUPPORT_OPENGLES2;OPTIMISE_NON_NPTL_SINGLE_THREAD_TLS_LOOKUP;SUPPORT_BINARY_SHADER;SUPPORT_SOURCE_SHADER;GLES2_EXTENSION_GET_PROGRAM_BINARY;GLES2_EXTENSION_EGL_IMAGE_EXTERNAL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <OptimizationLevel>Level3</OptimizationLevel>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <AdditionalIncludeDirectories>$(SCE_PSP2_SDK_DIR)\target\include\vdsuite\user;$(SCE_PSP2_SDK_DIR)\target\include\vdsuite\common;$(SolutionDir)include\gpu_es4;$(SolutionDir)include\gpu_es4\eurasia\include4;$(SolutionDir)include\gpu_es4\eurasia\hwdefs;$(SolutionDir)include\gpu_es4\eurasia\services4\include;$(SolutionDir)include\gpu_es4\eurasia\services4\system\psp2;$(SolutionDir)codegen\pds;$(SolutionDir)codegen\pixevent;$(SolutionDir)codegen\usegen;$(SolutionDir)eurasiacon\include;$(SolutionDir)eurasiacon\common;$(SolutionDir)common\tls;$(SolutionDir)common\dmscalc;$(SolutionDir)include\gpu_es4\eurasia\services4\srvclient\devices\sgx;$(SolutionDir)codegen\ffgen;$(SolutionDir)tools\intern\useasm;$(SolutionDir)codegen\pixfmts;$(SolutionDir)intermediates\pds_mte_state_copy;$(SolutionDir)intermediates\pds_aux_vtx;$(SolutionDir)intermediates\pixelevent;$(SolutionDir)intermediates\pixelevent_tilexy;$(SolutionDir)intermediates\sgxsupport;$(SolutionDir)intermediates\errata;$(SolutionDir)tools\intern\usp;$(SolutionDir)tools\intern\oglcompiler\binshader;$(SolutionDir)tools\intern\oglcompiler\glsl;$(SolutionDir)tools\intern\oglcompiler\powervr;$(SolutionDir)tools\intern\oglcompiler\parser;$(SolutionDir)tools\intern\usc2;$(SolutionDir)codegen\combiner;$(SolutionDir)intermediates\glslparser;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <FastMath>true</FastMath>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>$(OutDir)libgpu_es4_ext_stub.a;$(OutDir)libpvrPSP2_WSEGL_stub.a;$(OutDir)libIMGEGL_stub.a;$(SolutionDir)gpu_es4_ext\libSceGpuEs4User_stub.a;$(SolutionDir)gpu_es4_ext\libSceGpuEs4UserForVsh_stub.a;-lSceGxm_stub;-lSceGpuEs4ForUser_stub;-lSceDmacmgr_stub;-lSceSysmodule_stub;-lSceUlt_stub_weak;-lSceSha256;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SCE_PSP2_SDK_DIR)\target\lib\vdsuite;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <InfoStripping>StripSymsAndDebug</InfoStripping>
+    </Link>
+    <PostBuildEvent>
+      <Command>"$(SCE_PSP2_SDK_DIR)\host_tools\build\bin\vdsuite-libgen.exe" --output-kind VitasdkStub "$(SolutionDir)lib\vitasdk_out\GLESv2.yml" "$(OutDir)libGLESv2_stub_vitasdk.a"</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|PSVita'">
+    <ClCompile>
+      <PreprocessorDefinitions>_DEBUG;DEBUG;GLSL_ES;GEN_HW_CODE;INCLUDE_SGX_FEATURE_TABLE;INCLUDE_SGX_BUG_TABLE;OUTPUT_USPBIN;OGLES_PSP2_PRX_EXPORT;USER;PDS_BUILD_OPENGLES;USE_GCC__thread_KEYWORD;OGLES2_MODULE;SUPPORT_SGX;SUPPORT_SGX543;SUPPORT_OPENGLES2;OPTIMISE_NON_NPTL_SINGLE_THREAD_TLS_LOOKUP;SUPPORT_BINARY_SHADER;SUPPORT_SOURCE_SHADER;GLES2_EXTENSION_GET_PROGRAM_BINARY;GLES2_EXTENSION_EGL_IMAGE_EXTERNAL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <AdditionalIncludeDirectories>$(SCE_PSP2_SDK_DIR)\target\include\vdsuite\user;$(SCE_PSP2_SDK_DIR)\target\include\vdsuite\common;$(SolutionDir)include\gpu_es4;$(SolutionDir)include\gpu_es4\eurasia\include4;$(SolutionDir)include\gpu_es4\eurasia\hwdefs;$(SolutionDir)include\gpu_es4\eurasia\services4\include;$(SolutionDir)include\gpu_es4\eurasia\services4\system\psp2;$(SolutionDir)codegen\pds;$(SolutionDir)codegen\pixevent;$(SolutionDir)codegen\usegen;$(SolutionDir)eurasiacon\include;$(SolutionDir)eurasiacon\common;$(SolutionDir)common\tls;$(SolutionDir)common\dmscalc;$(SolutionDir)include\gpu_es4\eurasia\services4\srvclient\devices\sgx;$(SolutionDir)codegen\ffgen;$(SolutionDir)tools\intern\useasm;$(SolutionDir)codegen\pixfmts;$(SolutionDir)intermediates\pds_mte_state_copy;$(SolutionDir)intermediates\pds_aux_vtx;$(SolutionDir)intermediates\pixelevent;$(SolutionDir)intermediates\pixelevent_tilexy;$(SolutionDir)intermediates\sgxsupport;$(SolutionDir)intermediates\errata;$(SolutionDir)tools\intern\usp;$(SolutionDir)tools\intern\oglcompiler\binshader;$(SolutionDir)tools\intern\oglcompiler\glsl;$(SolutionDir)tools\intern\oglcompiler\powervr;$(SolutionDir)tools\intern\oglcompiler\parser;$(SolutionDir)tools\intern\usc2;$(SolutionDir)codegen\combiner;$(SolutionDir)intermediates\glslparser;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>$(OutDir)libgpu_es4_ext_stub.a;$(OutDir)libpvrPSP2_WSEGL_stub.a;$(OutDir)libIMGEGL_stub.a;$(SolutionDir)gpu_es4_ext\libSceGpuEs4User_stub.a;$(SolutionDir)gpu_es4_ext\libSceGpuEs4UserForVsh_stub.a;-lSceGxm_stub;-lSceGpuEs4ForUser_stub;-lSceDmacmgr_stub;-lSceSysmodule_stub;-lSceUlt_stub_weak;-lSceSha256;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SCE_PSP2_SDK_DIR)\target\lib\vdsuite;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <Import Condition="'$(ConfigurationType)' == 'Makefile' and Exists('$(VCTargetsPath)\Platforms\$(Platform)\SCE.Makefile.$(Platform).targets')" Project="$(VCTargetsPath)\Platforms\$(Platform)\SCE.Makefile.$(Platform).targets" />
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

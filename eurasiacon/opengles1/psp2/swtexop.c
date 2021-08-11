@@ -206,7 +206,7 @@ IMG_INT32 texOpAsyncCleanupThread(IMG_UINT32 argSize, IMG_VOID *pArgBlock)
 			}
 		}
 
-		sceKernelDelayThread(gc->sAppHints.ui32OGLES1SwTexOpCleanupDelay);
+		sceKernelDelayThread(gc->sAppHints.ui32SwTexOpCleanupDelay);
 	}
 
 	return sceKernelExitDeleteThread(0);

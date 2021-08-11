@@ -30,7 +30,6 @@
 ******************************************************************************/
 #include <stdarg.h>
 #include <string.h>
-#include <memory.h>
 #include "img_types.h"
 #include "sgxdefs.h"
 #include "usp_typedefs.h"

@@ -29,6 +29,10 @@
  $Log: uscgendata.c $
 *****************************************************************************/
 
+#include "img_defs.h"
+#include "alloc.h"
+#include "uscshrd.h"
+#include "data.h"
 #include "uscgendata.h"
 
 /***

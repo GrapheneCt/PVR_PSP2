@@ -142,10 +142,6 @@
     <ClInclude Include="names.h" />
     <ClInclude Include="ogles_types.h" />
     <ClInclude Include="osglue.h" />
-    <ClInclude Include="pds_compiled\pds_aux_vtx.h" />
-    <ClInclude Include="pds_compiled\pds_aux_vtx_sizeof.h" />
-    <ClInclude Include="pds_compiled\pds_mte_state_copy.h" />
-    <ClInclude Include="pds_compiled\pds_mte_state_copy_sizeof.h" />
     <ClInclude Include="pdump.h" />
     <ClInclude Include="profile.h" />
     <ClInclude Include="psp2\heaplib_internal.h" />

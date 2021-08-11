@@ -834,31 +834,31 @@ IMG_INTERNAL IMG_BOOL GetApplicationHints(GLESAppHints *psAppHints, EGLcontextMo
 	PVRSRVGetAppHint(pvHintState, "EnableAppTextureDependency", IMG_UINT_TYPE, &ui32Default, &psAppHints->bEnableAppTextureDependency);
 
 	ui32Default = 4 * 1024;
-	PVRSRVGetAppHint(pvHintState, "OGLES1UNCTexHeapSize", IMG_UINT_TYPE, &ui32Default, &psAppHints->ui32OGLES1UNCTexHeapSize);
+	PVRSRVGetAppHint(pvHintState, "UNCTexHeapSize", IMG_UINT_TYPE, &ui32Default, &psAppHints->ui32UNCTexHeapSize);
 
 	ui32Default = 256 * 1024;
-	PVRSRVGetAppHint(pvHintState, "OGLES1CDRAMTexHeapSize", IMG_UINT_TYPE, &ui32Default, &psAppHints->ui32OGLES1CDRAMTexHeapSize);
+	PVRSRVGetAppHint(pvHintState, "CDRAMTexHeapSize", IMG_UINT_TYPE, &ui32Default, &psAppHints->ui32CDRAMTexHeapSize);
 
 	ui32Default = 1;
-	PVRSRVGetAppHint(pvHintState, "OGLES1EnableUNCAutoExtend", IMG_UINT_TYPE, &ui32Default, &psAppHints->bOGLES1EnableUNCAutoExtend);
+	PVRSRVGetAppHint(pvHintState, "EnableUNCAutoExtend", IMG_UINT_TYPE, &ui32Default, &psAppHints->bEnableUNCAutoExtend);
 
 	ui32Default = 1;
-	PVRSRVGetAppHint(pvHintState, "OGLES1EnableCDRAMAutoExtend", IMG_UINT_TYPE, &ui32Default, &psAppHints->bOGLES1EnableCDRAMAutoExtend);
+	PVRSRVGetAppHint(pvHintState, "EnableCDRAMAutoExtend", IMG_UINT_TYPE, &ui32Default, &psAppHints->bEnableCDRAMAutoExtend);
 
 	ui32Default = 1;
-	PVRSRVGetAppHint(pvHintState, "OGLES1SwTexOpThreadNum", IMG_UINT_TYPE, &ui32Default, &psAppHints->ui32OGLES1SwTexOpThreadNum);
+	PVRSRVGetAppHint(pvHintState, "SwTexOpThreadNum", IMG_UINT_TYPE, &ui32Default, &psAppHints->ui32SwTexOpThreadNum);
 
 	ui32Default = 70;
-	PVRSRVGetAppHint(pvHintState, "OGLES1SwTexOpThreadPriority", IMG_UINT_TYPE, &ui32Default, &psAppHints->ui32OGLES1SwTexOpThreadPriority);
+	PVRSRVGetAppHint(pvHintState, "SwTexOpThreadPriority", IMG_UINT_TYPE, &ui32Default, &psAppHints->ui32SwTexOpThreadPriority);
 
 	ui32Default = 0;
-	PVRSRVGetAppHint(pvHintState, "OGLES1SwTexOpThreadAffinity", IMG_UINT_TYPE, &ui32Default, &psAppHints->ui32OGLES1SwTexOpThreadAffinity);
+	PVRSRVGetAppHint(pvHintState, "SwTexOpThreadAffinity", IMG_UINT_TYPE, &ui32Default, &psAppHints->ui32SwTexOpThreadAffinity);
 
 	ui32Default = 16;
-	PVRSRVGetAppHint(pvHintState, "OGLES1SwTexOpMaxUltNum", IMG_UINT_TYPE, &ui32Default, &psAppHints->ui32OGLES1SwTexOpMaxUltNum);
+	PVRSRVGetAppHint(pvHintState, "SwTexOpMaxUltNum", IMG_UINT_TYPE, &ui32Default, &psAppHints->ui32SwTexOpMaxUltNum);
 
 	ui32Default = 10000000;
-	PVRSRVGetAppHint(pvHintState, "OGLES1SwTexOpCleanupDelay", IMG_UINT_TYPE, &ui32Default, &psAppHints->ui32OGLES1SwTexOpCleanupDelay);
+	PVRSRVGetAppHint(pvHintState, "SwTexOpCleanupDelay", IMG_UINT_TYPE, &ui32Default, &psAppHints->ui32SwTexOpCleanupDelay);
 
 	PVRSRVFreeAppHintState(IMG_OPENGLES1, pvHintState);
 

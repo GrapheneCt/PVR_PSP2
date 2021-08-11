@@ -1153,7 +1153,9 @@
 		#define	FIX_HW_BRN_29574/* workaround in uKernel */
 		#define FIX_HW_BRN_29602/* workaround in hwdefs*/
 		#define FIX_HW_BRN_29643/* workaround in usc*/
+#if !defined(__psp2__)
 		#define FIX_HW_BRN_29954/* turns off regbank split feature */
+#endif
 		#define FIX_HW_BRN_29960/* workaround in services */
 		#define FIX_HW_BRN_29997/* workaround in uKernel */
 		#define FIX_HW_BRN_30089/* workaround in services */

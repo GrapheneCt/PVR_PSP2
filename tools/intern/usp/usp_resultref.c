@@ -30,7 +30,6 @@
  .#
   --- Revision Logs Removed --- 
 ******************************************************************************/
-#include <memory.h>
 #include "img_types.h"
 #include "sgxdefs.h"
 #include "usp_typedefs.h"

@@ -312,49 +312,119 @@ IMG_EXPORT IMG_BOOL PVRSRVGetAppHint(IMG_VOID		*pvHintState,
 			*(IMG_UINT32 *)pvReturn = s_appHint.bEnableAppTextureDependency;
 			bFound = IMG_TRUE;
 		}
-		else if (!sceClibStrncasecmp(pszHintName, "OGLES1UNCTexHeapSize", 21))
+		else if (!sceClibStrncasecmp(pszHintName, "UNCTexHeapSize", 21))
 		{
-			*(IMG_UINT32 *)pvReturn = s_appHint.ui32OGLES1UNCTexHeapSize;
+			*(IMG_UINT32 *)pvReturn = s_appHint.ui32UNCTexHeapSize;
 			bFound = IMG_TRUE;
 		}
-		else if (!sceClibStrncasecmp(pszHintName, "OGLES1CDRAMTexHeapSize", 23))
+		else if (!sceClibStrncasecmp(pszHintName, "CDRAMTexHeapSize", 23))
 		{
-			*(IMG_UINT32 *)pvReturn = s_appHint.ui32OGLES1CDRAMTexHeapSize;
+			*(IMG_UINT32 *)pvReturn = s_appHint.ui32CDRAMTexHeapSize;
 			bFound = IMG_TRUE;
 		}
-		else if (!sceClibStrncasecmp(pszHintName, "OGLES1EnableUNCAutoExtend", 26))
+		else if (!sceClibStrncasecmp(pszHintName, "EnableUNCAutoExtend", 26))
 		{
-			*(IMG_UINT32 *)pvReturn = s_appHint.bOGLES1EnableUNCAutoExtend;
+			*(IMG_UINT32 *)pvReturn = s_appHint.bEnableUNCAutoExtend;
 			bFound = IMG_TRUE;
 		}
-		else if (!sceClibStrncasecmp(pszHintName, "OGLES1EnableCDRAMAutoExtend", 28))
+		else if (!sceClibStrncasecmp(pszHintName, "EnableCDRAMAutoExtend", 28))
 		{
-			*(IMG_UINT32 *)pvReturn = s_appHint.bOGLES1EnableCDRAMAutoExtend;
+			*(IMG_UINT32 *)pvReturn = s_appHint.bEnableCDRAMAutoExtend;
 			bFound = IMG_TRUE;
 		}
-		else if (!sceClibStrncasecmp(pszHintName, "OGLES1SwTexOpThreadNum", 23))
+		else if (!sceClibStrncasecmp(pszHintName, "SwTexOpThreadNum", 23))
 		{
-			*(IMG_UINT32 *)pvReturn = s_appHint.ui32OGLES1SwTexOpThreadNum;
+			*(IMG_UINT32 *)pvReturn = s_appHint.ui32SwTexOpThreadNum;
 			bFound = IMG_TRUE;
 		}
-		else if (!sceClibStrncasecmp(pszHintName, "OGLES1SwTexOpThreadPriority", 28))
+		else if (!sceClibStrncasecmp(pszHintName, "SwTexOpThreadPriority", 28))
 		{
-			*(IMG_UINT32 *)pvReturn = s_appHint.ui32OGLES1SwTexOpThreadPriority;
+			*(IMG_UINT32 *)pvReturn = s_appHint.ui32SwTexOpThreadPriority;
 			bFound = IMG_TRUE;
 		}
-		else if (!sceClibStrncasecmp(pszHintName, "OGLES1SwTexOpThreadAffinity", 28))
+		else if (!sceClibStrncasecmp(pszHintName, "SwTexOpThreadAffinity", 28))
 		{
-			*(IMG_UINT32 *)pvReturn = s_appHint.ui32OGLES1SwTexOpThreadAffinity;
+			*(IMG_UINT32 *)pvReturn = s_appHint.ui32SwTexOpThreadAffinity;
 			bFound = IMG_TRUE;
 		}
-		else if (!sceClibStrncasecmp(pszHintName, "OGLES1SwTexOpMaxUltNum", 23))
+		else if (!sceClibStrncasecmp(pszHintName, "SwTexOpMaxUltNum", 23))
 		{
-			*(IMG_UINT32 *)pvReturn = s_appHint.ui32OGLES1SwTexOpMaxUltNum;
+			*(IMG_UINT32 *)pvReturn = s_appHint.ui32SwTexOpMaxUltNum;
 			bFound = IMG_TRUE;
 		}
-		else if (!sceClibStrncasecmp(pszHintName, "OGLES1SwTexOpCleanupDelay", 26))
+		else if (!sceClibStrncasecmp(pszHintName, "SwTexOpCleanupDelay", 26))
 		{
-			*(IMG_UINT32 *)pvReturn = s_appHint.ui32OGLES1SwTexOpCleanupDelay;
+			*(IMG_UINT32 *)pvReturn = s_appHint.ui32SwTexOpCleanupDelay;
+			bFound = IMG_TRUE;
+		}
+		else if (!sceClibStrncasecmp(pszHintName, "AdjustShaderPrecision", 22))
+		{
+			*(IMG_UINT32 *)pvReturn = s_appHint.ui32AdjustShaderPrecision;
+			bFound = IMG_TRUE;
+		}
+		else if (!sceClibStrncasecmp(pszHintName, "DumpCompilerLogFiles", 21))
+		{
+			*(IMG_UINT32 *)pvReturn = s_appHint.bDumpCompilerLogFiles;
+			bFound = IMG_TRUE;
+		}
+		else if (!sceClibStrncasecmp(pszHintName, "StrictBinaryVersionComparison", 30))
+		{
+			*(IMG_UINT32 *)pvReturn = s_appHint.bStrictBinaryVersionComparison;
+			bFound = IMG_TRUE;
+		}
+		else if (!sceClibStrncasecmp(pszHintName, "PolygonUnitsMultiplier", 23))
+		{
+			*(IMG_FLOAT *)pvReturn = s_appHint.fPolygonUnitsMultiplier;
+			bFound = IMG_TRUE;
+		}
+		else if (!sceClibStrncasecmp(pszHintName, "PolygonFactorMultiplier", 24))
+		{
+			*(IMG_FLOAT *)pvReturn = s_appHint.fPolygonFactorMultiplier;
+			bFound = IMG_TRUE;
+		}
+		else if (!sceClibStrncasecmp(pszHintName, "DumpUSPOutput", 14))
+		{
+			*(IMG_UINT32 *)pvReturn = s_appHint.bDumpUSPOutput;
+			bFound = IMG_TRUE;
+		}
+		else if (!sceClibStrncasecmp(pszHintName, "DumpShaderAnalysis", 19))
+		{
+			*(IMG_UINT32 *)pvReturn = s_appHint.bDumpShaderAnalysis;
+			bFound = IMG_TRUE;
+		}
+		else if (!sceClibStrncasecmp(pszHintName, "TrackUSCMemory", 15))
+		{
+			*(IMG_UINT32 *)pvReturn = s_appHint.bTrackUSCMemory;
+			bFound = IMG_TRUE;
+		}
+		else if (!sceClibStrncasecmp(pszHintName, "OverloadTexLayout", 18))
+		{
+			*(IMG_UINT32 *)pvReturn = s_appHint.ui32OverloadTexLayout;
+			bFound = IMG_TRUE;
+		}
+		else if (!sceClibStrncasecmp(pszHintName, "InitialiseVSOutputs", 20))
+		{
+			*(IMG_UINT32 *)pvReturn = s_appHint.bInitialiseVSOutputs;
+			bFound = IMG_TRUE;
+		}
+		else if (!sceClibStrncasecmp(pszHintName, "TriangleSplitPixelThreshold", 28))
+		{
+			*(IMG_UINT32 *)pvReturn = s_appHint.ui32TriangleSplitPixelThreshold;
+			bFound = IMG_TRUE;
+		}
+		else if (!sceClibStrncasecmp(pszHintName, "DynamicSplitCalc", 17))
+		{
+			*(IMG_UINT32 *)pvReturn = s_appHint.bDynamicSplitCalc;
+			bFound = IMG_TRUE;
+		}
+		else if (!sceClibStrncasecmp(pszHintName, "AllowTrilinearNPOT", 19))
+		{
+			*(IMG_UINT32 *)pvReturn = s_appHint.bAllowTrilinearNPOT;
+			bFound = IMG_TRUE;
+		}
+		else if (!sceClibStrncasecmp(pszHintName, "EnableVaryingPrecisionOpt", 26))
+		{
+			*(IMG_UINT32 *)pvReturn = s_appHint.bEnableVaryingPrecisionOpt;
 			bFound = IMG_TRUE;
 		}
 	}
@@ -423,8 +493,9 @@ IMG_EXPORT IMG_BOOL PVRSRVInitializeAppHint(PVRSRV_PSP2_APPHINT *psAppHint)
 
 	sceClibMemset(psAppHint, 0, sizeof(PVRSRV_PSP2_APPHINT));
 
-	sceClibStrncpy(psAppHint->szGLES1, "app0:libGLESv1_CM.suprx", 256);
-	sceClibStrncpy(psAppHint->szWindowSystem, "app0:libpvrPSP2_WSEGL.suprx", 256);
+	sceClibStrncpy(psAppHint->szGLES1, "app0:module/libGLESv1_CM.suprx", 256);
+	sceClibStrncpy(psAppHint->szGLES2, "app0:module/libGLESv2.suprx", 256);
+	sceClibStrncpy(psAppHint->szWindowSystem, "app0:module/libpvrPSP2_WSEGL.suprx", 256);
 	psAppHint->bDisableMetricsOutput = IMG_TRUE;
 	psAppHint->bDumpProfileData = IMG_FALSE;
 	psAppHint->ui32ProfileStartFrame = 0;
@@ -458,15 +529,30 @@ IMG_EXPORT IMG_BOOL PVRSRVInitializeAppHint(PVRSRV_PSP2_APPHINT *psAppHint)
 	psAppHint->ui32DefaultVertexBufferSize = 200 * 1024;
 	psAppHint->ui32FlushBehaviour = 0;
 	psAppHint->ui32MaxVertexBufferSize = 800 * 1024;
-	psAppHint->ui32OGLES1UNCTexHeapSize = 4 * 1024;
-	psAppHint->ui32OGLES1CDRAMTexHeapSize = 256 * 1024;
-	psAppHint->bOGLES1EnableUNCAutoExtend = IMG_TRUE;
-	psAppHint->bOGLES1EnableCDRAMAutoExtend = IMG_TRUE;
-	psAppHint->ui32OGLES1SwTexOpThreadNum = 1;
-	psAppHint->ui32OGLES1SwTexOpThreadPriority = 70;
-	psAppHint->ui32OGLES1SwTexOpThreadAffinity = 0;
-	psAppHint->ui32OGLES1SwTexOpMaxUltNum = 16;
-	psAppHint->ui32OGLES1SwTexOpCleanupDelay = 10000000;
+	psAppHint->ui32UNCTexHeapSize = 4 * 1024;
+	psAppHint->ui32CDRAMTexHeapSize = 256 * 1024;
+	psAppHint->bEnableUNCAutoExtend = IMG_TRUE;
+	psAppHint->bEnableCDRAMAutoExtend = IMG_TRUE;
+	psAppHint->ui32SwTexOpThreadNum = 1;
+	psAppHint->ui32SwTexOpThreadPriority = 70;
+	psAppHint->ui32SwTexOpThreadAffinity = 0;
+	psAppHint->ui32SwTexOpMaxUltNum = 16;
+	psAppHint->ui32SwTexOpCleanupDelay = 10000000;
+
+	psAppHint->ui32AdjustShaderPrecision = 0;
+	psAppHint->bDumpCompilerLogFiles = 0;
+	psAppHint->bStrictBinaryVersionComparison = 1;
+	psAppHint->fPolygonUnitsMultiplier = 1.0f;
+	psAppHint->fPolygonFactorMultiplier = 1.0f;
+	psAppHint->bDumpUSPOutput = 0;
+	psAppHint->bDumpShaderAnalysis = 0;
+	psAppHint->bTrackUSCMemory = 1;
+	psAppHint->ui32OverloadTexLayout = 0;
+	psAppHint->bInitialiseVSOutputs = 0;
+	psAppHint->ui32TriangleSplitPixelThreshold = EURASIA_DEFAULT_TAG_TRIANGLE_SPLIT;
+	psAppHint->bDynamicSplitCalc = 1;
+	psAppHint->bAllowTrilinearNPOT = 1;
+	psAppHint->bEnableVaryingPrecisionOpt = 1;
 
 	return IMG_TRUE;
 }

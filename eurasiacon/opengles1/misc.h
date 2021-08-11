@@ -87,15 +87,15 @@ typedef struct GLESAppHintsRec
 
 	/* PSP2-specific */
 
-	IMG_UINT32 ui32OGLES1CDRAMTexHeapSize;
-	IMG_UINT32 ui32OGLES1UNCTexHeapSize;
-	IMG_BOOL bOGLES1EnableCDRAMAutoExtend;
-	IMG_BOOL bOGLES1EnableUNCAutoExtend;
-	IMG_UINT32 ui32OGLES1SwTexOpThreadNum;
-	IMG_UINT32 ui32OGLES1SwTexOpThreadPriority;
-	IMG_UINT32 ui32OGLES1SwTexOpThreadAffinity;
-	IMG_UINT32 ui32OGLES1SwTexOpMaxUltNum;
-	IMG_UINT32 ui32OGLES1SwTexOpCleanupDelay;
+	IMG_UINT32 ui32CDRAMTexHeapSize;
+	IMG_UINT32 ui32UNCTexHeapSize;
+	IMG_BOOL bEnableCDRAMAutoExtend;
+	IMG_BOOL bEnableUNCAutoExtend;
+	IMG_UINT32 ui32SwTexOpThreadNum;
+	IMG_UINT32 ui32SwTexOpThreadPriority;
+	IMG_UINT32 ui32SwTexOpThreadAffinity;
+	IMG_UINT32 ui32SwTexOpMaxUltNum;
+	IMG_UINT32 ui32SwTexOpCleanupDelay;
 } GLESAppHints;
 
 IMG_BOOL GetApplicationHints(GLESAppHints *psAppHints, EGLcontextMode *psMode);

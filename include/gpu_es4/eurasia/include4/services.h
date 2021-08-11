@@ -64,7 +64,7 @@ extern "C" {
 		IMG_CHAR szGLES1[256]; //path to libGLESv1_CM module
 		IMG_CHAR szGLES2[256]; //path to libGLESv2 module
 
-		/* OGLES1 hints */
+		/* common OGLES hints */
 
 		IMG_BOOL bFBODepthDiscard;
 		IMG_BOOL bOptimisedValidation;
@@ -88,15 +88,32 @@ extern "C" {
 		IMG_UINT32 ui32DefaultVDMBufferSize;
 		IMG_BOOL bEnableMemorySpeedTest;
 		IMG_BOOL bEnableAppTextureDependency;
-		IMG_UINT32 ui32OGLES1UNCTexHeapSize;
-		IMG_UINT32 ui32OGLES1CDRAMTexHeapSize;
-		IMG_BOOL bOGLES1EnableUNCAutoExtend;
-		IMG_BOOL bOGLES1EnableCDRAMAutoExtend;
-		IMG_UINT32 ui32OGLES1SwTexOpThreadNum;
-		IMG_UINT32 ui32OGLES1SwTexOpThreadPriority;
-		IMG_UINT32 ui32OGLES1SwTexOpThreadAffinity;
-		IMG_UINT32 ui32OGLES1SwTexOpMaxUltNum;
-		IMG_UINT32 ui32OGLES1SwTexOpCleanupDelay;
+		IMG_UINT32 ui32UNCTexHeapSize;
+		IMG_UINT32 ui32CDRAMTexHeapSize;
+		IMG_BOOL bEnableUNCAutoExtend;
+		IMG_BOOL bEnableCDRAMAutoExtend;
+		IMG_UINT32 ui32SwTexOpThreadNum;
+		IMG_UINT32 ui32SwTexOpThreadPriority;
+		IMG_UINT32 ui32SwTexOpThreadAffinity;
+		IMG_UINT32 ui32SwTexOpMaxUltNum;
+		IMG_UINT32 ui32SwTexOpCleanupDelay;
+
+		/* OGLES2 hints */
+
+		IMG_UINT32 ui32AdjustShaderPrecision;
+		IMG_BOOL bDumpCompilerLogFiles;
+		IMG_BOOL bStrictBinaryVersionComparison;
+		IMG_FLOAT fPolygonUnitsMultiplier;
+		IMG_FLOAT fPolygonFactorMultiplier;
+		IMG_BOOL bDumpUSPOutput;
+		IMG_BOOL bDumpShaderAnalysis;
+		IMG_BOOL bTrackUSCMemory;
+		IMG_UINT32 ui32OverloadTexLayout;
+		IMG_BOOL bInitialiseVSOutputs;
+		IMG_UINT32 ui32TriangleSplitPixelThreshold;
+		IMG_BOOL bDynamicSplitCalc;
+		IMG_BOOL bAllowTrilinearNPOT;
+		IMG_BOOL bEnableVaryingPrecisionOpt;
 
 	} PVRSRV_PSP2_APPHINT;
 #endif

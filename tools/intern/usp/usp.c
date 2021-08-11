@@ -31,7 +31,6 @@
 #include <stdarg.h>
 #include <string.h>
 #include <stdio.h>
-#include <memory.h>
 #include "img_types.h"
 #include "sgxdefs.h"
 #include "use.h"

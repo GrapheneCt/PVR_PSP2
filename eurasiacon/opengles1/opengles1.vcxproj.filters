@@ -9,9 +9,6 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hpp</Extensions>
     </Filter>
-    <Filter Include="Header Files\pds_compiled">
-      <UniqueIdentifier>{d38016be-7fac-420a-a0fc-0befc98e99e0}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\psp2">
       <UniqueIdentifier>{abf445bd-7cc8-4cca-a05a-e10379cf6c20}</UniqueIdentifier>
     </Filter>
@@ -492,18 +489,6 @@
     </ClInclude>
     <ClInclude Include="xform.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="pds_compiled\pds_aux_vtx.h">
-      <Filter>Header Files\pds_compiled</Filter>
-    </ClInclude>
-    <ClInclude Include="pds_compiled\pds_aux_vtx_sizeof.h">
-      <Filter>Header Files\pds_compiled</Filter>
-    </ClInclude>
-    <ClInclude Include="pds_compiled\pds_mte_state_copy.h">
-      <Filter>Header Files\pds_compiled</Filter>
-    </ClInclude>
-    <ClInclude Include="pds_compiled\pds_mte_state_copy_sizeof.h">
-      <Filter>Header Files\pds_compiled</Filter>
     </ClInclude>
     <ClInclude Include="psp2\heaplib_internal.h">
       <Filter>Header Files\psp2</Filter>
