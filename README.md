@@ -30,7 +30,8 @@ Driver layer GPU libraries and tests for PSP2
 | Test  | Status |
 | ------------- | ------------- |
 | pvr2d_test | Passed  |
-| gles1test | Passed  |
+| gles1test1 | Passed  |
+| gles2test1 | Passed  |
 
 # Library port status
 
@@ -40,4 +41,4 @@ Driver layer GPU libraries and tests for PSP2
 | WSEGL | Completed  |
 | IMGEGL | Completed  |
 | OpenGLES1 | Completed  |
-| OpenGLES2 | WIP  |
+| OpenGLES2 | Completed  |
