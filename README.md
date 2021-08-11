@@ -12,7 +12,8 @@ Driver layer GPU libraries and tests for PSP2
 4. IMGEGL port for PSP2.
 5. WSEGL port for PSP2.
 6. OpenGL ES v1.1 port for PSP2.
-7. Various unittests to check basic driver features.
+7. OpenGL ES v2 port for PSP2.
+8. Various unittests to check basic driver features.
 
 # Unittest status
 
