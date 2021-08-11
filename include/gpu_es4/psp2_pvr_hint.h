@@ -3,6 +3,11 @@
 
 // Universal header for PVRSRV apphint. Use this instead of services.h
 
+typedef unsigned int IMG_UINT32;
+typedef int IMG_BOOL;
+typedef char IMG_CHAR;
+typedef float IMG_FLOAT;
+
 typedef struct _PVRSRV_PSP2_APPHINT_
 {
 	/* Common hints */
