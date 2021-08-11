@@ -7,53 +7,70 @@ typedef struct _PVRSRV_PSP2_APPHINT_
 {
 	/* Common hints */
 
-	unsigned int ui32PDSFragBufferSize;
-	unsigned int  ui32ParamBufferSize;
-	unsigned int  ui32DriverMemorySize;
-	unsigned int  ui32ExternalZBufferMode;
-	unsigned int  ui32ExternalZBufferXSize;
-	unsigned int  ui32ExternalZBufferYSize;
-	unsigned int bDumpProfileData;
-	unsigned int ui32ProfileStartFrame;
-	unsigned int ui32ProfileEndFrame;
-	unsigned int bDisableMetricsOutput;
-	char szWindowSystem[256]; //path to libpvrPSP2_WSEGL module
-	char szGLES1[256]; //path to libGLESv1_CM module
-	char szGLES2[256]; //path to libGLESv2 module
+	IMG_UINT32 ui32PDSFragBufferSize;
+	IMG_UINT32 ui32ParamBufferSize;
+	IMG_UINT32 ui32DriverMemorySize;
+	IMG_UINT32 ui32ExternalZBufferMode;
+	IMG_UINT32 ui32ExternalZBufferXSize;
+	IMG_UINT32 ui32ExternalZBufferYSize;
+	IMG_BOOL bDumpProfileData;
+	IMG_UINT32 ui32ProfileStartFrame;
+	IMG_UINT32 ui32ProfileEndFrame;
+	IMG_BOOL bDisableMetricsOutput;
+	IMG_CHAR szWindowSystem[256]; //path to libpvrPSP2_WSEGL module
+	IMG_CHAR szGLES1[256]; //path to libGLESv1_CM module
+	IMG_CHAR szGLES2[256]; //path to libGLESv2 module
 
-	/* OGLES1 hints */
+	/* common OGLES hints */
 
-	unsigned int bFBODepthDiscard;
-	unsigned int bOptimisedValidation;
-	unsigned int bDisableHWTQTextureUpload;
-	unsigned int bDisableHWTQNormalBlit;
-	unsigned int bDisableHWTQBufferBlit;
-	unsigned int bDisableHWTQMipGen;
-	unsigned int bDisableHWTextureUpload;
-	unsigned int ui32FlushBehaviour;
-	unsigned int bEnableStaticPDSVertex;
-	unsigned int bEnableStaticMTECopy;
-	unsigned int bDisableStaticPDSPixelSAProgram;
-	unsigned int bDisableUSEASMOPT;
-	unsigned int bDumpShaders;
-	unsigned int ui32DefaultVertexBufferSize;
-	unsigned int ui32MaxVertexBufferSize;
-	unsigned int ui32DefaultIndexBufferSize;
-	unsigned int ui32DefaultPDSVertBufferSize;
-	unsigned int ui32DefaultPregenPDSVertBufferSize;
-	unsigned int ui32DefaultPregenMTECopyBufferSize;
-	unsigned int ui32DefaultVDMBufferSize;
-	unsigned int bEnableMemorySpeedTest;
-	unsigned int bEnableAppTextureDependency;
-	unsigned int ui32OGLES1UNCTexHeapSize;
-	unsigned int ui32OGLES1CDRAMTexHeapSize;
-	unsigned int bOGLES1EnableUNCAutoExtend;
-	unsigned int bOGLES1EnableCDRAMAutoExtend;
-	unsigned int ui32OGLES1SwTexOpThreadNum;
-	unsigned int ui32OGLES1SwTexOpThreadPriority;
-	unsigned int ui32OGLES1SwTexOpThreadAffinity;
-	unsigned int ui32OGLES1SwTexOpMaxUltNum;
-	unsigned int ui32OGLES1SwTexOpCleanupDelay;
+	IMG_BOOL bFBODepthDiscard;
+	IMG_BOOL bOptimisedValidation;
+	IMG_BOOL bDisableHWTQTextureUpload;
+	IMG_BOOL bDisableHWTQNormalBlit;
+	IMG_BOOL bDisableHWTQBufferBlit;
+	IMG_BOOL bDisableHWTQMipGen;
+	IMG_BOOL bDisableHWTextureUpload;
+	IMG_UINT32 ui32FlushBehaviour;
+	IMG_BOOL bEnableStaticPDSVertex;
+	IMG_BOOL bEnableStaticMTECopy;
+	IMG_BOOL bDisableStaticPDSPixelSAProgram;
+	IMG_BOOL bDisableUSEASMOPT;
+	IMG_BOOL bDumpShaders;
+	IMG_UINT32 ui32DefaultVertexBufferSize;
+	IMG_UINT32 ui32MaxVertexBufferSize;
+	IMG_UINT32 ui32DefaultIndexBufferSize;
+	IMG_UINT32 ui32DefaultPDSVertBufferSize;
+	IMG_UINT32 ui32DefaultPregenPDSVertBufferSize;
+	IMG_UINT32 ui32DefaultPregenMTECopyBufferSize;
+	IMG_UINT32 ui32DefaultVDMBufferSize;
+	IMG_BOOL bEnableMemorySpeedTest;
+	IMG_BOOL bEnableAppTextureDependency;
+	IMG_UINT32 ui32UNCTexHeapSize;
+	IMG_UINT32 ui32CDRAMTexHeapSize;
+	IMG_BOOL bEnableUNCAutoExtend;
+	IMG_BOOL bEnableCDRAMAutoExtend;
+	IMG_UINT32 ui32SwTexOpThreadNum;
+	IMG_UINT32 ui32SwTexOpThreadPriority;
+	IMG_UINT32 ui32SwTexOpThreadAffinity;
+	IMG_UINT32 ui32SwTexOpMaxUltNum;
+	IMG_UINT32 ui32SwTexOpCleanupDelay;
+
+	/* OGLES2 hints */
+
+	IMG_UINT32 ui32AdjustShaderPrecision;
+	IMG_BOOL bDumpCompilerLogFiles;
+	IMG_BOOL bStrictBinaryVersionComparison;
+	IMG_FLOAT fPolygonUnitsMultiplier;
+	IMG_FLOAT fPolygonFactorMultiplier;
+	IMG_BOOL bDumpUSPOutput;
+	IMG_BOOL bDumpShaderAnalysis;
+	IMG_BOOL bTrackUSCMemory;
+	IMG_UINT32 ui32OverloadTexLayout;
+	IMG_BOOL bInitialiseVSOutputs;
+	IMG_UINT32 ui32TriangleSplitPixelThreshold;
+	IMG_BOOL bDynamicSplitCalc;
+	IMG_BOOL bAllowTrilinearNPOT;
+	IMG_BOOL bEnableVaryingPrecisionOpt;
 
 } PVRSRV_PSP2_APPHINT;
 
