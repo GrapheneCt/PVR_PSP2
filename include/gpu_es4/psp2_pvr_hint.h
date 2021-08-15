@@ -76,6 +76,7 @@ typedef struct _PVRSRV_PSP2_APPHINT_
 	IMG_BOOL bDynamicSplitCalc;
 	IMG_BOOL bAllowTrilinearNPOT;
 	IMG_BOOL bEnableVaryingPrecisionOpt;
+	IMG_BOOL bDisableAsyncTextureOp;
 
 } PVRSRV_PSP2_APPHINT;
 

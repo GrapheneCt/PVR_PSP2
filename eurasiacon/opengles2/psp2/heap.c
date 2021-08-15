@@ -38,6 +38,10 @@
 
 #define ALIGN(x, a)	(((x) + ((a) - 1)) & ~((a) - 1))
 
+// Currently we keep that outside of heap head because it may cause data corruption
+static PVRSRV_DEV_DATA *st_psDevData = IMG_NULL;
+static IMG_SID st_hDevMemContext = 0;
+
 //J プロトタイプ宣言
 //E prototype declaration
 int _sceHeapQueryBlockInfo(void *heap, void *ptr, unsigned int *puiSize, int *piBlockIndex, SceHeapMspaceLink **msplink);
@@ -139,8 +143,8 @@ void	*sceHeapCreateHeap(PVRSRV_DEV_DATA *psDevData, IMG_SID hDevMemContext, cons
 
 	head->magic = (SceUIntPtr)(head + 1);
 
-	head->psDevData = psDevData;
-	head->hDevMemContext = hDevMemContext;
+	st_psDevData = psDevData;
+	st_hDevMemContext = hDevMemContext;
 	head->memblockType = memblockType;
 
 	return (head);
@@ -180,7 +184,7 @@ int sceHeapDeleteHeap(void *heap)
 		next = hp->next;
 		sceClibMspaceDestroy(hp->msp);
 		sceKernelGetMemBlockBase(hp->uid, &tmpBase);
-		PVRSRVUnmapMemoryFromGpu(head->psDevData, tmpBase, 0, IMG_FALSE);
+		PVRSRVUnmapMemoryFromGpu(st_psDevData, tmpBase, 0, IMG_FALSE);
 		sceKernelFreeMemBlock(hp->uid);
 		if (hp == &(head->prim)) {
 			break;
@@ -313,8 +317,8 @@ void	*sceHeapAllocHeapMemoryWithOption(void *heap, unsigned int nbytes, const Sc
 		}
 
 		res = PVRSRVMapMemoryToGpu(
-			head->psDevData,
-			head->hDevMemContext,
+			st_psDevData,
+			st_hDevMemContext,
 			0,
 			hsize,
 			0,
@@ -363,8 +367,8 @@ void	*sceHeapAllocHeapMemoryWithOption(void *heap, unsigned int nbytes, const Sc
 
 #if defined(DEBUG)
 	res = PVRSRVCheckMappedMemory(
-		head->psDevData,
-		head->hDevMemContext,
+		st_psDevData,
+		st_hDevMemContext,
 		result,
 		nbytes,
 		PVRSRV_MEM_READ | PVRSRV_MEM_WRITE
@@ -440,7 +444,7 @@ int	sceHeapFreeHeapMemory(void *heap, void *ptr)
 #endif	/* USE_HEAPINFO */
 				sceClibMspaceDestroy(hp->msp);
 				sceKernelGetMemBlockBase(hp->uid, &tmpBase);
-				PVRSRVUnmapMemoryFromGpu(head->psDevData, tmpBase, 0, IMG_FALSE);
+				PVRSRVUnmapMemoryFromGpu(st_psDevData, tmpBase, 0, IMG_FALSE);
 				sceKernelFreeMemBlock(hp->uid);
 			}
 #if USE_HEAPINFO

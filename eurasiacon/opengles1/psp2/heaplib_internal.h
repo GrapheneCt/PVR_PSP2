@@ -69,8 +69,6 @@ typedef struct SceHeapWorkInternal {
 
 	SceHeapMspaceLink	prim;
 	unsigned int		memblockType;
-	PVRSRV_DEV_DATA *psDevData;
-	IMG_SID hDevMemContext;
 } SceHeapWorkInternal;
 
 #define SCE_HEAP_OFFSET_TO_VALID_HEAP	768				// FIXME:

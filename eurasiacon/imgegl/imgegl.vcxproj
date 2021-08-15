@@ -83,7 +83,7 @@
   <PropertyGroup />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|PSVita'">
     <ClCompile>
-      <PreprocessorDefinitions>NDEBUG;EGL_MODULE;IMGEGL_MODULE;PDS_BUILD_OPENGLES;PROFILE_COMMON;SUPPORT_SGX;SUPPORT_SGX543;SUPPORT_OPENGLES1;SUPPORT_OPENGLES1_V1;SUPPORT_OPENGLES2;IMG_PSP2_PRX_EXPORT;USE_GCC__thread_KEYWORD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;EGL_MODULE;IMGEGL_MODULE;PDS_BUILD_OPENGLES;PROFILE_COMMON;SUPPORT_SGX;SUPPORT_SGX543;SUPPORT_OPENGLES1;SUPPORT_OPENGLES1_V1;SUPPORT_OPENGLES2;IMG_PSP2_PRX_EXPORT;USE_GCC__thread_KEYWORD;EGL_EXTENSION_ANDROID_BLOB_CACHE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <OptimizationLevel>Level3</OptimizationLevel>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <AdditionalIncludeDirectories>$(SCE_PSP2_SDK_DIR)\target\include\vdsuite\user;$(SCE_PSP2_SDK_DIR)\target\include\vdsuite\common;$(SolutionDir)include\gpu_es4;$(SolutionDir)include\gpu_es4\eurasia\include4;$(SolutionDir)include\gpu_es4\eurasia\hwdefs;$(SolutionDir)include\gpu_es4\eurasia\services4\include;$(SolutionDir)include\gpu_es4\eurasia\services4\system\psp2;$(SolutionDir)codegen\pds;$(SolutionDir)codegen\pixevent;$(SolutionDir)codegen\usegen;$(SolutionDir)eurasiacon\include;$(SolutionDir)eurasiacon\common;$(SolutionDir)common\tls;$(SolutionDir)common\dmscalc;$(SolutionDir)include\gpu_es4\eurasia\services4\srvclient\devices\sgx;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -101,13 +101,13 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|PSVita'">
     <ClCompile>
-      <PreprocessorDefinitions>_DEBUG;DEBUG;EGL_MODULE;IMGEGL_MODULE;PDS_BUILD_OPENGLES;PROFILE_COMMON;SUPPORT_SGX;SUPPORT_SGX543;SUPPORT_OPENGLES1;SUPPORT_OPENGLES1_V1;SUPPORT_OPENGLES2;PVRSRV_NEED_PVR_DPF;IMG_PSP2_PRX_EXPORT;USE_GCC__thread_KEYWORD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;DEBUG;EGL_MODULE;IMGEGL_MODULE;PDS_BUILD_OPENGLES;PROFILE_COMMON;SUPPORT_SGX;SUPPORT_SGX543;SUPPORT_OPENGLES1;SUPPORT_OPENGLES1_V1;SUPPORT_OPENGLES2;PVRSRV_NEED_PVR_DPF;IMG_PSP2_PRX_EXPORT;USE_GCC__thread_KEYWORD;EGL_EXTENSION_ANDROID_BLOB_CACHE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <AdditionalIncludeDirectories>$(SCE_PSP2_SDK_DIR)\target\include\vdsuite\user;$(SCE_PSP2_SDK_DIR)\target\include\vdsuite\common;$(SolutionDir)include\gpu_es4;$(SolutionDir)include\gpu_es4\eurasia\include4;$(SolutionDir)include\gpu_es4\eurasia\hwdefs;$(SolutionDir)include\gpu_es4\eurasia\services4\include;$(SolutionDir)include\gpu_es4\eurasia\services4\system\psp2;$(SolutionDir)codegen\pds;$(SolutionDir)codegen\pixevent;$(SolutionDir)codegen\usegen;$(SolutionDir)eurasiacon\include;$(SolutionDir)eurasiacon\common;$(SolutionDir)common\tls;$(SolutionDir)common\dmscalc;$(SolutionDir)include\gpu_es4\eurasia\services4\srvclient\devices\sgx;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>$(OutDir)libgpu_es4_ext_stub.a;$(OutDir)libpvrPSP2_WSEGL_stub.a;$(SolutionDir)gpu_es4_ext\libSceGpuEs4User_stub.a;-lSceGxm_stub;-lSceGpuEs4ForUser_stub;-lSceModulemgr_stub;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(OutDir)libgpu_es4_ext_stub.a;$(OutDir)libpvrPSP2_WSEGL_stub.a;$(SolutionDir)gpu_es4_ext\libSceGpuEs4User_stub.a;-lSceGxm_stub;-lSceGpuEs4ForUser_stub;-lSceModulemgr_stub;-llibgpu_es4_kernel_ext_stub_weak;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SCE_PSP2_SDK_DIR)\target\lib\vdsuite;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>--no-required-files</AdditionalOptions>
     </Link>

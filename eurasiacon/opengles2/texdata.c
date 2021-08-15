@@ -2524,9 +2524,16 @@ IMG_INTERNAL IMG_VOID TranslateLevel(GLES2Context *gc, GLES2Texture *psTex, IMG_
 
 	if(!bHWUploaded)
 	{
-		if (psMipLevel->ui32Width >= 128 && psMipLevel->ui32Height >= 128)
+		if (!gc->sAppHints.bDisableAsyncTextureOp)
 		{
-			SWTextureUpload(gc, psTex, psMipLevel, ui32OffsetInBytes, psTexFmt, ui32Face, ui32Lod, ui32TopUsize, ui32TopVsize);
+			if (psMipLevel->ui32Width >= 128 && psMipLevel->ui32Height >= 128)
+			{
+				SWTextureUpload(gc, psTex, psMipLevel, ui32OffsetInBytes, psTexFmt, ui32Face, ui32Lod, ui32TopUsize, ui32TopVsize);
+			}
+			else
+			{
+				TextureUpload(psTex, psMipLevel, ui32OffsetInBytes, psTexFmt, ui32Face, ui32Lod, ui32TopUsize, ui32TopVsize);
+			}
 		}
 		else
 		{

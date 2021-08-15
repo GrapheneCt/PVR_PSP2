@@ -367,6 +367,7 @@ IMG_INTERNAL PVRSRV_ERROR OSFlushCPUCacheRange(IMG_VOID *pvRangeAddrStart,
 ******************************************************************************/
 IMG_EXPORT PVRSRV_ERROR IMG_CALLCONV PVRSRVCreateMutex(PVRSRV_MUTEX_HANDLE *phMutex)
 {
+#if defined(THREAD_SAFE)
 	SceKernelLwMutexWork *psPVRMutex;
 	IMG_INT iError;
 
@@ -387,6 +388,9 @@ IMG_EXPORT PVRSRV_ERROR IMG_CALLCONV PVRSRVCreateMutex(PVRSRV_MUTEX_HANDLE *phMu
 	}
 
 	*phMutex = (PVRSRV_MUTEX_HANDLE)psPVRMutex;
+#else
+	*phMutex = 1;
+#endif
 
 	return PVRSRV_OK;
 }
@@ -401,6 +405,7 @@ IMG_EXPORT PVRSRV_ERROR IMG_CALLCONV PVRSRVCreateMutex(PVRSRV_MUTEX_HANDLE *phMu
 ******************************************************************************/
 IMG_EXPORT PVRSRV_ERROR IMG_CALLCONV PVRSRVDestroyMutex(PVRSRV_MUTEX_HANDLE hMutex)
 {
+#if defined(THREAD_SAFE)
 	SceKernelLwMutexWork *psPVRMutex = (SceKernelLwMutexWork *)hMutex;
 	IMG_INT iError;
 
@@ -415,6 +420,7 @@ IMG_EXPORT PVRSRV_ERROR IMG_CALLCONV PVRSRVDestroyMutex(PVRSRV_MUTEX_HANDLE hMut
 	}
 
 	PVRSRVFreeUserModeMem(psPVRMutex);
+#endif
 
 	return PVRSRV_OK;
 }
@@ -429,6 +435,7 @@ IMG_EXPORT PVRSRV_ERROR IMG_CALLCONV PVRSRVDestroyMutex(PVRSRV_MUTEX_HANDLE hMut
 ******************************************************************************/
 IMG_EXPORT IMG_VOID IMG_CALLCONV PVRSRVLockMutex(PVRSRV_MUTEX_HANDLE hMutex)
 {
+#if defined(THREAD_SAFE)
 	SceKernelLwMutexWork *psPVRMutex = (SceKernelLwMutexWork *)hMutex;
 	IMG_INT iError;
 
@@ -436,6 +443,7 @@ IMG_EXPORT IMG_VOID IMG_CALLCONV PVRSRVLockMutex(PVRSRV_MUTEX_HANDLE hMutex)
 		return;
 
 	sceKernelLockLwMutex(psPVRMutex, 1, NULL);
+#endif
 }
 
 /*****************************************************************************
@@ -448,11 +456,12 @@ IMG_EXPORT IMG_VOID IMG_CALLCONV PVRSRVLockMutex(PVRSRV_MUTEX_HANDLE hMutex)
 ******************************************************************************/
 IMG_EXPORT IMG_VOID IMG_CALLCONV PVRSRVUnlockMutex(PVRSRV_MUTEX_HANDLE hMutex)
 {
+#if defined(THREAD_SAFE)
 	SceKernelLwMutexWork *psPVRMutex = (SceKernelLwMutexWork *)hMutex;
 	IMG_INT iError;
 
 	if (psPVRMutex == NULL)
 		return;
-
 	sceKernelUnlockLwMutex(psPVRMutex, 1);
+#endif
 }

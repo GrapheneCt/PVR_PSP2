@@ -57,33 +57,6 @@ static FILE *gLogFiles[LOGFILE_LAST_LOG_FILE]={ 0 };
  *****************************************************************************/
 #define GetLogFile(a) ((a >=  LOGFILE_LAST_LOG_FILE) ? IMG_NULL : gLogFiles[eLogFile])
 
-
-	#ifdef LINUX 
-
-	static IMG_INT32 MakeDir(IMG_CHAR *pszFilename)
-	{
-		return mkdir(pszFilename, S_IRWXU);
-	}
-
-	static IMG_INT32 ChangeDir(IMG_CHAR *pszPath)
-	{
-		return chdir(pszPath);
-	}
-
-	#else
-
-
-			static IMG_INT32 MakeDir(IMG_CHAR *pszFilename)
-			{
-				return _mkdir(pszFilename);
-			}
-
-			static IMG_INT32 ChangeDir(IMG_CHAR *pszPath)
-			{
-				return _chdir(pszPath);
-			}
-	#endif
-
 /******************************************************************************
  * Function Name: CreateLogFile
  *
@@ -120,37 +93,43 @@ IMG_INTERNAL IMG_BOOL CreateLogFile(LogFile eLogFile, IMG_CHAR *pszFileName)
 {
 	FILE     *LogFile = NULL;
 	IMG_BOOL  bChangedToLogFileDir = IMG_FALSE;
+	IMG_CHAR szPath[256];
 
 	if (eLogFile >= LOGFILE_LAST_LOG_FILE)
 	{
 		return IMG_FALSE;
 	}
 
-	if(ChangeDir("logfiles"))
+	SceUID fd = sceIoDopen("ux0:data/gles/glsl/logfiles");
+
+	if (fd <= 0)
 	{
-		if ( MakeDir("logfiles") == 0)
+		sceIoMkdir("ux0:data/gles", 0777);
+		sceIoMkdir("ux0:data/gles/glsl", 0777);
+		sceIoMkdir("ux0:data/gles/glsl/logfiles", 0777);
+
+		fd = sceIoDopen("ux0:data/gles/glsl/logfiles");
+
+		if (fd <= 0)
 		{
-			ChangeDir("logfiles");
-			bChangedToLogFileDir = IMG_TRUE;
+			bChangedToLogFileDir = IMG_FALSE;
 		}
 		else
 		{
-			bChangedToLogFileDir = IMG_FALSE;
+			sceIoDclose(fd);
+			bChangedToLogFileDir = IMG_TRUE;
 		}
 	}
 	else
 	{
+		sceIoDclose(fd);
 		bChangedToLogFileDir = IMG_TRUE;
 	}
 
 	if (pszFileName)
 	{
-		LogFile = fopen(pszFileName, "wc");
-	}
-
-	if (bChangedToLogFileDir)
-	{
-		ChangeDir("..");
+		snprintf(szPath, 256, "%s%s", "ux0:data/gles/glsl/logfiles/", pszFileName);
+		LogFile = fopen(szPath, "wc");
 	}
 
 	gLogFiles[eLogFile] = LogFile;

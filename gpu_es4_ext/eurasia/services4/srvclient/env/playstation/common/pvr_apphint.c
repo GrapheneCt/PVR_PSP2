@@ -427,6 +427,11 @@ IMG_EXPORT IMG_BOOL PVRSRVGetAppHint(IMG_VOID		*pvHintState,
 			*(IMG_UINT32 *)pvReturn = s_appHint.bEnableVaryingPrecisionOpt;
 			bFound = IMG_TRUE;
 		}
+		else if (!sceClibStrncasecmp(pszHintName, "DisableAsyncTextureOp", 22))
+		{
+		*(IMG_UINT32 *)pvReturn = s_appHint.bDisableAsyncTextureOp;
+			bFound = IMG_TRUE;
+		}
 	}
 
 	if (!bFound)
@@ -538,6 +543,7 @@ IMG_EXPORT IMG_BOOL PVRSRVInitializeAppHint(PVRSRV_PSP2_APPHINT *psAppHint)
 	psAppHint->ui32SwTexOpThreadAffinity = 0;
 	psAppHint->ui32SwTexOpMaxUltNum = 16;
 	psAppHint->ui32SwTexOpCleanupDelay = 10000000;
+	psAppHint->bDisableAsyncTextureOp = IMG_FALSE;
 
 	psAppHint->ui32AdjustShaderPrecision = 0;
 	psAppHint->bDumpCompilerLogFiles = 0;

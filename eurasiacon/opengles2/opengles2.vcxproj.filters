@@ -461,9 +461,6 @@
     <ClCompile Include="..\..\tools\intern\oglcompiler\parser\memmgr.c">
       <Filter>Source Files\tools\intern\oglcompiler\parser</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\tools\intern\oglcompiler\parser\metrics.c">
-      <Filter>Source Files\tools\intern\oglcompiler\parser</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\tools\intern\oglcompiler\parser\parser.c">
       <Filter>Source Files\tools\intern\oglcompiler\parser</Filter>
     </ClCompile>
@@ -472,6 +469,9 @@
     </ClCompile>
     <ClCompile Include="..\..\intermediates\glslparser\glsl_parser.tab.c">
       <Filter>Source Files\intermediates\glslparser</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\intern\oglcompiler\parser\parser_metrics.c">
+      <Filter>Source Files\tools\intern\oglcompiler\parser</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

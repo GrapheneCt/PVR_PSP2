@@ -96,7 +96,7 @@
 
 
 #if defined(__linux__) || defined(__psp2__)
-#if defined(DEBUG)
+#if defined(DEBUG) && !defined(__psp2__)
 
 	#define DebugMemAlloc(X)			PVRSRVAllocUserModeMemTracking(X, __FILE__, __LINE__)
 	#define DebugMemCalloc(X)			PVRSRVCallocUserModeMemTracking(X, __FILE__, __LINE__)

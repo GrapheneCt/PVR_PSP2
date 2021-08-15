@@ -1514,7 +1514,20 @@ static IMG_VOID IMG_CALLCONV UniPatchDebugPrint(const IMG_CHAR* pszFormat, ...)
 
 	if(gc->sAppHints.bDumpUSPOutput)
 	{
-		FILE    *fstream = fopen("usp_out.txt","a+t");
+		SceUID fd = sceIoDopen("ux0:data/gles/usp");
+
+		if (fd <= 0)
+		{
+			sceIoMkdir("ux0:data/gles", 0777);
+			sceIoMkdir("ux0:data/gles/usp", 0777);
+		}
+		else
+		{
+			sceIoDclose(fd);
+		}
+
+
+		FILE    *fstream = fopen("ux0:data/gles/usp_out.txt","a+t");
 		va_list vaList;
 
 		if(fstream)
@@ -3794,7 +3807,7 @@ GL_APICALL void GL_APIENTRY glCompileShader (GLuint shader)
 	GLES2_TIME_START(GLES2_TIMES_glCompileShader);
 
 	psShader = GetNamedShader(gc, shader);
-
+	
 	if(psShader == IMG_NULL)
 	{
 		GLES2_TIME_STOP(GLES2_TIMES_glCompileShader);

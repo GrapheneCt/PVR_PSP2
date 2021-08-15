@@ -729,6 +729,9 @@ IMG_INTERNAL IMG_BOOL GetApplicationHints(GLESAppHints *psAppHints, EGLcontextMo
 	ui32Default = 10000000;
 	PVRSRVGetAppHint(pvHintState, "SwTexOpCleanupDelay", IMG_UINT_TYPE, &ui32Default, &psAppHints->ui32SwTexOpCleanupDelay);
 
+	ui32Default = 1;
+	PVRSRVGetAppHint(pvHintState, "DisableAsyncTextureOp", IMG_UINT_TYPE, &ui32Default, &psAppHints->bDisableAsyncTextureOp);
+
 	PVRSRVFreeAppHintState(IMG_OPENGLES2, pvHintState);
 
 	return IMG_TRUE;

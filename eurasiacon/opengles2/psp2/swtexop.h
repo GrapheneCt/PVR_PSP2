@@ -6,10 +6,10 @@
 typedef struct SWTexUploadArg
 {
 	GLES2Context *gc;
-	GLES2Texture *psTex;
-	GLES2MipMapLevel *psMipLevel;
+	GLES2Texture psTex;
+	GLES2MipMapLevel psMipLevel;
 	IMG_UINT32 ui32OffsetInBytes;
-	GLES2TextureFormat *psTexFmt;
+	GLES2TextureFormat psTexFmt;
 	IMG_UINT32 ui32Face;
 	IMG_UINT32 ui32Lod;
 	IMG_UINT32 ui32TopUsize;

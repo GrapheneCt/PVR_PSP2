@@ -487,7 +487,18 @@ static IMG_BOOL CreateSharedState(GLES2Context *gc, GLES2Context *psShareContext
 #if defined(DEBUG)
 static FILE *OpenShaderAnalysisFile(void)
 {
-	#define SHADER_ANALYSIS_TXT "ux0:data/shaderanalysis.txt"
+	#define SHADER_ANALYSIS_TXT "ux0:data/gles/shaderanalysis.txt"
+
+	SceUID fd = sceIoDopen("ux0:data/gles");
+
+	if (fd <= 0)
+	{
+		sceIoMkdir("ux0:data/gles", 0777);
+	}
+	else
+	{
+		sceIoDclose(fd);
+	}
 
 #if defined(SUPPORT_ANDROID_PLATFORM)
 #define I_DIR				"/data/data/"

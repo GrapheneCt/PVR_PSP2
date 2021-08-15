@@ -23,7 +23,7 @@
 /******************************************************************************
    Memory manipulation functions
 ******************************************************************************/
-#if (defined(__linux__) && !defined(DEBUG))
+#if ((defined(__linux__) || defined(__psp2__)) && !defined(DEBUG))
 	#include <string.h>
 
 	#define	GLES2MemCopy(X,Y,Z)		memcpy(X, Y, Z)

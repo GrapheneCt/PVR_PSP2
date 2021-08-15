@@ -114,6 +114,7 @@ extern "C" {
 		IMG_BOOL bDynamicSplitCalc;
 		IMG_BOOL bAllowTrilinearNPOT;
 		IMG_BOOL bEnableVaryingPrecisionOpt;
+		IMG_BOOL bDisableAsyncTextureOp;
 
 	} PVRSRV_PSP2_APPHINT;
 #endif

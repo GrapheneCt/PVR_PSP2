@@ -2038,10 +2038,10 @@ skip_zs_alloc:
 	psKickTA->sKickTACommon.ui32ValidRegionYMax = psRenderSurface->ui32Height - 1;
 	psKickTA->sKickTACommon.ui16PrimitiveSplitThreshold = 1000;
 
-	while (gc->ui32AsyncTexOpNum)
+	/*while (gc->ui32AsyncTexOpNum)
 	{
 		sceKernelDelayThread(10);
-	}
+	}*/
 
 	GLES2_TIME_START(GLES2_TIMER_SGXKICKTA_TIME);
 

@@ -7,7 +7,7 @@
 
 int32_t sceKernelAtomicAddAndGet32(volatile int32_t* ptr, int32_t value);
 
-static IMG_VOID *pvAsDstPtr[1024];
+static IMG_VOID *pvAsDstPtr[8192];
 
 static IMG_INT32 _SWTextureUploadEntry(IMG_UINT32 arg)
 {
@@ -25,7 +25,7 @@ static IMG_INT32 _SWTextureUploadEntry(IMG_UINT32 arg)
 	sceUltUlthreadGetSelf(&psSelf);
 	GLES1Free(IMG_NULL, psSelf);
 
-	return 0;
+	return sceUltUlthreadExit(0);
 }
 
 static IMG_INT32 _SWTextureMipGenEntry(IMG_UINT32 arg)
@@ -46,7 +46,7 @@ static IMG_INT32 _SWTextureMipGenEntry(IMG_UINT32 arg)
 	sceUltUlthreadGetSelf(&psSelf);
 	GLES1Free(IMG_NULL, psSelf);
 
-	return 0;
+	return sceUltUlthreadExit(0);
 }
 
 IMG_INTERNAL IMG_VOID SWTextureUpload(
@@ -170,7 +170,7 @@ IMG_VOID texOpAsyncAddForCleanup(GLES1Context *gc, IMG_PVOID pvPtr)
 {
 	IMG_UINT32 i = 0;
 
-	for (i = 0; i < 1024; i++)
+	for (i = 0; i < sizeof(pvAsDstPtr) / 4; i++)
 	{
 		if (pvAsDstPtr[i] == IMG_NULL)
 		{
@@ -190,13 +190,13 @@ IMG_INT32 texOpAsyncCleanupThread(IMG_UINT32 argSize, IMG_VOID *pArgBlock)
 	IMG_UINT32 ui32TriggerTime = 0;
 	GLES1Context *gc = *(GLES1Context **)pArgBlock;
 
-	sceClibMemset(pvAsDstPtr, 0, 1024 * 4);
+	sceClibMemset(pvAsDstPtr, 0, sizeof(pvAsDstPtr));
 
 	while (!gc->bSwTexOpFin)
 	{
 		ui32TriggerTime = sceKernelGetProcessTimeLow();
 
-		for (i = 0; i < 1024; i++)
+		for (i = 0; i < sizeof(pvAsDstPtr) / 4; i++)
 		{
 			if (pvAsDstPtr[i] != IMG_NULL && !gc->ui32AsyncTexOpNum)
 			{

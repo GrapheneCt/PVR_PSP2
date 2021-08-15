@@ -298,7 +298,19 @@ IMG_INTERNAL IMG_BOOL InitFFTNLState(GLES1Context *gc)
 #if defined(FFGEN_UNIFLEX) && defined(DEBUG)
 	if(gc->sAppHints.bDumpShaders)
 	{
-		fOutputFile = fopen("USCShaders.txt","w+t");
+		SceUID fd = sceIoDopen("ux0:data/gles/usc2");
+
+		if (fd <= 0)
+		{
+			sceIoMkdir("ux0:data/gles", 0777);
+			sceIoMkdir("ux0:data/gles/usc2", 0777);
+		}
+		else
+		{
+			sceIoDclose(fd);
+		}
+
+		fOutputFile = fopen("ux0:data/gles/usc2/USCShaders.txt","w+t");
 	}
 #endif /* defined(FFGEN_UNIFLEX) && defined(DEBUG)*/
 
