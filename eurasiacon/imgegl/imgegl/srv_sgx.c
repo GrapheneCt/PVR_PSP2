@@ -479,7 +479,6 @@ static IMG_VOID SetupZLSRegs(EGLRenderSurface *psRenderSurface, IMG_UINT32 ui32W
 		GLES_SET_REGISTER(ps3DRegs->sISPStencilStoreBase, EUR_CR_ISP_STENCIL_STORE_BASE, 0);
 	}
 }
-static int rtnum = 0;
 
 /***********************************************************************************
  Function Name      : KEGL_SGXCreateRenderSurface
