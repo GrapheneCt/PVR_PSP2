@@ -1153,9 +1153,7 @@
 		#define	FIX_HW_BRN_29574/* workaround in uKernel */
 		#define FIX_HW_BRN_29602/* workaround in hwdefs*/
 		#define FIX_HW_BRN_29643/* workaround in usc*/
-#if !defined(__psp2__)
 		#define FIX_HW_BRN_29954/* turns off regbank split feature */
-#endif
 		#define FIX_HW_BRN_29960/* workaround in services */
 		#define FIX_HW_BRN_29997/* workaround in uKernel */
 		#define FIX_HW_BRN_30089/* workaround in services */
@@ -1212,6 +1210,94 @@
  			#define FIX_HW_BRN_31989/* workaround in uKernel */
 		#endif
 		#define FIX_HW_BRN_32044 /* workaround in uKernel, services and client drivers */
+ 		#if defined(SGX_FEATURE_MP)
+ 			#define FIX_HW_BRN_32052/* workaround in uKernel */
+ 		#endif
+		#define FIX_HW_BRN_32845/* workaround in ukernel*/
+		#define FIX_HW_BRN_33309/* workaround in ukernel*/
+ 		#if defined(SUPPORT_SGX_LOW_LATENCY_SCHEDULING) && defined(SGX_FEATURE_MP)
+			#define FIX_HW_BRN_33657/* workaround in ukernel*/
+		#endif
+		#define FIX_HW_BRN_33668/* workaround in client drivers */
+		#define FIX_HW_BRN_33753/* workaround in ukernel */
+		#define FIX_HW_BRN_33920/* workaround in ukernel */
+		#define FIX_HW_BRN_34043 /* workaround in services */
+		#define FIX_HW_BRN_34264 /* workaround in uKernel */
+		#define FIX_HW_BRN_34293 /* workaround in usc */
+		#define FIX_HW_BRN_34351 /* Implicit workaround in client drivers */
+		#define FIX_HW_BRN_34811 /* workaround in uKernel */
+		#define FIX_HW_BRN_34939 /* workaround in services */
+		#define FIX_HW_BRN_35498 /* Workaround in client drivers */
+		#define FIX_HW_BRN_36513 /* workaround in uKernel and Services */
+	#else
+	#if SGX_CORE_REV == 117
+		#define FIX_HW_BRN_28249/* Workaround in client drivers (dmscalc) */
+		#define	FIX_HW_BRN_29424/* workaround in uKernel */
+		#define FIX_HW_BRN_29461/* workaround in uKernel */
+		#define FIX_HW_BRN_29504/* workaround in services */
+		#define FIX_HW_BRN_29513/* workaround in client drivers/compiler */
+		#define FIX_HW_BRN_29519/* usc */
+		#define	FIX_HW_BRN_29557/* workaround in uKernel */
+		#define	FIX_HW_BRN_29574/* workaround in uKernel */
+		#define FIX_HW_BRN_29602/* workaround in hwdefs*/
+		#define FIX_HW_BRN_29643/* workaround in usc*/
+		// #define FIX_HW_BRN_29954/* turns off regbank split feature */
+		// #define FIX_HW_BRN_29960/* workaround in services */
+		#define FIX_HW_BRN_29997/* workaround in uKernel */
+		#define FIX_HW_BRN_30089/* workaround in services */
+		#define FIX_HW_BRN_30182/* workaround in uKernel */
+		// #define FIX_HW_BRN_30201/* turns off msaa 5th position feature */
+		#define FIX_HW_BRN_30505/* workaround in uKernel */
+		#define FIX_HW_BRN_30573/* workaround in services */
+		#define FIX_HW_BRN_30656/* workaround in uKernel */
+		#define FIX_HW_BRN_30700/* workaround in uKernel */
+		#define FIX_HW_BRN_30701/* workaround in uKernel */
+		#define	FIX_HW_BRN_30710/* workaround in uKernel */
+		#define FIX_HW_BRN_30749/* workaround in uKernel */
+		#define FIX_HW_BRN_30764 /* workaround in uKernel */
+		#define FIX_HW_BRN_30795/* workaround in usc */
+		#define FIX_HW_BRN_30852/* turns off PDS auto clock gating */
+		#define FIX_HW_BRN_30853/* workaround in usc */
+		#define FIX_HW_BRN_30871/* workaround in usc*/
+		#define FIX_HW_BRN_30893/* workaround in uKernel */
+		// #define FIX_HW_BRN_30954/* workaround in services */
+		// #define FIX_HW_BRN_31054/* workaround in services */
+		#define FIX_HW_BRN_31076/* workaround in uKernel */
+		// #define FIX_HW_BRN_31079/* workaround in services */
+		// #define FIX_HW_BRN_31093/* workaround in services */
+		#define FIX_HW_BRN_31109/* workaround in uKernel (may not be present in psp2) */
+		#define FIX_HW_BRN_31140 /* workaround in client driver (no intention to fix) */
+		#define FIX_HW_BRN_31175/* workaround in client drivers (no intention to fix hw) */
+		// #define FIX_HW_BRN_31195/* workaround in services */
+		#define FIX_HW_BRN_31256/* NOWA: No intention to fix */
+		#define FIX_HW_BRN_31272/* workaround in services (srvclient) and uKernel */
+		// #define FIX_HW_BRN_31278/* disabled prefetching in MMU */
+ 		#if defined(SGX_FEATURE_MP)
+ 			#define FIX_HW_BRN_31425/* workaround in services and uKernel */
+ 		#endif
+		#define FIX_HW_BRN_31474/* workaround in uKernel */
+		#define FIX_HW_BRN_31542 /* workaround in uKernel and Services */
+ 		#define FIX_HW_BRN_31543/* workaround in uKernel */
+ 		#if defined(SGX_FEATURE_MP)
+ 			#define FIX_HW_BRN_31559/* workaround in uKernel */
+ 		#endif
+		#define FIX_HW_BRN_31562/* workaround in uKernel */
+		// #define FIX_HW_BRN_31620/* workaround in services */
+		#define FIX_HW_BRN_31663/* Client drivers. No Intention to fix */
+ 		#if defined(SGX_FEATURE_MP)
+ 			#define FIX_HW_BRN_31769/* workaround in uKernel */
+ 		#endif
+ 		#define FIX_HW_BRN_31780/* workaround in uKernel */
+ 		#define FIX_HW_BRN_31930/* workaround in uKernel */
+ 		#if defined(SGX_FEATURE_MP)
+ 			#define FIX_HW_BRN_31964/* workaround in uKernel */
+ 		#endif
+		#define FIX_HW_BRN_31982/* workaround in codegen */
+		#define FIX_HW_BRN_31988/* workaround in usc and Services */
+ 		#if defined(SGX_FEATURE_MP)
+ 			#define FIX_HW_BRN_31989/* workaround in uKernel */
+		#endif
+		// #define FIX_HW_BRN_32044 /* workaround in uKernel, services and client drivers */
  		#if defined(SGX_FEATURE_MP)
  			#define FIX_HW_BRN_32052/* workaround in uKernel */
  		#endif
@@ -2029,6 +2115,7 @@
 		#define FIX_HW_BRN_34293 /* workaround in usc */
 	#else
 		#error "sgxerrata.h: SGX543 Core Revision unspecified"
+	#endif
 	#endif
 	#endif
 	#endif

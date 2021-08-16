@@ -350,6 +350,7 @@
 #define SGXBS_CORE_REVISION_114                        ((IMG_UINT16) 0x0114U)
 #define SGXBS_CORE_REVISION_115                        ((IMG_UINT16) 0x0115U)
 #define SGXBS_CORE_REVISION_116                        ((IMG_UINT16) 0x0116U)
+#define SGXBS_CORE_REVISION_117                        ((IMG_UINT16) 0x0117U)
 #define SGXBS_CORE_REVISION_120                        ((IMG_UINT16) 0x0120U)
 #define SGXBS_CORE_REVISION_121                        ((IMG_UINT16) 0x0121U)
 #define SGXBS_CORE_REVISION_122                        ((IMG_UINT16) 0x0122U)
