@@ -15,6 +15,20 @@ Driver layer GPU libraries and tests for PSP2
 7. OpenGL ES v2 port for PSP2.
 8. Various unittests to check basic driver features.
 
+# Known issues
+
+### GLES1:
+
+1. GLES1 and GLES2 libraries upload textures to separate GPU memory on demand after validation. That increases memory consumption by 2 and may cause slowdowns.
+- Required solution: render textures directly from intermediate memory.
+
+### GLES2:
+
+1. GLES1 and GLES2 libraries upload textures to separate GPU memory on demand after validation. That increases memory consumption by 2 and may cause slowdowns.
+- Required solution: render textures directly from intermediate memory.
+
+2. Major slowdown during vector instruction optimizations in GLSL shader compiler, specifically GenerateVectorDualIssue() function.
+
 # Unittest status
 
 ### Basic:
