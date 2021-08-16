@@ -17,6 +17,6 @@
 #define SUPPORT_SGX_NEW_STATUS_VALS
 #define SUPPORT_SID_INTERFACE
 #define TRANSFER_QUEUE
-#define SGX_CORE_REV 113 //Actual revision on Vita is 117, but there is no support for it in this driver version
+#define SGX_CORE_REV 117
 
 #endif
