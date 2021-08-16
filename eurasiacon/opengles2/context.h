@@ -450,7 +450,7 @@ __inline PVRSRV_ERROR GLES2FREEDEVICEMEM_HEAP(GLES2Context *gc, PVRSRV_CLIENT_ME
 		PVRSRVFreeSyncInfo(gc->ps3DDevData, psMemInfo->psClientSyncInfo);
 	}
 
-	GLES2Free(IMG_NULL, psMemInfo->pvLinAddr);
+	GLES2Free(gc, psMemInfo->pvLinAddr);
 	GLES2Free(IMG_NULL, psMemInfo);
 
 	return PVRSRV_OK;
