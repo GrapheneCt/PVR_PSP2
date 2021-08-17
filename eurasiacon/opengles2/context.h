@@ -369,11 +369,11 @@ __inline IMG_VOID GLES2Free(GLES2Context *gc, void *mem)
 #if defined(DEBUG)
 	SceKernelMemBlockInfo sMemInfo;
 	sMemInfo.size = sizeof(SceKernelMemBlockInfo);
-	sMemInfo.type = 0;
-	sceKernelGetMemBlockInfoByAddr(mem, &sMemInfo);
-	if (sMemInfo.type != SCE_KERNEL_MEMBLOCK_TYPE_USER_RW && !gc)
+	sMemInfo.type = SCE_KERNEL_MEMBLOCK_TYPE_USER_RW;
+	IMG_INT32 ret = sceKernelGetMemBlockInfoByAddr(mem, &sMemInfo);
+	if (ret == 0 && sMemInfo.type != SCE_KERNEL_MEMBLOCK_TYPE_USER_RW && !gc)
 	{
-		PVR_DPF((PVR_DBG_WARNING, "GLES2Free called on uncached memory, but gc is NULL!"));
+		PVR_DPF((PVR_DBG_ERROR, "GLES2Free called on uncached memory, but gc is NULL!"));
 		abort();
 	}
 #endif
