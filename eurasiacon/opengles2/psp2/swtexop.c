@@ -79,10 +79,10 @@ IMG_INTERNAL IMG_VOID SWTextureUpload(
 		psArg->psSyncInfo = psTex->psMemInfo->psClientSyncInfo;
 	}
 
-	/*do
+	do
 	{
 		eResult = SGX2DQueryBlitsComplete(gc->ps3DDevData, psArg->psSyncInfo, IMG_TRUE);
-	} while (eResult == PVRSRV_ERROR_TIMEOUT);*/
+	} while (eResult == PVRSRV_ERROR_TIMEOUT);
 
 	PVRSRVCreateSyncInfoModObj(gc->psSysContext->psConnection, &psArg->hOpSyncObj);
 
@@ -186,7 +186,7 @@ IMG_VOID texOpAsyncAddForCleanup(GLES2Context *gc, IMG_PVOID pvPtr)
 
 	PVR_DPF((PVR_DBG_WARNING, "texOpAsyncAddForCleanup: not enough space in free queue"));
 
-	GLES2Free(IMG_NULL, pvPtr);
+	GLES2Free(gc, pvPtr);
 }
 
 IMG_INT32 texOpAsyncCleanupThread(IMG_UINT32 argSize, IMG_VOID *pArgBlock)
@@ -206,7 +206,7 @@ IMG_INT32 texOpAsyncCleanupThread(IMG_UINT32 argSize, IMG_VOID *pArgBlock)
 			if (pvAsDstPtr[i] != IMG_NULL && !gc->ui32AsyncTexOpNum)
 			{
 				SGXWaitTransfer(gc->ps3DDevData, gc->psSysContext->hTransferContext);
-				GLES2Free(IMG_NULL, pvAsDstPtr[i]);
+				GLES2Free(gc, pvAsDstPtr[i]);
 				pvAsDstPtr[i] = IMG_NULL;
 			}
 		}

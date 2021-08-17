@@ -365,6 +365,19 @@ __inline IMG_VOID *GLES2CallocHeapUNC(GLES2Context *gc, unsigned int size)
 #define GLES2FreeAsync(X,Y)					   texOpAsyncAddForCleanup(X, Y)
 __inline IMG_VOID GLES2Free(GLES2Context *gc, void *mem)
 {
+
+#if defined(DEBUG)
+	SceKernelMemBlockInfo sMemInfo;
+	sMemInfo.size = sizeof(SceKernelMemBlockInfo);
+	sMemInfo.type = 0;
+	sceKernelGetMemBlockInfoByAddr(mem, &sMemInfo);
+	if (sMemInfo.type != SCE_KERNEL_MEMBLOCK_TYPE_USER_RW && !gc)
+	{
+		PVR_DPF((PVR_DBG_WARNING, "GLES2Free called on uncached memory, but gc is NULL!"));
+		abort();
+	}
+#endif
+
 	if (gc)
 	{
 		if (sceHeapFreeHeapMemory(gc->pvUNCHeap, mem) == SCE_HEAP_ERROR_INVALID_POINTER)
@@ -415,9 +428,10 @@ __inline PVRSRV_ERROR GLES2ALLOCDEVICEMEM_HEAP(GLES2Context *gc, IMG_UINT32 ui32
 	}
 
 	psMemInfo = GLES2Calloc(gc, sizeof(PVRSRV_CLIENT_MEM_INFO));
+
 	if (!psMemInfo)
 	{
-		GLES2Free(IMG_NULL, mem);
+		GLES2Free(gc, mem);
 		return PVRSRV_ERROR_OUT_OF_MEMORY;
 	}
 

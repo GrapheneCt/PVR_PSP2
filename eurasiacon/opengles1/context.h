@@ -618,6 +618,19 @@ __inline IMG_VOID *GLES1CallocHeapUNC(GLES1Context *gc, unsigned int size)
 #define GLES1FreeAsync(X,Y)					   texOpAsyncAddForCleanup(X, Y)
 __inline IMG_VOID GLES1Free(GLES1Context *gc, void *mem)
 {
+
+#if defined(DEBUG)
+	SceKernelMemBlockInfo sMemInfo;
+	sMemInfo.size = sizeof(SceKernelMemBlockInfo);
+	sMemInfo.type = 0;
+	sceKernelGetMemBlockInfoByAddr(mem, &sMemInfo);
+	if (sMemInfo.type != SCE_KERNEL_MEMBLOCK_TYPE_USER_RW && !gc)
+	{
+		PVR_DPF((PVR_DBG_WARNING, "GLES1Free called on uncached memory, but gc is NULL!"));
+		abort();
+	}
+#endif
+
 	if (gc)
 	{
 		if (sceHeapFreeHeapMemory(gc->pvUNCHeap, mem) == SCE_HEAP_ERROR_INVALID_POINTER)
