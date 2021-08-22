@@ -1527,7 +1527,7 @@ static IMG_VOID IMG_CALLCONV UniPatchDebugPrint(const IMG_CHAR* pszFormat, ...)
 		}
 
 
-		FILE    *fstream = fopen("ux0:data/gles/usp_out.txt","a+t");
+		FILE    *fstream = fopen("ux0:data/gles/usp/usp_out.txt","a+t");
 		va_list vaList;
 
 		if(fstream)

@@ -636,8 +636,10 @@ static IMG_BOOL InitContext(GLES2Context *gc, GLES2Context *psShareContext, EGLc
 	sceSysmoduleLoadModuleInternal(SCE_SYSMODULE_INTERNAL_ULT);
 
 	IMG_UINT32 ui32UltRuntimeWorkAreaSize = sceUltUlthreadRuntimeGetWorkAreaSize(gc->sAppHints.ui32SwTexOpMaxUltNum, gc->sAppHints.ui32SwTexOpThreadNum);
-	IMG_PVOID pvUltRuntimeWorkArea = GLES2Malloc(gc, ui32UltRuntimeWorkAreaSize);
+	gc->pvUltRuntimeWorkArea = GLES2Malloc(gc, ui32UltRuntimeWorkAreaSize);
 	gc->pvUltRuntime = GLES2Malloc(gc, _SCE_ULT_ULTHREAD_RUNTIME_SIZE);
+	gc->pvUltThreadStorage = GLES2Malloc(gc, 4 * gc->sAppHints.ui32SwTexOpMaxUltNum);
+	GLES2MemSet(gc->pvUltThreadStorage, 0, 4 * gc->sAppHints.ui32SwTexOpMaxUltNum);
 
 	SceUltUlthreadRuntimeOptParam sUltOptParam;
 	sceUltUlthreadRuntimeOptParamInitialize(&sUltOptParam);
@@ -651,7 +653,7 @@ static IMG_BOOL InitContext(GLES2Context *gc, GLES2Context *psShareContext, EGLc
 		"OGLES2UltRuntime",
 		gc->sAppHints.ui32SwTexOpMaxUltNum,
 		gc->sAppHints.ui32SwTexOpThreadNum,
-		pvUltRuntimeWorkArea,
+		gc->pvUltRuntimeWorkArea,
 		&sUltOptParam);
 
 	if (i != SCE_OK)
@@ -1047,7 +1049,10 @@ FAILED_TASync:
 
 	FreeContextSharedState(gc);
 
+	GLES2Free(IMG_NULL, gc->pvUltThreadStorage);
 	sceUltUlthreadRuntimeDestroy((SceUltUlthreadRuntime *)gc->pvUltRuntime);
+	GLES2Free(IMG_NULL, gc->pvUltRuntimeWorkArea);
+	GLES2Free(IMG_NULL, gc->pvUltRuntime);
 
 FAILED_sceUltUlthreadRuntimeCreate:
 
@@ -1182,7 +1187,10 @@ static IMG_BOOL DeInitContext(GLES2Context *gc)
 		sceHeapDeleteHeap(gc->pvCDRAMHeap);
 	}
 
+	GLES2Free(IMG_NULL, gc->pvUltThreadStorage);
 	sceUltUlthreadRuntimeDestroy((SceUltUlthreadRuntime *)gc->pvUltRuntime);
+	GLES2Free(IMG_NULL, gc->pvUltRuntimeWorkArea);
+	GLES2Free(IMG_NULL, gc->pvUltRuntime);
 
 	return bPass;
 }	

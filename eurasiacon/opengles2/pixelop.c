@@ -1077,7 +1077,7 @@ GL_APICALL void GL_APIENTRY glReadPixels(GLint x, GLint y, GLsizei width, GLsize
 
 	if(pvSurfacePointer!=psReadParams->pvLinSurfaceAddress)
 	{
-		GLES2Free(IMG_NULL, pvSurfacePointer);
+		GLES2FreeAsync(gc, pvSurfacePointer);
 	}
 
 	GLES2_INC_PIXEL_COUNT(GLES2_TIMES_glReadPixels, sSpanInfo.ui32Width * sSpanInfo.ui32Height);

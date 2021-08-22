@@ -516,6 +516,8 @@ struct GLES1Context_TAG
 	IMG_PVOID pvUNCHeap;
 	IMG_PVOID pvCDRAMHeap;
 	IMG_PVOID pvUltRuntime;
+	IMG_PVOID pvUltRuntimeWorkArea;
+	IMG_PVOID *pvUltThreadStorage;
 	IMG_UINT32 ui32AsyncTexOpNum;
 	IMG_BOOL bSwTexOpFin;
 	SceUID hSwTexOpThrd;
@@ -626,7 +628,7 @@ __inline IMG_VOID GLES1Free(GLES1Context *gc, void *mem)
 	IMG_INT32 ret = sceKernelGetMemBlockInfoByAddr(mem, &sMemInfo);
 	if (ret == 0 && sMemInfo.type != SCE_KERNEL_MEMBLOCK_TYPE_USER_RW && !gc)
 	{
-		PVR_DPF((PVR_DBG_ERROR, "GLES2Free called on uncached memory, but gc is NULL!"));
+		PVR_DPF((PVR_DBG_ERROR, "GLES1Free called on uncached memory, but gc is NULL!"));
 		abort();
 	}
 #endif

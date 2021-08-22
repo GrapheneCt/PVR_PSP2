@@ -22,9 +22,6 @@ static IMG_INT32 _SWTextureUploadEntry(IMG_UINT32 arg)
 	PVRSRVDestroySyncInfoModObj(psArg->gc->psSysContext->psConnection, psArg->hOpSyncObj);
 
 	GLES2Free(IMG_NULL, psArg);
-	SceUltUlthread *psSelf;
-	sceUltUlthreadGetSelf(&psSelf);
-	GLES2Free(IMG_NULL, psSelf);
 
 	return sceUltUlthreadExit(0);
 }
@@ -44,9 +41,6 @@ static IMG_INT32 _SWTextureMipGenEntry(IMG_UINT32 arg)
 	}
 
 	GLES2Free(IMG_NULL, psArg);
-	SceUltUlthread *psSelf;
-	sceUltUlthreadGetSelf(&psSelf);
-	GLES2Free(IMG_NULL, psSelf);
 
 	return sceUltUlthreadExit(0);
 }
@@ -56,6 +50,8 @@ IMG_INTERNAL IMG_VOID SWTextureUpload(
 	IMG_UINT32 ui32Face, IMG_UINT32 ui32Lod, IMG_UINT32 ui32TopUsize, IMG_UINT32 ui32TopVsize)
 {
 	PVRSRV_ERROR eResult;
+	IMG_INT32 i;
+	IMG_INT32 ret;
 	IMG_PVOID arg = GLES2Malloc(gc, sizeof(SWTexUploadArg));
 	SWTexUploadArg *psArg = (SWTexUploadArg *)arg;
 	psArg->gc = gc;
@@ -97,8 +93,17 @@ IMG_INTERNAL IMG_VOID SWTextureUpload(
 
 	sceKernelAtomicAddAndGet32(&gc->ui32AsyncTexOpNum, 1);
 
-	int ret = sceUltUlthreadCreate(
-		GLES2Malloc(gc, _SCE_ULT_ULTHREAD_SIZE),
+	for (i = 0; i < gc->sAppHints.ui32SwTexOpMaxUltNum; i++)
+	{
+		if (gc->pvUltThreadStorage[i] == IMG_NULL)
+		{
+			gc->pvUltThreadStorage[i] = GLES2Malloc(gc, _SCE_ULT_ULTHREAD_SIZE);
+			break;
+		}
+	}
+
+	ret = sceUltUlthreadCreate(
+		gc->pvUltThreadStorage[i],
 		"OGLES2SWTextureUpload",
 		_SWTextureUploadEntry,
 		(IMG_UINT32)arg,
@@ -106,11 +111,19 @@ IMG_INTERNAL IMG_VOID SWTextureUpload(
 		0,
 		gc->pvUltRuntime,
 		SCE_NULL);
+
+	if (ret != SCE_OK)
+	{
+		PVR_DPF((PVR_DBG_ERROR, "sceUltUlthreadCreate failed with code 0x%X. Consider increasing apphint SwTexOpMaxUltNum value", ret));
+		abort();
+	}
 }
 
 IMG_INTERNAL IMG_BOOL SWMakeTextureMipmapLevels(GLES2Context *gc, GLES2Texture *psTex, IMG_UINT32 ui32Face, IMG_UINT32 ui32MaxFace, IMG_BOOL bIsNonPow2)
 {
 	PVRSRV_ERROR eResult;
+	IMG_INT32 i;
+	IMG_INT32 ret;
 	IMG_PVOID arg = GLES2Malloc(gc, sizeof(SWTexMipGenArg));
 	SWTexMipGenArg *psArg = (SWTexMipGenArg *)arg;
 	psArg->gc = gc;
@@ -158,8 +171,17 @@ IMG_INTERNAL IMG_BOOL SWMakeTextureMipmapLevels(GLES2Context *gc, GLES2Texture *
 
 	sceKernelAtomicAddAndGet32(&gc->ui32AsyncTexOpNum, 1);
 
-	sceUltUlthreadCreate(
-		GLES2Malloc(gc, _SCE_ULT_ULTHREAD_SIZE),
+	for (i = 0; i < gc->sAppHints.ui32SwTexOpMaxUltNum; i++)
+	{
+		if (gc->pvUltThreadStorage[i] == IMG_NULL)
+		{
+			gc->pvUltThreadStorage[i] = GLES2Malloc(gc, _SCE_ULT_ULTHREAD_SIZE);
+			break;
+		}
+	}
+
+	ret = sceUltUlthreadCreate(
+		gc->pvUltThreadStorage[i],
 		"OGLES2SWTextureMipGen",
 		_SWTextureMipGenEntry,
 		(IMG_UINT32)arg,
@@ -167,6 +189,12 @@ IMG_INTERNAL IMG_BOOL SWMakeTextureMipmapLevels(GLES2Context *gc, GLES2Texture *
 		0,
 		gc->pvUltRuntime,
 		SCE_NULL);
+
+	if (ret != SCE_OK)
+	{
+		PVR_DPF((PVR_DBG_ERROR, "sceUltUlthreadCreate failed with code 0x%X. Consider increasing apphint SwTexOpMaxUltNum value", ret));
+		abort();
+	}
 
 	return IMG_TRUE;
 }
@@ -211,7 +239,41 @@ IMG_INT32 texOpAsyncCleanupThread(IMG_UINT32 argSize, IMG_VOID *pArgBlock)
 			}
 		}
 
+		for (i = 0; i < gc->sAppHints.ui32SwTexOpMaxUltNum; i++)
+		{
+			if (gc->pvUltThreadStorage[i] != IMG_NULL)
+			{
+				if (sceUltUlthreadTryJoin(gc->pvUltThreadStorage[i], NULL) == SCE_OK)
+				{
+					GLES2Free(IMG_NULL, gc->pvUltThreadStorage[i]);
+					gc->pvUltThreadStorage[i] = IMG_NULL;
+				}
+			}
+		}
+
 		sceKernelDelayThread(gc->sAppHints.ui32SwTexOpCleanupDelay);
+	}
+
+	for (i = 0; i < sizeof(pvAsDstPtr) / 4; i++)
+	{
+		if (pvAsDstPtr[i] != IMG_NULL && !gc->ui32AsyncTexOpNum)
+		{
+			SGXWaitTransfer(gc->ps3DDevData, gc->psSysContext->hTransferContext);
+			GLES2Free(gc, pvAsDstPtr[i]);
+			pvAsDstPtr[i] = IMG_NULL;
+		}
+	}
+
+	for (i = 0; i < gc->sAppHints.ui32SwTexOpMaxUltNum; i++)
+	{
+		if (gc->pvUltThreadStorage[i] != IMG_NULL)
+		{
+			if (sceUltUlthreadJoin(gc->pvUltThreadStorage[i], NULL) == SCE_OK)
+			{
+				GLES2Free(IMG_NULL, gc->pvUltThreadStorage[i]);
+				gc->pvUltThreadStorage[i] = IMG_NULL;
+			}
+		}
 	}
 
 	return sceKernelExitDeleteThread(0);

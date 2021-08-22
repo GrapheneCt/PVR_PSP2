@@ -280,6 +280,8 @@ struct GLES2Context_TAG
 	IMG_PVOID pvUNCHeap;
 	IMG_PVOID pvCDRAMHeap;
 	IMG_PVOID pvUltRuntime;
+	IMG_PVOID pvUltRuntimeWorkArea;
+	IMG_PVOID *pvUltThreadStorage;
 	IMG_UINT32 ui32AsyncTexOpNum;
 	IMG_BOOL bSwTexOpFin;
 	SceUID hSwTexOpThrd;

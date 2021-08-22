@@ -6057,7 +6057,7 @@ bad_op:
 
 		if(pvSurfacePointer!=psReadParams->pvLinSurfaceAddress)
 		{
-			GLES2Free(IMG_NULL, pvSurfacePointer);
+			GLES2FreeAsync(gc, pvSurfacePointer);
 		}
 
 		PVRSRVUnlockMutex(gc->psSharedState->hTertiaryLock);
