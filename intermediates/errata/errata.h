@@ -23,7 +23,9 @@ static const SGX_CORE_DESC g_sUseasmCoreTable[] =
 		SGX_CORE_ID_520,								/* eCoreType */
 		111,											/* ui32CoreRevision */
 		{												/* sBugs */
-			0,
+			SGX_BUG_FLAGS_FIX_HW_BRN_24895 |
+			SGX_BUG_FLAGS_FIX_HW_BRN_25060 |
+			SGX_BUG_FLAGS_FIX_HW_BRN_25804,
 		},
 		&g_sSGX520_Features_Table,						/* psFeatures */
 	},
@@ -340,19 +342,6 @@ static const SGX_CORE_DESC g_sUseasmCoreTable[] =
 		},
 		&g_sSGX543_Features_Table,						/* psFeatures */
 	},
-	{	/* 543 117 revision */
-		SGX_CORE_ID_543,								/* eCoreType */
-		117,											/* ui32CoreRevision */
-		{												/* sBugs */
-			SGX_BUG_FLAGS_FIX_HW_BRN_29643 |
-			SGX_BUG_FLAGS_FIX_HW_BRN_30795 |
-			SGX_BUG_FLAGS_FIX_HW_BRN_30853 |
-			SGX_BUG_FLAGS_FIX_HW_BRN_30871 |
-			SGX_BUG_FLAGS_FIX_HW_BRN_31988 |
-			SGX_BUG_FLAGS_FIX_HW_BRN_34293,
-		},
-		&g_sSGX543_Features_Table,						/* psFeatures */
-	},
 	{	/* 543 122 revision */
 		SGX_CORE_ID_543,								/* eCoreType */
 		122,											/* ui32CoreRevision */
@@ -565,6 +554,7 @@ static const SGX_CORE_DESC g_sUseasmCoreTable[] =
 			SGX_BUG_FLAGS_FIX_HW_BRN_30795 |
 			SGX_BUG_FLAGS_FIX_HW_BRN_30853 |
 			SGX_BUG_FLAGS_FIX_HW_BRN_30871 |
+			SGX_BUG_FLAGS_FIX_HW_BRN_31988 |
 			SGX_BUG_FLAGS_FIX_HW_BRN_34293,
 		},
 		&g_sSGX544_Features_Table,						/* psFeatures */
@@ -620,7 +610,6 @@ static const SGX_CORE_DESC g_sUseasmCoreTable[] =
 			SGX_BUG_FLAGS_FIX_HW_BRN_27904 |
 			SGX_BUG_FLAGS_FIX_HW_BRN_27984 |
 			SGX_BUG_FLAGS_FIX_HW_BRN_30898 |
-			SGX_BUG_FLAGS_FIX_HW_BRN_31988 |
 			SGX_BUG_FLAGS_FIX_HW_BRN_33442,
 		},
 		&g_sSGX545_Features_Table,						/* psFeatures */
@@ -630,7 +619,6 @@ static const SGX_CORE_DESC g_sUseasmCoreTable[] =
 		109,											/* ui32CoreRevision */
 		{												/* sBugs */
 			SGX_BUG_FLAGS_FIX_HW_BRN_30898 |
-			SGX_BUG_FLAGS_FIX_HW_BRN_31988 |
 			SGX_BUG_FLAGS_FIX_HW_BRN_33442,
 		},
 		&g_sSGX545_Features_Table,						/* psFeatures */
@@ -640,7 +628,6 @@ static const SGX_CORE_DESC g_sUseasmCoreTable[] =
 		1011,											/* ui32CoreRevision */
 		{												/* sBugs */
 			SGX_BUG_FLAGS_FIX_HW_BRN_30898 |
-			SGX_BUG_FLAGS_FIX_HW_BRN_31988 |
 			SGX_BUG_FLAGS_FIX_HW_BRN_33442,
 		},
 		&g_sSGX545_Features_Table,						/* psFeatures */
@@ -650,7 +637,6 @@ static const SGX_CORE_DESC g_sUseasmCoreTable[] =
 		1012,											/* ui32CoreRevision */
 		{												/* sBugs */
 			SGX_BUG_FLAGS_FIX_HW_BRN_30898 |
-			SGX_BUG_FLAGS_FIX_HW_BRN_31988 |
 			SGX_BUG_FLAGS_FIX_HW_BRN_33442,
 		},
 		&g_sSGX545_Features_Table,						/* psFeatures */
@@ -660,7 +646,6 @@ static const SGX_CORE_DESC g_sUseasmCoreTable[] =
 		1013,											/* ui32CoreRevision */
 		{												/* sBugs */
 			SGX_BUG_FLAGS_FIX_HW_BRN_30898 |
-			SGX_BUG_FLAGS_FIX_HW_BRN_31988 |
 			SGX_BUG_FLAGS_FIX_HW_BRN_33442,
 		},
 		&g_sSGX545_Features_Table,						/* psFeatures */
@@ -670,7 +655,6 @@ static const SGX_CORE_DESC g_sUseasmCoreTable[] =
 		10131,											/* ui32CoreRevision */
 		{												/* sBugs */
 			SGX_BUG_FLAGS_FIX_HW_BRN_30898 |
-			SGX_BUG_FLAGS_FIX_HW_BRN_31988 |
 			SGX_BUG_FLAGS_FIX_HW_BRN_33442,
 		},
 		&g_sSGX545_Features_Table,						/* psFeatures */
@@ -680,7 +664,6 @@ static const SGX_CORE_DESC g_sUseasmCoreTable[] =
 		1014,											/* ui32CoreRevision */
 		{												/* sBugs */
 			SGX_BUG_FLAGS_FIX_HW_BRN_30898 |
-			SGX_BUG_FLAGS_FIX_HW_BRN_31988 |
 			SGX_BUG_FLAGS_FIX_HW_BRN_33442,
 		},
 		&g_sSGX545_Features_Table,						/* psFeatures */
@@ -690,7 +673,6 @@ static const SGX_CORE_DESC g_sUseasmCoreTable[] =
 		10141,											/* ui32CoreRevision */
 		{												/* sBugs */
 			SGX_BUG_FLAGS_FIX_HW_BRN_30898 |
-			SGX_BUG_FLAGS_FIX_HW_BRN_31988 |
 			SGX_BUG_FLAGS_FIX_HW_BRN_33442,
 		},
 		&g_sSGX545_Features_Table,						/* psFeatures */

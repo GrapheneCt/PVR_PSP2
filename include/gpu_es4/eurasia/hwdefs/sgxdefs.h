@@ -231,11 +231,6 @@
 	#define SGX_SW_CORE_REV_MIN		1
 	#define SGX_SW_CORE_REV_MAINT	6
 #else
-#if (SGX_CORE_REV == 117)
-	#define SGX_SW_CORE_REV_MAJ		1
-	#define SGX_SW_CORE_REV_MIN		1
-	#define SGX_SW_CORE_REV_MAINT	7
-#else
 #if (SGX_CORE_REV == 120)
 	#define SGX_SW_CORE_REV_MAJ		1
 	#define SGX_SW_CORE_REV_MIN		2
@@ -315,7 +310,6 @@
 
 #error "sgxdefs.h: SGX_CORE_REV unspecified or not recognised"
 
-#endif
 #endif
 #endif
 #endif
