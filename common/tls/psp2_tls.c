@@ -19,8 +19,6 @@
  *  --- Revision Logs Removed --- 
  **************************************************************************/
 #if !defined(DISABLE_THREADS)
-#include <pthread.h> /* Must be first included file */
-
 #include <kernel.h>
 
 #include <img_types.h>
