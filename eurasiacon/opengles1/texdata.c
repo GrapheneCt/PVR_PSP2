@@ -596,12 +596,22 @@ IMG_INTERNAL IMG_BOOL HWTQTextureUpload(GLES1Context *gc,
 #if defined(DEBUG)
 	SceKernelMemBlockInfo sMemInfo;
 	sMemInfo.size = sizeof(SceKernelMemBlockInfo);
-	sMemInfo.memoryType = 0;
+	sMemInfo.type = 0;
 	sceKernelGetMemBlockInfoByAddr(psQueueTransfer->asSources[0].sDevVAddr.uiAddr, &sMemInfo);
-	if (sMemInfo.memoryType == SCE_KERNEL_MEMBLOCK_TYPE_USER_RW)
+	PVR_DPF((PVR_DBG_MESSAGE, "HWTQTextureUpload src sDevVAddr: 0x%X\n", psQueueTransfer->asSources[0].sDevVAddr.uiAddr));
+	if (sMemInfo.type == SCE_KERNEL_MEMBLOCK_TYPE_USER_RW)
 	{
 		PVR_DPF((PVR_DBG_WARNING, "HWTQTextureUpload: Texture upload source is cached memory. Performance will be negatively affected"));
 	}
+
+	sMemInfo.size = sizeof(SceKernelMemBlockInfo);
+	sMemInfo.type = 0;
+	sceKernelGetMemBlockInfoByAddr(psQueueTransfer->asDests[0].sDevVAddr.uiAddr, &sMemInfo);
+	PVR_DPF((PVR_DBG_MESSAGE, "HWTQTextureUpload dst sDevVAddr: 0x%X\n", psQueueTransfer->asDests[0].sDevVAddr.uiAddr));
+	if (sMemInfo.type == SCE_KERNEL_MEMBLOCK_TYPE_USER_RW)
+	{
+		PVR_DPF((PVR_DBG_WARNING, "HWTQTextureUpload: Texture upload destination is cached memory. Performance will be negatively affected"));
+}
 #endif
 
 	eResult = SGXQueueTransfer(&gc->psSysContext->s3D, gc->psSysContext->hTransferContext, psQueueTransfer);
@@ -1218,6 +1228,27 @@ IMG_INTERNAL IMG_BOOL HWTQTextureNormalBlit(GLES1Context      *gc,
 {
  
 	PVRSRV_ERROR eResult;
+
+#if defined(DEBUG)
+	SceKernelMemBlockInfo sMemInfo;
+	sMemInfo.size = sizeof(SceKernelMemBlockInfo);
+	sMemInfo.type = 0;
+	sceKernelGetMemBlockInfoByAddr(psQueueTransfer->asSources[0].sDevVAddr.uiAddr, &sMemInfo);
+	PVR_DPF((PVR_DBG_MESSAGE, "HWTQTextureNormalBlit src sDevVAddr: 0x%X\n", psQueueTransfer->asSources[0].sDevVAddr.uiAddr));
+	if (sMemInfo.type == SCE_KERNEL_MEMBLOCK_TYPE_USER_RW)
+	{
+		PVR_DPF((PVR_DBG_WARNING, "HWTQTextureNormalBlit: Texture upload source is cached memory. Performance will be negatively affected"));
+	}
+
+	sMemInfo.size = sizeof(SceKernelMemBlockInfo);
+	sMemInfo.type = 0;
+	sceKernelGetMemBlockInfoByAddr(psQueueTransfer->asDests[0].sDevVAddr.uiAddr, &sMemInfo);
+	PVR_DPF((PVR_DBG_MESSAGE, "HWTQTextureNormalBlit dst sDevVAddr: 0x%X\n", psQueueTransfer->asDests[0].sDevVAddr.uiAddr));
+	if (sMemInfo.type == SCE_KERNEL_MEMBLOCK_TYPE_USER_RW)
+	{
+		PVR_DPF((PVR_DBG_WARNING, "HWTQTextureNormalBlit: Texture upload destination is cached memory. Performance will be negatively affected"));
+}
+#endif
 
 	eResult = SGXQueueTransfer(&gc->psSysContext->s3D, gc->psSysContext->hTransferContext, psQueueTransfer);
 
