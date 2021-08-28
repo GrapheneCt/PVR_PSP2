@@ -59,6 +59,8 @@ typedef struct _PVRSRV_PSP2_APPHINT_
 	IMG_UINT32 ui32SwTexOpThreadAffinity;
 	IMG_UINT32 ui32SwTexOpMaxUltNum;
 	IMG_UINT32 ui32SwTexOpCleanupDelay;
+	IMG_UINT32 ui32PrimitiveSplitThreshold;
+	IMG_UINT32 ui32MaxDrawCallsPerCore;
 
 	/* OGLES2 hints */
 

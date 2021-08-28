@@ -2036,7 +2036,8 @@ skip_zs_alloc:
 	psKickTA->sKickTACommon.ui32SceneHeight = psRenderSurface->ui32Height;
 	psKickTA->sKickTACommon.ui32ValidRegionXMax = psRenderSurface->ui32Width - 1;
 	psKickTA->sKickTACommon.ui32ValidRegionYMax = psRenderSurface->ui32Height - 1;
-	psKickTA->sKickTACommon.ui16PrimitiveSplitThreshold = 1000;
+	psKickTA->sKickTACommon.ui16MaxDrawCallsPerCore = gc->sAppHints.ui32MaxDrawCallsPerCore;
+	psKickTA->sKickTACommon.ui16PrimitiveSplitThreshold = gc->sAppHints.ui32PrimitiveSplitThreshold;
 
 	while (gc->ui32AsyncTexOpNum)
 	{

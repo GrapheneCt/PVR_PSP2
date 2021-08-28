@@ -723,7 +723,7 @@ IMG_INTERNAL IMG_BOOL GetApplicationHints(GLESAppHints *psAppHints, EGLcontextMo
 	ui32Default = 0;
 	PVRSRVGetAppHint(pvHintState, "SwTexOpThreadAffinity", IMG_UINT_TYPE, &ui32Default, &psAppHints->ui32SwTexOpThreadAffinity);
 
-	ui32Default = 16;
+	ui32Default = 256;
 	PVRSRVGetAppHint(pvHintState, "SwTexOpMaxUltNum", IMG_UINT_TYPE, &ui32Default, &psAppHints->ui32SwTexOpMaxUltNum);
 
 	ui32Default = 10000000;
@@ -731,6 +731,12 @@ IMG_INTERNAL IMG_BOOL GetApplicationHints(GLESAppHints *psAppHints, EGLcontextMo
 
 	ui32Default = 1;
 	PVRSRVGetAppHint(pvHintState, "DisableAsyncTextureOp", IMG_UINT_TYPE, &ui32Default, &psAppHints->bDisableAsyncTextureOp);
+
+	ui32Default = 1000;
+	PVRSRVGetAppHint(pvHintState, "PrimitiveSplitThreshold", IMG_UINT_TYPE, &ui32Default, &psAppHints->ui32PrimitiveSplitThreshold);
+
+	ui32Default = 0;
+	PVRSRVGetAppHint(pvHintState, "MaxDrawCallsPerCore", IMG_UINT_TYPE, &ui32Default, &psAppHints->ui32MaxDrawCallsPerCore);
 
 	PVRSRVFreeAppHintState(IMG_OPENGLES2, pvHintState);
 

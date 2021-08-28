@@ -149,6 +149,8 @@ typedef struct GLESAppHintsRec
 	IMG_UINT32 ui32SwTexOpMaxUltNum;
 	IMG_UINT32 ui32SwTexOpCleanupDelay;
 	IMG_BOOL bDisableAsyncTextureOp;
+	IMG_UINT32 ui32PrimitiveSplitThreshold;
+	IMG_UINT32 ui32MaxDrawCallsPerCore;
 } GLESAppHints;
 
 

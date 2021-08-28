@@ -429,7 +429,17 @@ IMG_EXPORT IMG_BOOL PVRSRVGetAppHint(IMG_VOID		*pvHintState,
 		}
 		else if (!sceClibStrncasecmp(pszHintName, "DisableAsyncTextureOp", 22))
 		{
-		*(IMG_UINT32 *)pvReturn = s_appHint.bDisableAsyncTextureOp;
+			*(IMG_UINT32 *)pvReturn = s_appHint.bDisableAsyncTextureOp;
+			bFound = IMG_TRUE;
+		}
+		else if (!sceClibStrncasecmp(pszHintName, "MaxDrawCallsPerCore", 20))
+		{
+			*(IMG_UINT32 *)pvReturn = s_appHint.ui32MaxDrawCallsPerCore;
+			bFound = IMG_TRUE;
+		}
+		else if (!sceClibStrncasecmp(pszHintName, "PrimitiveSplitThreshold", 24))
+		{
+			*(IMG_UINT32 *)pvReturn = s_appHint.ui32PrimitiveSplitThreshold;
 			bFound = IMG_TRUE;
 		}
 	}
@@ -544,6 +554,8 @@ IMG_EXPORT IMG_BOOL PVRSRVInitializeAppHint(PVRSRV_PSP2_APPHINT *psAppHint)
 	psAppHint->ui32SwTexOpMaxUltNum = 256;
 	psAppHint->ui32SwTexOpCleanupDelay = 10000000;
 	psAppHint->bDisableAsyncTextureOp = IMG_FALSE;
+	psAppHint->ui32PrimitiveSplitThreshold = 1000;
+	psAppHint->ui32MaxDrawCallsPerCore = 0;
 
 	psAppHint->ui32AdjustShaderPrecision = 0;
 	psAppHint->bDumpCompilerLogFiles = 0;
