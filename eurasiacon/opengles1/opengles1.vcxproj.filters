@@ -54,6 +54,12 @@
     <Filter Include="Header Files\psp2">
       <UniqueIdentifier>{4f891098-c2cd-4da9-923f-9978dabc4e3c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\psp2\NE10">
+      <UniqueIdentifier>{96b31ab3-e882-4634-afde-46351974c396}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\psp2\NE10">
+      <UniqueIdentifier>{7e6909f3-975c-43ca-a38f-d3565fe9f5e4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="accum.c">
@@ -392,6 +398,24 @@
     <ClCompile Include="psp2\swtexop.c">
       <Filter>Source Files\psp2</Filter>
     </ClCompile>
+    <ClCompile Include="psp2\NE10\NE10_invmat.neon.s">
+      <Filter>Source Files\psp2\NE10</Filter>
+    </ClCompile>
+    <ClCompile Include="psp2\NE10\NE10_mulmat.neon.s">
+      <Filter>Source Files\psp2\NE10</Filter>
+    </ClCompile>
+    <ClCompile Include="psp2\NE10\NE10_transmat.neon.s">
+      <Filter>Source Files\psp2\NE10</Filter>
+    </ClCompile>
+    <ClCompile Include="psp2\NE10\NE10_mul.neon.s">
+      <Filter>Source Files\psp2\NE10</Filter>
+    </ClCompile>
+    <ClCompile Include="psp2\NE10\NE10_mulcmatvec.neon.s">
+      <Filter>Source Files\psp2\NE10</Filter>
+    </ClCompile>
+    <ClCompile Include="psp2\NE10\NE10_identitymat.neon.s">
+      <Filter>Source Files\psp2\NE10</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bufobj.h">
@@ -498,6 +522,9 @@
     </ClInclude>
     <ClInclude Include="psp2\swtexop.h">
       <Filter>Header Files\psp2</Filter>
+    </ClInclude>
+    <ClInclude Include="psp2\NE10\NE10GLES.h">
+      <Filter>Header Files\psp2\NE10</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

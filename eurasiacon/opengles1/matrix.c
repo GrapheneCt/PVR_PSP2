@@ -19,6 +19,9 @@
 
 #include "context.h"
 
+#include "psp2/NE10/NE10GLES.h"
+#include "psp2/NE10/NE10_setc.neon.h"
+
 /***********************************************************************************
  Function Name      : XForm2
  Inputs             : afV, psMatrix
@@ -28,6 +31,15 @@
 ************************************************************************************/
 static IMG_VOID XForm2(GLEScoord *psRes, const IMG_FLOAT afV[2], const GLESMatrix *psMatrix)
 {
+#if defined(__psp2__)
+	ne10_vec4f_t sMulVec;
+	sMulVec.x = afV[0];
+	sMulVec.y = afV[1];
+	sMulVec.z = GLES1_Zero;
+	sMulVec.w = GLES1_One;
+
+	ne10_mulcmatvec_cm4x4f_v4f_neon((ne10_vec4f_t *)psRes, psMatrix, &sMulVec, 1);
+#else
 	IMG_FLOAT fX = afV[0];
 	IMG_FLOAT fY = afV[1];
 
@@ -35,6 +47,7 @@ static IMG_VOID XForm2(GLEScoord *psRes, const IMG_FLOAT afV[2], const GLESMatri
 	psRes->fY = fX*psMatrix->afMatrix[0][1] + fY*psMatrix->afMatrix[1][1] + psMatrix->afMatrix[3][1];
 	psRes->fZ = fX*psMatrix->afMatrix[0][2] + fY*psMatrix->afMatrix[1][2] + psMatrix->afMatrix[3][2];
 	psRes->fW = fX*psMatrix->afMatrix[0][3] + fY*psMatrix->afMatrix[1][3] + psMatrix->afMatrix[3][3];
+#endif
 }
 
 
@@ -47,6 +60,15 @@ static IMG_VOID XForm2(GLEScoord *psRes, const IMG_FLOAT afV[2], const GLESMatri
 ************************************************************************************/
 static IMG_VOID XForm3(GLEScoord *psRes, const IMG_FLOAT afV[3], const GLESMatrix *psMatrix)
 {
+#if defined(__psp2__)
+	ne10_vec4f_t sMulVec;
+	sMulVec.x = afV[0];
+	sMulVec.y = afV[1];
+	sMulVec.z = afV[2];
+	sMulVec.w = GLES1_One;
+
+	ne10_mulcmatvec_cm4x4f_v4f_neon((ne10_vec4f_t *)psRes, psMatrix, &sMulVec, 1);
+#else
 	IMG_FLOAT fX = afV[0];
 	IMG_FLOAT fY = afV[1];
 	IMG_FLOAT fZ = afV[2];
@@ -62,6 +84,7 @@ static IMG_VOID XForm3(GLEScoord *psRes, const IMG_FLOAT afV[3], const GLESMatri
 
 	psRes->fW = fX*psMatrix->afMatrix[0][3] + fY*psMatrix->afMatrix[1][3] +
 				fZ*psMatrix->afMatrix[2][3] + psMatrix->afMatrix[3][3];
+#endif
 }
 
 
@@ -74,6 +97,15 @@ static IMG_VOID XForm3(GLEScoord *psRes, const IMG_FLOAT afV[3], const GLESMatri
 ************************************************************************************/
 static IMG_VOID XForm4(GLEScoord *psRes, const IMG_FLOAT afV[4], const GLESMatrix *psMatrix)
 {
+#if defined(__psp2__)
+	ne10_vec4f_t sMulVec;
+	sMulVec.x = afV[0];
+	sMulVec.y = afV[1];
+	sMulVec.z = afV[2];
+	sMulVec.w = afV[3];
+
+	ne10_mulcmatvec_cm4x4f_v4f_neon((ne10_vec4f_t *)psRes, psMatrix, &sMulVec, 1);
+#else
 	IMG_FLOAT fX = afV[0];
 	IMG_FLOAT fY = afV[1];
 	IMG_FLOAT fZ = afV[2];
@@ -94,13 +126,14 @@ static IMG_VOID XForm4(GLEScoord *psRes, const IMG_FLOAT afV[4], const GLESMatri
 		psRes->fZ = fX*psMatrix->afMatrix[0][2] + fY*psMatrix->afMatrix[1][2] + fZ*psMatrix->afMatrix[2][2] + fW*psMatrix->afMatrix[3][2];
 		psRes->fW = fX*psMatrix->afMatrix[0][3] + fY*psMatrix->afMatrix[1][3] + fZ*psMatrix->afMatrix[2][3] + fW*psMatrix->afMatrix[3][3];
 	}
+#endif
 }
 
 /*
  * This compile flag would allow for optimised matrix transforms based on matrix type tracking -
  * currently disabled.
  */
-#ifdef EXAMPLE_MATRIX_FN_PICKING
+#ifdef PSP2_MATRIX_FN_PICKING
 	/*
 	 * The following is illustrative code demonstrating how depending on the
 	 * type of matrix, different more optimal transform functions can be 
@@ -411,7 +444,7 @@ static IMG_VOID XForm4_Identity(GLEScoord *psRes, const IMG_FLOAT afV[4],
 IMG_INTERNAL IMG_VOID PickMatrixProcs(GLES1Context *gc, GLESMatrix *psMatrix)
 {
 	PVR_UNREFERENCED_PARAMETER(gc);
-#ifdef EXAMPLE_MATRIX_FN_PICKING
+#ifdef PSP2_MATRIX_FN_PICKING
 	/*
 	 * The following is illustrative code demonstrating how depending on the
 	 * type of matrix, different more optimal transform functions can be 
@@ -486,7 +519,7 @@ IMG_INTERNAL IMG_VOID PickInvTransposeProcs(GLES1Context *gc, GLESMatrix *psMatr
 
 	psMatrix->pfnXf4 = XForm4;
 
-#ifdef EXAMPLE_MATRIX_FN_PICKING
+#ifdef PSP2_MATRIX_FN_PICKING
 	/*
 	 * The following is illustrative code demonstrating how depending on the
 	 * type of matrix, different more optimal transform functions can be 
@@ -540,6 +573,9 @@ IMG_INTERNAL IMG_VOID PickInvTransposeProcs(GLES1Context *gc, GLESMatrix *psMatr
 ************************************************************************************/
 IMG_INTERNAL IMG_VOID TransposeMatrix(GLESMatrix *psTranspose, const GLESMatrix *psSrc)
 {
+#if defined(__psp2__)
+	ne10_transmat_4x4f_neon(psTranspose, psSrc, 1);
+#else
 	psTranspose->afMatrix[0][0] = psSrc->afMatrix[0][0];
 	psTranspose->afMatrix[0][1] = psSrc->afMatrix[1][0];
 	psTranspose->afMatrix[0][2] = psSrc->afMatrix[2][0];
@@ -556,7 +592,7 @@ IMG_INTERNAL IMG_VOID TransposeMatrix(GLESMatrix *psTranspose, const GLESMatrix 
 	psTranspose->afMatrix[3][1] = psSrc->afMatrix[1][3];
 	psTranspose->afMatrix[3][2] = psSrc->afMatrix[2][3];
 	psTranspose->afMatrix[3][3] = psSrc->afMatrix[3][3];
-
+#endif
 }
 
 
@@ -639,13 +675,20 @@ But in the usual case that P,S == [0, 0, 0, 1], this is enough:
 ************************************************************************************/
 IMG_INTERNAL IMG_VOID InvertTransposeMatrix(GLESMatrix *psInverse, const GLESMatrix *psSrc)
 {
+	/* propagate matrix type & branch if general */
+	psInverse->eMatrixType = psSrc->eMatrixType;
+
+#if defined(__psp2__)
+	IMG_FLOAT afTempMatrix[4][4];
+
+	ne10_transmat_4x4f_neon((GLESMatrix *)afTempMatrix, psSrc, 1);
+	ne10_invmat_4x4f_neon(psInverse, (GLESMatrix *)afTempMatrix, 1);
+#else
+
 	IMG_FLOAT fX00, fX01, fX02;
 	IMG_FLOAT fX10, fX11, fX12;
 	IMG_FLOAT fX20, fX21, fX22;
 	IMG_FLOAT fRcp;
-
-	/* propagate matrix type & branch if general */
-	psInverse->eMatrixType = psSrc->eMatrixType;
 
 	if(psInverse->eMatrixType) 
 	{
@@ -837,6 +880,7 @@ IMG_INTERNAL IMG_VOID InvertTransposeMatrix(GLESMatrix *psInverse, const GLESMat
 		psInverse->afMatrix[3][2] = fZ32*fRcp;
 		psInverse->afMatrix[3][3] = fZ33*fRcp;
 	}
+#endif
 }
 
 /***********************************************************************************
@@ -870,7 +914,6 @@ IMG_INTERNAL IMG_VOID CopyMatrix(GLESMatrix *psDst, const GLESMatrix *psSrc)
 	psDst->afMatrix[3][3] = psSrc->afMatrix[3][3];
 }
 
-
 /***********************************************************************************
  Function Name      : MakeIdentity
  Inputs             : psMatrix
@@ -880,6 +923,9 @@ IMG_INTERNAL IMG_VOID CopyMatrix(GLESMatrix *psDst, const GLESMatrix *psSrc)
 ************************************************************************************/
 IMG_INTERNAL IMG_VOID MakeIdentity(GLESMatrix *psMatrix)
 {
+#if defined(__psp2__)
+	ne10_identitymat_4x4f_neon(psMatrix, 1);
+#else
 	IMG_FLOAT zer = GLES1_Zero;
 	IMG_FLOAT one = GLES1_One;
 
@@ -891,6 +937,7 @@ IMG_INTERNAL IMG_VOID MakeIdentity(GLESMatrix *psMatrix)
 	psMatrix->afMatrix[2][2] = one; psMatrix->afMatrix[2][3] = zer;
 	psMatrix->afMatrix[3][0] = zer; psMatrix->afMatrix[3][1] = zer;
 	psMatrix->afMatrix[3][2] = zer; psMatrix->afMatrix[3][3] = one;
+#endif
 	psMatrix->eMatrixType = GLES1_MT_IDENTITY;
 }
 
@@ -903,6 +950,9 @@ IMG_INTERNAL IMG_VOID MakeIdentity(GLESMatrix *psMatrix)
 ************************************************************************************/
 IMG_INTERNAL IMG_VOID MultMatrix(GLESMatrix *psRes, const GLESMatrix *psSrcA, const GLESMatrix *psSrcB)
 {
+#if defined(__psp2__)
+	ne10_mulmat_4x4f_neon(psRes, psSrcB, psSrcA, 1);
+#else
 	IMG_FLOAT fB00, fB01, fB02, fB03;
 	IMG_FLOAT fB10, fB11, fB12, fB13;
 	IMG_FLOAT fB20, fB21, fB22, fB23;
@@ -925,6 +975,7 @@ IMG_INTERNAL IMG_VOID MultMatrix(GLESMatrix *psRes, const GLESMatrix *psSrcA, co
 		psRes->afMatrix[i][2] = psSrcA->afMatrix[i][0]*fB02 + psSrcA->afMatrix[i][1]*fB12	+ psSrcA->afMatrix[i][2]*fB22 + psSrcA->afMatrix[i][3]*fB32;
 		psRes->afMatrix[i][3] = psSrcA->afMatrix[i][0]*fB03 + psSrcA->afMatrix[i][1]*fB13	+ psSrcA->afMatrix[i][2]*fB23 + psSrcA->afMatrix[i][3]*fB33;
 	}
+#endif
 }
 
 
@@ -1263,17 +1314,28 @@ struct GLESTranslationRec
 IMG_INTERNAL IMG_VOID TranslateMatrix(GLES1Context *gc, GLESMatrix *psDstMatrix, GLESMatrix *psSrcMatrix, IMG_VOID *pvData)
 {
 	struct GLESTranslationRec *psTrans;
-	IMG_FLOAT fX,fY,fZ;
-	IMG_FLOAT fM30, fM31, fM32, fM33;
 
 	PVR_UNREFERENCED_PARAMETER(gc);
 
-	if (psSrcMatrix->eMatrixType > GLES1_MT_IS2DNR) 
+	if (psSrcMatrix->eMatrixType > GLES1_MT_IS2DNR)
 	{
 		psDstMatrix->eMatrixType = GLES1_MT_IS2DNR;
 	}
 
 	psTrans = pvData;
+
+#if defined(__psp2__)
+
+	ne10_vec4f_t sMulVec;
+	sMulVec.x = psTrans->fX;
+	sMulVec.y = psTrans->fY;
+	sMulVec.z = psTrans->fZ;
+	sMulVec.w = GLES1_One;
+
+	ne10_mulcmatvec_cm4x4f_v4f_neon((ne10_vec4f_t *)&psDstMatrix->afMatrix[3][0], psSrcMatrix, &sMulVec, 1);
+#else
+	IMG_FLOAT fX,fY,fZ;
+	IMG_FLOAT fM30, fM31, fM32, fM33;
 
 	fX = psTrans->fX;
 	fY = psTrans->fY;
@@ -1295,6 +1357,7 @@ IMG_INTERNAL IMG_VOID TranslateMatrix(GLES1Context *gc, GLESMatrix *psDstMatrix,
 	psDstMatrix->afMatrix[3][1] = fM31;
 	psDstMatrix->afMatrix[3][2] = fM32;
 	psDstMatrix->afMatrix[3][3] = fM33;
+#endif
 }
 
 
