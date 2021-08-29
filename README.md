@@ -20,19 +20,6 @@ Driver layer GPU libraries and tests for PSP2
 - Check default apphint values before running your application and make sure everything is at expected values.
 Default apphint values can be found [here](https://github.com/GrapheneCt/PVR_PSP2/blob/main/gpu_es4_ext/eurasia/services4/srvclient/env/playstation/common/pvr_apphint.c#L501)
 
-# Known issues
-
-### GLES1:
-
-1. GLES1 and GLES2 libraries upload textures to separate GPU memory on demand after validation. That may cause slowdowns.
-- Required solution: render textures directly from intermediate memory.
-
-### GLES2:
-
-1. GLES1 and GLES2 libraries upload textures to separate GPU memory on demand after validation. That may cause slowdowns.
-- Required solution: render textures directly from intermediate memory.
-
-2. Major slowdown during vector instruction optimizations in GLSL shader compiler, specifically GenerateVectorDualIssue() function.
 
 # Unittest status
 
