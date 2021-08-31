@@ -133,7 +133,7 @@ IMG_EXPORT IMG_HANDLE PVRSRVLoadLibrary(const IMG_CHAR *szLibraryName)
 	if (hLib < 0) 
 	{
 		PVR_DPF((PVR_DBG_ERROR, "PVRSRVLoadLibrary, sceKernelLoadStartModule failed to open library"));
-		return PVRSRV_ERROR_UNABLE_TO_LOAD_LIBRARY;
+		return NULL;
 	}
 	else
 	{

@@ -209,6 +209,7 @@
     <Link>
       <AdditionalDependencies>$(OutDir)libgpu_es4_ext_stub.a;$(OutDir)libpvrPSP2_WSEGL_stub.a;$(OutDir)libIMGEGL_stub.a;$(SolutionDir)gpu_es4_ext\libSceGpuEs4User_stub.a;$(SolutionDir)gpu_es4_ext\libSceGpuEs4UserForVsh_stub.a;-lSceGxm_stub;-lSceGpuEs4ForUser_stub;-lSceDmacmgr_stub;-lSceSysmodule_stub;-lSceUlt_stub_weak;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SCE_PSP2_SDK_DIR)\target\lib\vdsuite;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateSnMapFile>FullMapFile</GenerateSnMapFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|PSVita'">

@@ -118,6 +118,7 @@
       <AdditionalDependencies>-lSceDisplayUser_stub;-lSceDisplay_stub;-lSceGpuEs4ForUser_stub;-lSceAppMgrUser_stub;-lScePower_stub;$(ProjectDir)libSceGpuEs4User_stub.a;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SCE_PSP2_SDK_DIR)\target\lib\vdsuite;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>--no-required-files</AdditionalOptions>
+      <GenerateSnMapFile>FullMapFile</GenerateSnMapFile>
     </Link>
     <PreBuildEvent>
       <Command>"$(SCE_PSP2_SDK_DIR)\host_tools\build\bin\armlibgen.exe" --dump "$(SolutionDir)lib\SceGpuEs4User.emd" --stub-archive
