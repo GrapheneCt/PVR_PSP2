@@ -126,18 +126,18 @@ IMG_EXPORT IMG_VOID PVRSRVMemCopy(IMG_VOID 	*pvDst,
 ******************************************************************************/
 IMG_EXPORT IMG_HANDLE PVRSRVLoadLibrary(const IMG_CHAR *szLibraryName)
 {
-	IMG_HANDLE	hLib;
+	IMG_INT32	i32Lib;
 
-	hLib = (IMG_HANDLE)sceKernelLoadStartModule(szLibraryName, 0, NULL, 0, NULL, NULL);
+	i32Lib = sceKernelLoadStartModule(szLibraryName, 0, NULL, 0, NULL, NULL);
 
-	if (hLib < 0) 
+	if (i32Lib < 0)
 	{
 		PVR_DPF((PVR_DBG_ERROR, "PVRSRVLoadLibrary, sceKernelLoadStartModule failed to open library"));
-		return NULL;
+		return IMG_NULL;
 	}
 	else
 	{
-		return hLib;
+		return (IMG_HANDLE)i32Lib;
 	}
 }
 
