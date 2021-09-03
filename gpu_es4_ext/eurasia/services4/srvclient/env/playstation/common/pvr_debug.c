@@ -119,10 +119,7 @@ IMG_EXPORT IMG_VOID PVRSRVDebugPrintf(IMG_UINT32 ui32DebugLevel,
 		szBufferEnd += sceClibStrnlen(szBufferEnd, PVR_MAX_DEBUG_MESSAGE_LEN);
 	}
 
-	if (bTrace == IMG_TRUE)
-	{
-		sceClibPrintf("%s\n", szBuffer);
-	}
+	sceClibPrintf("%s\n", szBuffer);
 }
 
 /*----------------------------------------------------------------------------

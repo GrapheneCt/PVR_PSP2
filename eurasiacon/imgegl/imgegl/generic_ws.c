@@ -442,8 +442,10 @@ Fail_OGLES2_Load:
 
 #if defined(__linux__)
 #define OGLLIBNAME	"libPVROGL.so"
+#elif defined(__psp2__)
+#define OGLLIBNAME "d"
 #else
-				#error ("Unknown host operating system")
+#error ("Unknown host operating system")
 #endif
 
 IMG_INTERNAL IMG_BOOL LoadOGLAndGetFunctions(EGLGlobal *psGlobalData)
@@ -512,8 +514,10 @@ Fail_OGL_Load:
 
 #if defined(__linux__)
 	#define OVGLIBNAME	"libOpenVG.so"
+#elif defined(__psp2__)
+#define OVGLIBNAME "d"
 #else
-				#error ("Unknown host operating system")
+#error ("Unknown host operating system")
 #endif
 
 IMG_BOOL IMG_INTERNAL LoadOVGAndGetFunctions(EGLGlobal *psGlobalData)
@@ -580,8 +584,10 @@ Fail_OVG_Load:
 
 #if defined(__linux__)
 	#define OCLLIBNAME	"libPVROCL.so"
+#elif defined(__psp2__)
+#define OCLLIBNAME "d"
 #else
-				#error ("Unknown host operating system")
+#error ("Unknown host operating system")
 #endif
 
 IMG_BOOL IMG_INTERNAL LoadOCLAndGetFunctions(EGLGlobal *psGlobalData)
@@ -665,8 +671,19 @@ IMG_INTERNAL IMG_BOOL IsOCLModulePresent(void)
 #else /* defined(API_MODULES_RUNTIME_CHECK_BY_NAME) */
 IMG_INTERNAL IMG_BOOL IsOGLES1ModulePresent(void)
 {
+	IMG_CHAR szAppHintPath[APPHINT_MAX_STRING_SIZE], szAppHintPathDefault[1];
+	IMG_HANDLE module;
 
-	IMG_HANDLE module = PVRSRVLoadLibrary(OGLES1LIBNAME);
+	szAppHintPathDefault[0] = '\0';
+
+	if (PVRSRVGetAppHint(IMG_NULL, "GLES1", IMG_STRING_TYPE, &szAppHintPathDefault, szAppHintPath))
+	{
+		module = PVRSRVLoadLibrary(szAppHintPath);
+	}
+	else
+	{
+		module = PVRSRVLoadLibrary(OGLES1LIBNAME);
+	}
 
 	if (!module)
 	{
@@ -679,7 +696,19 @@ IMG_INTERNAL IMG_BOOL IsOGLES1ModulePresent(void)
 
 IMG_INTERNAL IMG_BOOL IsOGLES2ModulePresent(void)
 {
-	IMG_HANDLE module = PVRSRVLoadLibrary(OGLES2LIBNAME);
+	IMG_CHAR szAppHintPath[APPHINT_MAX_STRING_SIZE], szAppHintPathDefault[1];
+	IMG_HANDLE module;
+
+	szAppHintPathDefault[0] = '\0';
+
+	if (PVRSRVGetAppHint(IMG_NULL, "GLES2", IMG_STRING_TYPE, &szAppHintPathDefault, szAppHintPath))
+	{
+		module = PVRSRVLoadLibrary(szAppHintPath);
+	}
+	else
+	{
+		module = PVRSRVLoadLibrary(OGLES2LIBNAME);
+	}
 
 	if (!module)
 	{
