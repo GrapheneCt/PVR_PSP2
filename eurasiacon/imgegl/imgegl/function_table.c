@@ -1036,8 +1036,7 @@ static IMG_BOOL IMGSearchGLES1Extension(const char *procname)
 	EGL_COMPARE_AND_RETURN(glDrawTexiOES)
 
 #if defined(PROFILE_COMMON)
-		EGL_COMPARE_AND_RETURN(glTexGenfOES)
-		EGL_COMPARE_AND_RETURN(glTexGenfvOES)
+	EGL_COMPARE_AND_RETURN(glDrawTexfOES)
 #endif /* PROFILE_COMMON */
 
 	EGL_COMPARE_AND_RETURN(glDrawTexxOES)
