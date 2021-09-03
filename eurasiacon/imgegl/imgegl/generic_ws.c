@@ -32,7 +32,7 @@
 
 
 #if defined(API_MODULES_RUNTIME_CHECKED)
-#	include <stdio.h>
+#include <stdio.h>
 #endif
 #include <string.h>
 
@@ -253,7 +253,7 @@ IMG_INTERNAL IMG_BOOL UnloadModule(IMG_HANDLE hModule)
 #endif
 
 #if !defined(OGLES1_BASEPATH)
-#define OGLES1_BASEPATH "app0:module/"
+	#define OGLES1_BASEPATH "app0:module/"
 #endif
 
 #if !defined(OGLES1_BASENAME)
@@ -269,7 +269,7 @@ IMG_INTERNAL IMG_BOOL UnloadModule(IMG_HANDLE hModule)
 #elif defined(__psp2__)
 	#define				OGLES1LIBNAME	OGLES1_BASEPATH "lib" OGLES1_BASENAME ".suprx"
 #else
-				#error ("Unknown host operating system")
+	#error ("Unknown host operating system")
 #endif
 
 IMG_INTERNAL IMG_BOOL LoadOGLES1AndGetFunctions(EGLGlobal *psGlobalData)
@@ -441,11 +441,11 @@ Fail_OGLES2_Load:
 #if defined(SUPPORT_OPENGL) || defined(API_MODULES_RUNTIME_CHECKED)
 
 #if defined(__linux__)
-#define OGLLIBNAME	"libPVROGL.so"
+	#define OGLLIBNAME	"libPVROGL.so"
 #elif defined(__psp2__)
-#define OGLLIBNAME "d"
+	#define OGLLIBNAME	"libPVROGL.suprx"
 #else
-#error ("Unknown host operating system")
+	#error ("Unknown host operating system")
 #endif
 
 IMG_INTERNAL IMG_BOOL LoadOGLAndGetFunctions(EGLGlobal *psGlobalData)
@@ -515,9 +515,9 @@ Fail_OGL_Load:
 #if defined(__linux__)
 	#define OVGLIBNAME	"libOpenVG.so"
 #elif defined(__psp2__)
-#define OVGLIBNAME "d"
+	#define OVGLIBNAME	"libOpenVG.suprx"
 #else
-#error ("Unknown host operating system")
+	#error ("Unknown host operating system")
 #endif
 
 IMG_BOOL IMG_INTERNAL LoadOVGAndGetFunctions(EGLGlobal *psGlobalData)
@@ -585,9 +585,9 @@ Fail_OVG_Load:
 #if defined(__linux__)
 	#define OCLLIBNAME	"libPVROCL.so"
 #elif defined(__psp2__)
-#define OCLLIBNAME "d"
+	#define OCLLIBNAME	"libPVROCL.suprx"
 #else
-#error ("Unknown host operating system")
+	#error ("Unknown host operating system")
 #endif
 
 IMG_BOOL IMG_INTERNAL LoadOCLAndGetFunctions(EGLGlobal *psGlobalData)
