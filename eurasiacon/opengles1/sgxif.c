@@ -1333,6 +1333,8 @@ static IMG_EGLERROR DoKickTA(GLES1Context *gc, EGLRenderSurface *psRenderSurface
 			opt.attr = SCE_KERNEL_ALLOC_MEMBLOCK_ATTR_HAS_ALIGNMENT;
 			opt.alignment = EURASIA_PDS_DOUTT2_TEXADDR_ALIGNSHIFT;
 
+			ui32SizeInBytes = ALIGNCOUNT(ui32SizeInBytes, 256 * 1024);
+
 			psRenderSurface->hZSBufferMemBlockUID = sceKernelAllocMemBlock(
 				"SGXZSBufferMem",
 				SCE_KERNEL_MEMBLOCK_TYPE_USER_CDRAM_RW,

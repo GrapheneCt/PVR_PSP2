@@ -769,12 +769,15 @@ IMG_INTERNAL IMG_BOOL KEGL_SGXCreateRenderSurface(SrvSysContext *psSysContext,
 		}
 
 		ui32SizeInBytes = MAX(1, ui32SizeInBytes);
+		ui32SizeInBytes = ALIGNCOUNT(ui32SizeInBytes, 256 * 1024);
 
 		SceKernelAllocMemBlockOpt opt;
 		sceClibMemset(&opt, 0, sizeof(SceKernelAllocMemBlockOpt));
 		opt.size = sizeof(SceKernelAllocMemBlockOpt);
 		opt.attr = SCE_KERNEL_ALLOC_MEMBLOCK_ATTR_HAS_ALIGNMENT;
 		opt.alignment = EURASIA_PDS_DOUTT2_TEXADDR_ALIGNSHIFT;
+
+		ui32SizeInBytes = ALIGNCOUNT(ui32SizeInBytes, 256 * 1024);
 
 		psSurface->hZSBufferMemBlockUID = sceKernelAllocMemBlock(
 			"SGXZSBufferMem",
@@ -1248,6 +1251,8 @@ IMG_INTERNAL IMG_BOOL KEGL_SGXResizeRenderSurface(SrvSysContext		*psSysContext,
 		opt.attr = SCE_KERNEL_ALLOC_MEMBLOCK_ATTR_HAS_ALIGNMENT;
 		opt.alignment = EURASIA_PDS_DOUTT2_TEXADDR_ALIGNSHIFT;
 
+		ui32SizeInBytes = ALIGNCOUNT(ui32SizeInBytes, 256 * 1024);
+
 		psSurface->hZSBufferMemBlockUID = sceKernelAllocMemBlock(
 			"SGXZSBufferMem",
 			SCE_KERNEL_MEMBLOCK_TYPE_USER_CDRAM_RW,
@@ -1518,6 +1523,8 @@ IMG_INTERNAL IMG_BOOL KEGL_SGXAwakeRenderSurface(SrvSysContext		*psSysContext,
 		opt.size = sizeof(SceKernelAllocMemBlockOpt);
 		opt.attr = SCE_KERNEL_ALLOC_MEMBLOCK_ATTR_HAS_ALIGNMENT;
 		opt.alignment = EURASIA_PDS_DOUTT2_TEXADDR_ALIGNSHIFT;
+
+		ui32SizeInBytes = ALIGNCOUNT(ui32SizeInBytes, 256 * 1024);
 
 		psSurface->hZSBufferMemBlockUID = sceKernelAllocMemBlock(
 			"SGXZSBufferMem",
