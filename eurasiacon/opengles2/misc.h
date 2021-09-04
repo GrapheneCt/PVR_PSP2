@@ -151,6 +151,7 @@ typedef struct GLESAppHintsRec
 	IMG_BOOL bDisableAsyncTextureOp;
 	IMG_UINT32 ui32PrimitiveSplitThreshold;
 	IMG_UINT32 ui32MaxDrawCallsPerCore;
+	IMG_UINT32 ui32GLSLEnabledWarnings;
 } GLESAppHints;
 
 

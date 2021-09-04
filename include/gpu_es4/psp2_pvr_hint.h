@@ -79,6 +79,7 @@ typedef struct _PVRSRV_PSP2_APPHINT_
 	IMG_BOOL bAllowTrilinearNPOT;
 	IMG_BOOL bEnableVaryingPrecisionOpt;
 	IMG_BOOL bDisableAsyncTextureOp;
+	IMG_UINT32 ui32GLSLEnabledWarnings;
 
 } PVRSRV_PSP2_APPHINT;
 

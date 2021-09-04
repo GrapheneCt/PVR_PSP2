@@ -18,6 +18,8 @@
 #include "img_defs.h"
 #include "services.h"
 
+#include "../../tools/intern/oglcompiler/glsl/glsl.h"
+
 typedef struct _PVR_APPHINT_STATE_
 {
 	IMG_MODULE_ID eModuleID;
@@ -442,6 +444,11 @@ IMG_EXPORT IMG_BOOL PVRSRVGetAppHint(IMG_VOID		*pvHintState,
 			*(IMG_UINT32 *)pvReturn = s_appHint.ui32PrimitiveSplitThreshold;
 			bFound = IMG_TRUE;
 		}
+		else if (!sceClibStrncasecmp(pszHintName, "GLSLEnabledWarnings", 20))
+		{
+			*(IMG_UINT32 *)pvReturn = s_appHint.ui32GLSLEnabledWarnings;
+			bFound = IMG_TRUE;
+		}
 	}
 
 	if (!bFound)
@@ -571,6 +578,7 @@ IMG_EXPORT IMG_BOOL PVRSRVInitializeAppHint(PVRSRV_PSP2_APPHINT *psAppHint)
 	psAppHint->bDynamicSplitCalc = 1;
 	psAppHint->bAllowTrilinearNPOT = 1;
 	psAppHint->bEnableVaryingPrecisionOpt = 1;
+	psAppHint->ui32GLSLEnabledWarnings = GLSLCW_WARN_ALL;
 
 	return IMG_TRUE;
 }

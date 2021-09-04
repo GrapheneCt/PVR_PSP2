@@ -3943,7 +3943,7 @@ NoBinary:
 	sCompileContext.bCompleteProgram = IMG_TRUE;
 	sCompileContext.bDisplayMetrics = IMG_FALSE;
 	sCompileContext.bValidateOnly = IMG_FALSE;
-	sCompileContext.eEnabledWarnings = GLSLCW_WARN_ALL;
+	sCompileContext.eEnabledWarnings = gc->sAppHints.ui32GLSLEnabledWarnings;
 
 	psCompiledProgram = gc->sProgram.sGLSLFuncTable.pfnCompileToUniflex(&sCompileUniflexContext);
 

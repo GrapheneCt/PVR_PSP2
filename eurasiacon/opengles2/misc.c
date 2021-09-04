@@ -20,6 +20,8 @@
 
 #include "context.h"
 
+#include "glsl.h"
+
 /*****************************************************************************/
 
 
@@ -737,6 +739,9 @@ IMG_INTERNAL IMG_BOOL GetApplicationHints(GLESAppHints *psAppHints, EGLcontextMo
 
 	ui32Default = 0;
 	PVRSRVGetAppHint(pvHintState, "MaxDrawCallsPerCore", IMG_UINT_TYPE, &ui32Default, &psAppHints->ui32MaxDrawCallsPerCore);
+
+	ui32Default = GLSLCW_WARN_ALL;
+	PVRSRVGetAppHint(pvHintState, "GLSLEnabledWarnings", IMG_UINT_TYPE, &ui32Default, &psAppHints->ui32GLSLEnabledWarnings);
 
 	PVRSRVFreeAppHintState(IMG_OPENGLES2, pvHintState);
 

@@ -117,6 +117,7 @@ extern "C" {
 		IMG_BOOL bAllowTrilinearNPOT;
 		IMG_BOOL bEnableVaryingPrecisionOpt;
 		IMG_BOOL bDisableAsyncTextureOp;
+		IMG_UINT32 ui32GLSLEnabledWarnings;
 
 	} PVRSRV_PSP2_APPHINT;
 #endif
