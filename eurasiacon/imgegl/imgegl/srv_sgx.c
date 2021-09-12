@@ -6,8 +6,6 @@
 @License        Strictly Confidential.
 */ /**************************************************************************/
 
-#include <gxm/render_target.h>
-
 #include "psp2_pvr_desc.h"
 #include "psp2_pvr_defs.h"
 
@@ -500,9 +498,9 @@ IMG_INTERNAL IMG_BOOL KEGL_SGXCreateRenderSurface(SrvSysContext *psSysContext,
 	IMG_UINT32 ui32MultiSample, ui32Align, ui32Size, ui32RTIndex, ui32DriverMemSize;
 	IMG_SID hRtMemRef;
 	IMGEGLAppHints *psAppHints;
-	SceGxmRenderTargetParams sRtTmpParam;
 	SceUID hDrvMemBlockForFree;
 	IMG_BOOL bUnused;
+	const IMG_UINT32 ui32RendersPerFrame = 1; // Default
 
 	psAppHints = (IMGEGLAppHints *)psSysContext->hIMGEGLAppHints;
 
@@ -518,13 +516,11 @@ IMG_INTERNAL IMG_BOOL KEGL_SGXCreateRenderSurface(SrvSysContext *psSysContext,
 	{
 		ui32MultiSample = 2;
 		ui32RTIndex = EGL_RENDER_TARGET_AA_INDEX;
-		sRtTmpParam.multisampleMode = SCE_GXM_MULTISAMPLE_4X;
 	}
 	else
 	{
 		ui32MultiSample = 0;
 		ui32RTIndex = EGL_RENDER_TARGET_NOAA_INDEX;
-		sRtTmpParam.multisampleMode = SCE_GXM_MULTISAMPLE_NONE;
 	}
 
 	psSurface->bMultiSample				= bMultiSample;
@@ -540,23 +536,11 @@ IMG_INTERNAL IMG_BOOL KEGL_SGXCreateRenderSurface(SrvSysContext *psSysContext,
 	}
 
 	sAddRenderTarget.ui32Flags			= SGX_ADDRTFLAGS_USEOGLMODE;
-	sAddRenderTarget.ui32RendersPerFrame = 1; // Default, can't use 0 on PSP2
+	sAddRenderTarget.ui32NumRTData = ui32RendersPerFrame * 2;
+	sAddRenderTarget.ui32MaxQueuedRenders = ui32RendersPerFrame * 3;
 	sAddRenderTarget.hRenderContext		= psSysContext->hRenderContext;
 	sAddRenderTarget.ui32NumPixelsX		= MAX(1, psParams->ui32Width);
 	sAddRenderTarget.ui32NumPixelsY		= MAX(1, psParams->ui32Height);
-
-	sRtTmpParam.driverMemBlock = SCE_UID_INVALID_UID;
-	sRtTmpParam.flags = 0;
-	sRtTmpParam.scenesPerFrame = 1;
-	sRtTmpParam.width = sAddRenderTarget.ui32NumPixelsX;
-	sRtTmpParam.height = sAddRenderTarget.ui32NumPixelsY;
-	sRtTmpParam.multisampleLocations = 0;
-	sceGxmGetRenderTargetMemSize(&sRtTmpParam, &ui32DriverMemSize);
-
-	sAddRenderTarget.i32DataMemblockUID = sceKernelAllocMemBlock("SGXRenderTarget", SCE_KERNEL_MEMBLOCK_TYPE_USER_NC_RW, ui32DriverMemSize, SCE_NULL);
-
-	hRtMemRef = 0;
-	PVRSRVRegisterMemBlock(&psSysContext->s3D, sAddRenderTarget.i32DataMemblockUID, &hRtMemRef, IMG_TRUE);
 
 	if (ui32MultiSample == 2)
 	{
@@ -576,12 +560,19 @@ IMG_INTERNAL IMG_BOOL KEGL_SGXCreateRenderSurface(SrvSysContext *psSysContext,
 	sAddRenderTarget.eRotation			= psParams->eRotationAngle;
 	sAddRenderTarget.ui16NumRTsInArray	= 1;
 
-	sAddRenderTarget.ui32RendersPerQueueSwap = 6;
 	sAddRenderTarget.ui8MacrotileCountX = 0;
 	sAddRenderTarget.ui8MacrotileCountY = 0;
 	sAddRenderTarget.bUseExternalUID = IMG_FALSE;
-	sAddRenderTarget.hMemBlockProcRef = hRtMemRef;
 	sAddRenderTarget.ui32MultisampleLocations = 0;
+
+	hRtMemRef = 0;
+
+	SGXGetRenderTargetMemSize(&sAddRenderTarget, &ui32DriverMemSize);
+
+	sAddRenderTarget.i32DataMemblockUID = sceKernelAllocMemBlock("SGXRenderTarget", SCE_KERNEL_MEMBLOCK_TYPE_USER_NC_RW, ui32DriverMemSize, SCE_NULL);
+	PVRSRVRegisterMemBlock(&psSysContext->s3D, sAddRenderTarget.i32DataMemblockUID, &hRtMemRef, IMG_TRUE);
+
+	sAddRenderTarget.hMemBlockProcRef = hRtMemRef;
 
 	if(SGXAddRenderTarget (&psSysContext->s3D,
 							&sAddRenderTarget, &psSurface->ahRenderTarget[ui32RTIndex]) != PVRSRV_OK)
@@ -593,18 +584,18 @@ IMG_INTERNAL IMG_BOOL KEGL_SGXCreateRenderSurface(SrvSysContext *psSysContext,
 	{
 		PVR_ASSERT(bMultiSample);
 
-		sRtTmpParam.multisampleMode = SCE_GXM_MULTISAMPLE_NONE;
-		sceGxmGetRenderTargetMemSize(&sRtTmpParam, &ui32DriverMemSize);
-
-		sAddRenderTarget.i32DataMemblockUID = sceKernelAllocMemBlock("SGXRenderTargetPairRt", SCE_KERNEL_MEMBLOCK_TYPE_USER_NC_RW, ui32DriverMemSize, SCE_NULL);
-
-		hRtMemRef = 0;
-		PVRSRVRegisterMemBlock(&psSysContext->s3D, sAddRenderTarget.i32DataMemblockUID, &hRtMemRef, IMG_TRUE);
-
 		sAddRenderTarget.ui16MSAASamplesInX = 1;
 		sAddRenderTarget.ui16MSAASamplesInY = 1;
 		sAddRenderTarget.eForceScalingInX = SGX_SCALING_NONE;
 		sAddRenderTarget.eForceScalingInY = SGX_SCALING_NONE;
+
+		hRtMemRef = 0;
+
+		SGXGetRenderTargetMemSize(&sAddRenderTarget, &ui32DriverMemSize);
+
+		sAddRenderTarget.i32DataMemblockUID = sceKernelAllocMemBlock("SGXRenderTargetPairRt", SCE_KERNEL_MEMBLOCK_TYPE_USER_NC_RW, ui32DriverMemSize, SCE_NULL);
+		PVRSRVRegisterMemBlock(&psSysContext->s3D, sAddRenderTarget.i32DataMemblockUID, &hRtMemRef, IMG_TRUE);
+
 		sAddRenderTarget.hMemBlockProcRef = hRtMemRef;
 
 		if(SGXAddRenderTarget (&psSysContext->s3D,
@@ -1048,9 +1039,9 @@ IMG_INTERNAL IMG_BOOL KEGL_SGXResizeRenderSurface(SrvSysContext		*psSysContext,
 	IMG_UINT32 ui32MultiSample = 0, ui32RTIndex;
 	IMG_UINT32 ui32SizeInBytes, ui32DriverMemSize;
 	IMG_SID hRtMemRef;
-	SceGxmRenderTargetParams sRtTmpParam;
 	SceUID hDrvMemBlockForFree;
 	IMG_BOOL bUnused;
+	const IMG_UINT32 ui32RendersPerFrame = 1;
 
 	if(bMultiSample)
 	{
@@ -1066,7 +1057,13 @@ IMG_INTERNAL IMG_BOOL KEGL_SGXResizeRenderSurface(SrvSysContext		*psSysContext,
 	}
 
 	/* Wait for operations on the surface to complete */
-	if(sceGpuSignalWait(sceKernelGetTLSAddr(0x44), 1000000) != PVRSRV_OK)
+	if (PVRSRVPollForValue(psSysContext->psConnection,
+		psSysContext->sHWInfo.sMiscInfo.hOSGlobalEvent,
+		psSurface->sPDSBuffer.pui32ReadOffset,
+		psSurface->sPDSBuffer.ui32CommittedHWOffsetInBytes,
+		0xFFFFFFFF,
+		1000,
+		1000) != PVRSRV_OK)
 	{
 		PVR_DPF((PVR_DBG_ERROR, "KEGL_SGXResizeRenderSurface: Timeout failed on waiting for previous render op"));
 	}
@@ -1138,7 +1135,8 @@ IMG_INTERNAL IMG_BOOL KEGL_SGXResizeRenderSurface(SrvSysContext		*psSysContext,
 	}
 
 	sAddRenderTarget.ui32Flags			= SGX_ADDRTFLAGS_USEOGLMODE;
-	sAddRenderTarget.ui32RendersPerFrame = 1; // Default, can't use 0 on PSP2
+	sAddRenderTarget.ui32NumRTData = ui32RendersPerFrame * 2;
+	sAddRenderTarget.ui32MaxQueuedRenders = ui32RendersPerFrame * 3;
 	sAddRenderTarget.hRenderContext		= psSysContext->hRenderContext;
 	sAddRenderTarget.ui32NumPixelsX		= psParams->ui32Width;
 	sAddRenderTarget.ui32NumPixelsY		= psParams->ui32Height;
@@ -1147,27 +1145,12 @@ IMG_INTERNAL IMG_BOOL KEGL_SGXResizeRenderSurface(SrvSysContext		*psSysContext,
 	{
 		sAddRenderTarget.ui16MSAASamplesInX = 2;
 		sAddRenderTarget.ui16MSAASamplesInY = 2;
-		sRtTmpParam.multisampleMode = SCE_GXM_MULTISAMPLE_4X;
 	}
 	else
 	{
 		sAddRenderTarget.ui16MSAASamplesInX = 1;
 		sAddRenderTarget.ui16MSAASamplesInY = 1;
-		sRtTmpParam.multisampleMode = SCE_GXM_MULTISAMPLE_NONE;
 	}
-
-	sRtTmpParam.driverMemBlock = SCE_UID_INVALID_UID;
-	sRtTmpParam.flags = 0;
-	sRtTmpParam.scenesPerFrame = 1;
-	sRtTmpParam.width = sAddRenderTarget.ui32NumPixelsX;
-	sRtTmpParam.height = sAddRenderTarget.ui32NumPixelsY;
-	sRtTmpParam.multisampleLocations = 0;
-	sceGxmGetRenderTargetMemSize(&sRtTmpParam, &ui32DriverMemSize);
-
-	sAddRenderTarget.i32DataMemblockUID = sceKernelAllocMemBlock("SGXRenderTarget", SCE_KERNEL_MEMBLOCK_TYPE_USER_NC_RW, ui32DriverMemSize, SCE_NULL);
-
-	hRtMemRef = 0;
-	PVRSRVRegisterMemBlock(&psSysContext->s3D, sAddRenderTarget.i32DataMemblockUID, &hRtMemRef, IMG_TRUE);
 
 	sAddRenderTarget.eForceScalingInX = SGX_SCALING_NONE;
 	sAddRenderTarget.eForceScalingInY = SGX_SCALING_NONE;
@@ -1176,12 +1159,19 @@ IMG_INTERNAL IMG_BOOL KEGL_SGXResizeRenderSurface(SrvSysContext		*psSysContext,
 	sAddRenderTarget.eRotation			= psParams->eRotationAngle;
 	sAddRenderTarget.ui16NumRTsInArray	= 1;
 
-	sAddRenderTarget.ui32RendersPerQueueSwap = 6;
 	sAddRenderTarget.ui8MacrotileCountX = 0;
 	sAddRenderTarget.ui8MacrotileCountY = 0;
 	sAddRenderTarget.bUseExternalUID = IMG_FALSE;
-	sAddRenderTarget.hMemBlockProcRef = hRtMemRef;
 	sAddRenderTarget.ui32MultisampleLocations = 0;
+
+	hRtMemRef = 0;
+
+	SGXGetRenderTargetMemSize(&sAddRenderTarget, &ui32DriverMemSize);
+
+	sAddRenderTarget.i32DataMemblockUID = sceKernelAllocMemBlock("SGXRenderTarget", SCE_KERNEL_MEMBLOCK_TYPE_USER_NC_RW, ui32DriverMemSize, SCE_NULL);
+	PVRSRVRegisterMemBlock(&psSysContext->s3D, sAddRenderTarget.i32DataMemblockUID, &hRtMemRef, IMG_TRUE);
+
+	sAddRenderTarget.hMemBlockProcRef = hRtMemRef;
 
 	if(SGXAddRenderTarget (&psSysContext->s3D,
 							&sAddRenderTarget, &psSurface->ahRenderTarget[ui32RTIndex]) != PVRSRV_OK)
@@ -1200,7 +1190,6 @@ IMG_INTERNAL IMG_BOOL KEGL_SGXResizeRenderSurface(SrvSysContext		*psSysContext,
 			sAddRenderTarget.ui16MSAASamplesInY = 1;
 			sAddRenderTarget.eForceScalingInX = SGX_SCALING_NONE;
 			sAddRenderTarget.eForceScalingInY = SGX_SCALING_NONE;
-			sRtTmpParam.multisampleMode = SCE_GXM_MULTISAMPLE_NONE;
 
 			ui32RTIndex = EGL_RENDER_TARGET_NOAA_INDEX;
 		}
@@ -1210,16 +1199,14 @@ IMG_INTERNAL IMG_BOOL KEGL_SGXResizeRenderSurface(SrvSysContext		*psSysContext,
 			sAddRenderTarget.ui16MSAASamplesInY = 2;
 			sAddRenderTarget.eForceScalingInX = SGX_SCALING_NONE;
 			sAddRenderTarget.eForceScalingInY = SGX_SCALING_NONE;
-			sRtTmpParam.multisampleMode = SCE_GXM_MULTISAMPLE_4X;
 
 			ui32RTIndex = EGL_RENDER_TARGET_AA_INDEX;
 		}
+		hRtMemRef = 0;
 
-		sceGxmGetRenderTargetMemSize(&sRtTmpParam, &ui32DriverMemSize);
+		SGXGetRenderTargetMemSize(&sAddRenderTarget, &ui32DriverMemSize);
 
 		sAddRenderTarget.i32DataMemblockUID = sceKernelAllocMemBlock("SGXRenderTargetPairRt", SCE_KERNEL_MEMBLOCK_TYPE_USER_NC_RW, ui32DriverMemSize, SCE_NULL);
-
-		hRtMemRef = 0;
 		PVRSRVRegisterMemBlock(&psSysContext->s3D, sAddRenderTarget.i32DataMemblockUID, &hRtMemRef, IMG_TRUE);
 
 		sAddRenderTarget.hMemBlockProcRef = hRtMemRef;
@@ -1305,9 +1292,15 @@ IMG_INTERNAL IMG_BOOL KEGL_SGXHibernateRenderSurface(SrvSysContext		*psSysContex
 	IMG_BOOL bUnused;
 
 	/* Wait for operations on the surface to complete */
-	if(sceGpuSignalWait(sceKernelGetTLSAddr(0x44), 1000000) != PVRSRV_OK)
+	if (PVRSRVPollForValue(psSysContext->psConnection,
+		psSysContext->sHWInfo.sMiscInfo.hOSGlobalEvent,
+		psSurface->sPDSBuffer.pui32ReadOffset,
+		psSurface->sPDSBuffer.ui32CommittedHWOffsetInBytes,
+		0xFFFFFFFF,
+		1000,
+		1000) != PVRSRV_OK)
 	{
-		PVR_DPF((PVR_DBG_ERROR, "KEGL_SGXHibernateRenderSurface: Timeout failed on waiting for previous render op"));
+		PVR_DPF((PVR_DBG_ERROR, "KEGL_SGXResizeRenderSurface: Timeout failed on waiting for previous render op"));
 	}
 
 #if defined(PDUMP)
@@ -1392,9 +1385,9 @@ IMG_INTERNAL IMG_BOOL KEGL_SGXAwakeRenderSurface(SrvSysContext		*psSysContext,
 	SGX_ADDRENDTARG sAddRenderTarget;
 	IMG_BOOL bSuccess = IMG_TRUE;
 	IMG_SID hRtMemRef;
-	SceGxmRenderTargetParams sRtTmpParam;
 	SceUID hDrvMemBlockForFree;
 	IMG_BOOL bUnused;
+	const IMG_UINT32 ui32RendersPerFrame = 1;
 
 	IMG_UINT32 ui32MultiSample = 0, ui32RTIndex;
 	IMG_UINT32 ui32SizeInBytes, ui32DriverMemSize;
@@ -1404,32 +1397,18 @@ IMG_INTERNAL IMG_BOOL KEGL_SGXAwakeRenderSurface(SrvSysContext		*psSysContext,
 		ui32MultiSample = 2;
 
 		ui32RTIndex = EGL_RENDER_TARGET_AA_INDEX;
-		sRtTmpParam.multisampleMode = SCE_GXM_MULTISAMPLE_4X;
 	}
 	else
 	{
 		ui32RTIndex = EGL_RENDER_TARGET_NOAA_INDEX;
-		sRtTmpParam.multisampleMode = SCE_GXM_MULTISAMPLE_NONE;
 	}
 
 	sAddRenderTarget.ui32Flags			= SGX_ADDRTFLAGS_USEOGLMODE;
-	sAddRenderTarget.ui32RendersPerFrame = 0;
+	sAddRenderTarget.ui32NumRTData = ui32RendersPerFrame * 2;
+	sAddRenderTarget.ui32MaxQueuedRenders = ui32RendersPerFrame * 3;
 	sAddRenderTarget.hRenderContext		= psSysContext->hRenderContext;
 	sAddRenderTarget.ui32NumPixelsX		= psParams->ui32Width;
 	sAddRenderTarget.ui32NumPixelsY		= psParams->ui32Height;
-
-	sRtTmpParam.driverMemBlock = SCE_UID_INVALID_UID;
-	sRtTmpParam.flags = 0;
-	sRtTmpParam.scenesPerFrame = 1;
-	sRtTmpParam.width = sAddRenderTarget.ui32NumPixelsX;
-	sRtTmpParam.height = sAddRenderTarget.ui32NumPixelsY;
-	sRtTmpParam.multisampleLocations = 0;
-	sceGxmGetRenderTargetMemSize(&sRtTmpParam, &ui32DriverMemSize);
-
-	sAddRenderTarget.i32DataMemblockUID = sceKernelAllocMemBlock("SGXRenderTarget", SCE_KERNEL_MEMBLOCK_TYPE_USER_NC_RW, ui32DriverMemSize, SCE_NULL);
-
-	hRtMemRef = 0;
-	PVRSRVRegisterMemBlock(&psSysContext->s3D, sAddRenderTarget.i32DataMemblockUID, &hRtMemRef, IMG_TRUE);
 
 	if (ui32MultiSample == 2)
 	{
@@ -1449,12 +1428,19 @@ IMG_INTERNAL IMG_BOOL KEGL_SGXAwakeRenderSurface(SrvSysContext		*psSysContext,
 	sAddRenderTarget.eRotation			= psParams->eRotationAngle;
 	sAddRenderTarget.ui16NumRTsInArray	= 1;
 
-	sAddRenderTarget.ui32RendersPerQueueSwap = 6;
 	sAddRenderTarget.ui8MacrotileCountX = 0;
 	sAddRenderTarget.ui8MacrotileCountY = 0;
 	sAddRenderTarget.bUseExternalUID = IMG_FALSE;
-	sAddRenderTarget.hMemBlockProcRef = hRtMemRef;
 	sAddRenderTarget.ui32MultisampleLocations = 0;
+
+	hRtMemRef = 0;
+
+	SGXGetRenderTargetMemSize(&sAddRenderTarget, &ui32DriverMemSize);
+
+	sAddRenderTarget.i32DataMemblockUID = sceKernelAllocMemBlock("SGXRenderTarget", SCE_KERNEL_MEMBLOCK_TYPE_USER_NC_RW, ui32DriverMemSize, SCE_NULL);
+	PVRSRVRegisterMemBlock(&psSysContext->s3D, sAddRenderTarget.i32DataMemblockUID, &hRtMemRef, IMG_TRUE);
+
+	sAddRenderTarget.hMemBlockProcRef = hRtMemRef;
 
 	if(SGXAddRenderTarget (&psSysContext->s3D,
 							&sAddRenderTarget, &psSurface->ahRenderTarget[ui32RTIndex]) != PVRSRV_OK)
@@ -1473,7 +1459,6 @@ IMG_INTERNAL IMG_BOOL KEGL_SGXAwakeRenderSurface(SrvSysContext		*psSysContext,
 			sAddRenderTarget.ui16MSAASamplesInY = 1;
 			sAddRenderTarget.eForceScalingInX = SGX_SCALING_NONE;
 			sAddRenderTarget.eForceScalingInY = SGX_SCALING_NONE;
-			sRtTmpParam.multisampleMode = SCE_GXM_MULTISAMPLE_NONE;
 
 			ui32RTIndex = EGL_RENDER_TARGET_NOAA_INDEX;
 		}
@@ -1483,16 +1468,14 @@ IMG_INTERNAL IMG_BOOL KEGL_SGXAwakeRenderSurface(SrvSysContext		*psSysContext,
 			sAddRenderTarget.ui16MSAASamplesInY = 2;
 			sAddRenderTarget.eForceScalingInX = SGX_SCALING_NONE;
 			sAddRenderTarget.eForceScalingInY = SGX_SCALING_NONE;
-			sRtTmpParam.multisampleMode = SCE_GXM_MULTISAMPLE_4X;
 
 			ui32RTIndex = EGL_RENDER_TARGET_AA_INDEX;
 		}
+		hRtMemRef = 0;
 
-		sceGxmGetRenderTargetMemSize(&sRtTmpParam, &ui32DriverMemSize);
+		SGXGetRenderTargetMemSize(&sAddRenderTarget, &ui32DriverMemSize);
 
 		sAddRenderTarget.i32DataMemblockUID = sceKernelAllocMemBlock("SGXRenderTargetPairRt", SCE_KERNEL_MEMBLOCK_TYPE_USER_NC_RW, ui32DriverMemSize, SCE_NULL);
-
-		hRtMemRef = 0;
 		PVRSRVRegisterMemBlock(&psSysContext->s3D, sAddRenderTarget.i32DataMemblockUID, &hRtMemRef, IMG_TRUE);
 
 		sAddRenderTarget.hMemBlockProcRef = hRtMemRef;

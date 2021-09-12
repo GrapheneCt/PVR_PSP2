@@ -3969,11 +3969,11 @@ static IMG_VOID srft_AddRenderTarget(SRFT_CONFIG		*psConfig,
     SGX_ADDRENDTARG		sAddRTInfo = {0};
 #ifdef __psp2__
     SceUID				rtMemUID;
+	IMG_UINT32 ui32DriverMemSize;
     IMG_SID				hRtMem = 0;
 #endif
 
     sAddRTInfo.ui32Flags			= 0;
-	sAddRTInfo.ui32RendersPerFrame = psConfig->ui32RendersPerFrame;
     sAddRTInfo.hRenderContext		= hRenderContext;
     sAddRTInfo.hDevCookie			= psSGXDevData->hDevCookie;
     sAddRTInfo.ui32NumPixelsX		= ui32RectangleSizeX;
@@ -3998,21 +3998,24 @@ static IMG_VOID srft_AddRenderTarget(SRFT_CONFIG		*psConfig,
     }
     sAddRTInfo.ui16NumRTsInArray	= 1;
 
-#ifdef __psp2__
-
-    rtMemUID = sceKernelAllocMemBlock("SGXRenderTarget", SCE_KERNEL_MEMBLOCK_TYPE_USER_NC_RW, 0x100000, NULL);
-
-    PVRSRVRegisterMemBlock(psSGXDevData, rtMemUID, &hRtMem, IMG_TRUE);
-
+#if defined(__psp2__)
     sAddRTInfo.eRotation = PVRSRV_ROTATE_0;
-    sAddRTInfo.ui32RendersPerQueueSwap = 3;
+    sAddRTInfo.ui32NumRTData = psConfig->ui32RendersPerFrame * 2;
+    sAddRTInfo.ui32MaxQueuedRenders = psConfig->ui32RendersPerFrame * 3;
     sAddRTInfo.ui8MacrotileCountX = 0;
     sAddRTInfo.ui8MacrotileCountY = 0;
-    sAddRTInfo.i32DataMemblockUID = rtMemUID;
     sAddRTInfo.bUseExternalUID = IMG_FALSE;
-    sAddRTInfo.hMemBlockProcRef = hRtMem;
     sAddRTInfo.ui32MultisampleLocations = 0;
 
+	SGXGetRenderTargetMemSize(&sAddRTInfo, &ui32DriverMemSize);
+
+	rtMemUID = sceKernelAllocMemBlock("SGXRenderTarget", SCE_KERNEL_MEMBLOCK_TYPE_USER_NC_RW, ui32DriverMemSize, NULL);
+	PVRSRVRegisterMemBlock(psSGXDevData, rtMemUID, &hRtMem, IMG_TRUE);
+
+	sAddRTInfo.hMemBlockProcRef = hRtMem;
+	sAddRTInfo.i32DataMemblockUID = rtMemUID;
+#else
+	sAddRTInfo.ui32RendersPerFrame = psConfig->ui32RendersPerFrame;
 #endif
 
     psShared->fnInfo("Adding render target via SGXAddRenderTarget, %ux%u pixels\n",

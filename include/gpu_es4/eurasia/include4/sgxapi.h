@@ -172,8 +172,12 @@ typedef enum _SGX_SCALING_
 typedef struct _SGX_ADDRENDTARG_
 {
 	IMG_UINT32				ui32Flags;
+#if defined(__psp2__)
+	IMG_UINT32				ui32NumRTData;    /* Renders per frame * 2 */
+	IMG_UINT32				ui32MaxQueuedRenders;    /* Renders per frame * Max frames in progress */
+#else
 	IMG_UINT32				ui32RendersPerFrame;	/* Maximum renders per frame before blocking behaviour, must not be 0 */
-	IMG_UINT32				ui32RendersPerQueueSwap;
+#endif
 	IMG_HANDLE				hRenderContext;
 	IMG_SID					hDevCookie;
 	IMG_UINT32				ui32NumPixelsX;

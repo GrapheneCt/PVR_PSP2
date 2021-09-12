@@ -147,6 +147,8 @@ PVRSRV_ERROR IMG_CALLCONV SGXGetRenderTargetInfoExt(PVRSRV_DEV_DATA *psDevData, 
 
 PVRSRV_ERROR IMG_CALLCONV SGXGetRenderTargetDriverMemBlock(PVRSRV_DEV_DATA *psDevData, IMG_HANDLE hRTDataSet, IMG_INT32 *pi32DriverMemBlockUID, IMG_BOOL *pbInternalUID);
 
+PVRSRV_ERROR IMG_CALLCONV SGXGetRenderTargetMemSize(SGX_ADDRENDTARG *psAddRTInfo, IMG_UINT32 *pui32MemSize);
+
 PVRSRV_ERROR IMG_CALLCONV SGXWaitTransfer(PVRSRV_DEV_DATA *psDevData, IMG_HANDLE hTransferContext);
 
 int sceGpuSignalWait(void *unkTLS, unsigned int timeout);
