@@ -239,6 +239,9 @@ typedef enum _SGX_MISC_INFO_REQUEST_
 	SGX_MISC_INFO_REQUEST_SPM,
 	SGX_MISC_INFO_REQUEST_ACTIVEPOWER,
 	SGX_MISC_INFO_REQUEST_LOCKUPS,
+#if defined(__psp2__)
+	SGX_MISC_INFO_REQUEST_TIMERS,
+#endif
 	SGX_MISC_INFO_REQUEST_FORCE_I16 				=  0x7fff
 } SGX_MISC_INFO_REQUEST;
 
@@ -352,6 +355,21 @@ typedef struct _PVRSRV_SGX_MISCINFO_SET_HWPERF_STATUS
 } PVRSRV_SGX_MISCINFO_SET_HWPERF_STATUS;
 
 
+#if defined(__psp2__)
+/*!
+ ******************************************************************************
+ * Structure for getting the CPU and GPU timers
+ *****************************************************************************/
+typedef struct _PVRSRV_SGX_MISCINFO_TIMERS_
+{
+	/* Based on process time */
+	IMG_UINT64	ui64CPUTimer;
+	/* See EUR_CR_TIMER */
+	IMG_UINT32	ui32GPUTimer;
+} PVRSRV_SGX_MISCINFO_TIMERS;
+#endif
+
+
 /*!
  ******************************************************************************
  * Structure for misc SGX commands in services
@@ -377,6 +395,9 @@ typedef struct _SGX_MISC_INFO_
 		SGX_BREAKPOINT_INFO									sSGXBreakpointInfo;
 #endif
 		PVRSRV_SGX_MISCINFO_SET_HWPERF_STATUS				sSetHWPerfStatus;
+#if defined(__psp2__)
+		PVRSRV_SGX_MISCINFO_TIMERS							sTimers;
+#endif
 	} uData;
 } SGX_MISC_INFO;
 
