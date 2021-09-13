@@ -184,6 +184,16 @@ typedef struct _PVRSRV_KERNEL_SYNC_INFO_
  *	This is a device addressable version of a pvrsrv_sync_oject
  *	- any hw cmd may have an unlimited number of these
  ****************************************************************************/
+#if defined(__psp2__)
+typedef struct _PVRSRV_DEVICE_SYNC_OBJECT_
+{
+	/* KEEP THESE 4 VARIABLES TOGETHER FOR UKERNEL BLOCK LOAD */
+	IMG_UINT32			ui32ReadOpsPendingVal;
+	IMG_DEV_VIRTADDR	sReadOpsCompleteDevVAddr;
+	IMG_UINT32			ui32WriteOpsPendingVal;
+	IMG_DEV_VIRTADDR	sWriteOpsCompleteDevVAddr;
+} PVRSRV_DEVICE_SYNC_OBJECT;
+#else
 typedef struct _PVRSRV_DEVICE_SYNC_OBJECT_
 {
 	/* KEEP THESE 6 VARIABLES TOGETHER FOR UKERNEL BLOCK LOAD */
@@ -194,6 +204,7 @@ typedef struct _PVRSRV_DEVICE_SYNC_OBJECT_
 	IMG_UINT32			ui32ReadOps2PendingVal;
 	IMG_DEV_VIRTADDR	sReadOps2CompleteDevVAddr;
 } PVRSRV_DEVICE_SYNC_OBJECT;
+#endif
 
 /*!
  *****************************************************************************

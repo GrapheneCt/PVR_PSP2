@@ -277,6 +277,52 @@ typedef	struct _SGXMKIF_HWPBDESC_UPDATE_
 	HW specific structure defining which registers need to be loaded
 	before a TA kick can be started
 */
+#if defined(__psp2__)
+typedef struct _SGXMKIF_TAREGISTERS_
+{
+	IMG_UINT32	ui32TEAA;/*!< TE AA mode control register value */
+	IMG_UINT32	ui32TEMTile1;/*!< TE macrotile control register value */
+	IMG_UINT32	ui32TEMTile2;/*!< TE macrotile control register value */
+	IMG_UINT32	ui32TEScreen;/*!< TE screen config register value */
+	IMG_UINT32	ui32TEMTileStride;/*!< TE macrotile stride control register value */
+	IMG_UINT32	ui32TEPSG;/*!< TE PSG register value */
+	IMG_UINT32	ui32VDMCtrlStreamBase;/*!< VDM control stream base register value */
+	IMG_UINT32	ui32MTECtrl;/*!< MTE ccontrol register value */
+	IMG_UINT32	aui32TEPSGRgnBase[SGX_FEATURE_MP_CORE_COUNT_TA];/*!< TE PSG region base(s) register value(s) */
+	IMG_UINT32	aui32TETPCBase[SGX_FEATURE_MP_CORE_COUNT_TA];/*!< TE TPC base(s) register value(s) */
+	IMG_UINT32	ui32MTEWCompare;/*!< MTE W Compare register value */
+	IMG_UINT32	ui32MTEWClamp;/*!< MTE W Clamp register value */
+	IMG_UINT32	ui32MTEScreen;/*!< MTE Screen config register value */
+	IMG_UINT32	ui32USELDRedirect;/*!< USE LD redirect register value */
+	IMG_UINT32	ui32USESTRange;/*!< USE ST Range control register value */
+	IMG_UINT32	ui32BIFTAReqBase;/*!< TA requestor base register value */
+#if defined(EUR_CR_MTE_FIXED_POINT)
+	IMG_UINT32	ui32MTEFixedPoint;/*!< MTE Fixed point control register value */
+#endif
+#if defined(SGX545)
+	#if defined(FIX_HW_BRN_26915)
+	IMG_UINT32	ui32GSGBaseAndStride;/*!< GSG Base and stride register value */
+	#else
+	IMG_UINT32	ui32GSGStride;/*!< GSG Stride register value */
+	IMG_UINT32	ui32GSGBase;/*!< GSG Base register value */
+	#endif
+	IMG_UINT32	ui32GSGWrap;/*!< GSG Wrap register value */
+	IMG_UINT32	ui32GSGStateStore;/*!< GSG State Store register value */
+	IMG_UINT32	ui32MTE1stPhaseCompGeomBase;/*!< MTE 1st Phase compllext geometry base register value */
+	IMG_UINT32	ui32MTE1stPhaseCompGeomSize;/*!< MTE 1st Phase compllext geometry size register value */
+	IMG_UINT32	ui32VtxBufWritePointerPDSProg;/*!< Vertex buffer write pointer (PDS program) register value */
+	IMG_UINT32	ui32SCWordCopyProgram;/*!< SC word copy program register value */
+	IMG_UINT32	ui32ITPProgram;/*!< ITP program register value */
+	#if defined(SGX_FEATURE_RENDER_TARGET_ARRAYS)
+	IMG_UINT32	ui32TARTMax;/*!< max render targets */
+	IMG_UINT32	ui32TETPC;/*!< TPC control */
+	#endif
+#endif
+	IMG_UINT32	ui32MTEMSCtrl;/*!< MTE MS control register value */
+
+	IMG_UINT32	ui32MasterMPPrimitive;/*!< Master MP Primitive register value */
+} SGXMKIF_TAREGISTERS, *PSGXMKIF_TAREGISTERS;
+#else
 typedef struct _SGXMKIF_TAREGISTERS_
 {
 	IMG_UINT32	ui32TEAA;/*!< TE AA mode control register value */
@@ -319,11 +365,65 @@ typedef struct _SGXMKIF_TAREGISTERS_
 #endif
 	IMG_UINT32	ui32MTEMSCtrl;/*!< MTE MS control register value */
 } SGXMKIF_TAREGISTERS, *PSGXMKIF_TAREGISTERS;
+#endif
 
 /*!
 	TA command. The SGX TA can be used to tile a whole scene's objects
 	as per TA behaviour on SGX.
 */
+#if defined(__psp2__)
+typedef struct _SGXMKIF_CMDTA_
+{
+	IMG_UINT32				ui32Size; /*!< command size */
+	IMG_UINT32				ui32Flags; /*!< command control flags */
+	IMG_UINT32				aui32SpecObject[3];/*!< special object pathing words */
+	IMG_UINT32				ui32BGObjDims;/*!< Dimensions for the BGObj */
+	IMG_UINT32				ui32NumVertexPartitions;/*!< number of vertex partitions */
+	IMG_UINT32				ui32SPMNumVertexPartitions;/*!< number of vertex partitions */
+	IMG_UINT32				ui32RenderFlags;/*!< render control flags */
+	IMG_UINT32				ui32FrameNum;/*!< associated frame number */
+	IMG_UINT32				ui32SceneNum;/*!< associated scene number */
+	IMG_DEV_VIRTADDR		sHWPBDescDevVAddr;/*!< Device virtual address of parameter buffer */
+	SGXMKIF_HWPBDESC_UPDATE	sHWPBDescUpdate;/*!< HW parameter buffer update descriptor */
+	IMG_DEV_VIRTADDR		sHWRenderDetailsDevAddr;/*!< HW render details Device Virtual Address */
+	IMG_DEV_VIRTADDR		sHWDstSyncListDevAddr;/*!< HW Dst Sync List Device Virtual Address */
+	IMG_DEV_VIRTADDR		sHWRTDataSetDevAddr;/*!< HW RTDataSet Device Virtual Address */
+	IMG_DEV_VIRTADDR		sHWRTDataDevAddr;/*!< HW RTData Device Virtual Address */
+
+#if defined(SGX_FEATURE_VDM_CONTEXT_SWITCH)
+	#if !defined(SGX_FEATURE_MTE_STATE_FLUSH)
+	IMG_DEV_VIRTADDR		sTAStateShadowDevAddr;/*!< TA State shadow buffer device virtual address */
+	#endif
+	#if !defined(SGX_FEATURE_USE_SA_COUNT_REGISTER)
+	IMG_DEV_VIRTADDR		sVDMSARestoreDataDevAddr[SGX_MAX_VDM_STATE_RESTORE_PROGS];/*!< VDM SA restore Device Virtual Address */
+	#endif
+#endif /* SGX_FEATURE_VDM_CONTEXT_SWITCH_REV_2 */
+
+#if defined(SGX_FEATURE_VISTEST_IN_MEMORY)
+	IMG_UINT32				ui32VisTestCount;/*!< Visibility test count */
+#else
+	IMG_DEV_VIRTADDR		sVisTestResultsDevAddr;/*!< Visibility test results buffer device virtual address */
+#endif
+#if defined(SGX_FEATURE_RENDER_TARGET_ARRAYS)
+	IMG_UINT32				ui32ZBufferStride;
+	IMG_UINT32				ui32SBufferStride;
+#endif
+	IMG_UINT32				ui32Num3DRegs;/*!< number of 3d registers to write */
+
+	SGXMKIF_CMDTA_SHARED	sShared;/*!< CMDTA shared command */
+	SGXMKIF_TAREGISTERS		sTARegs;/*!< TA registers */
+	
+	PVRSRV_HWREG			s3DRegUpdates[1];/*!< 3D register updates */
+	
+	/*** README ***
+	 *
+	 * 3D register updates may be larger than 1 and will be allocated in the
+	 * driver when the command is inserted in the TA cmd circular buffer.
+	 * Don't add structure members here as they will potentially conflict with
+	 * register updates causing the driver to crash.
+	 */
+} SGXMKIF_CMDTA,*PSGXMKIF_CMDTA;
+#else
 typedef struct _SGXMKIF_CMDTA_
 {
 	IMG_UINT32				ui32Size; /*!< command size */
@@ -373,6 +473,7 @@ typedef struct _SGXMKIF_CMDTA_
 	 * register updates causing the driver to crash.
 	 */
 } SGXMKIF_CMDTA,*PSGXMKIF_CMDTA;
+#endif
 
 /*!
 	microkernel structure contains all set-up info associated with one set
@@ -607,6 +708,87 @@ typedef struct _SGXMKIF_3DREGISTERS_
 	either normally at the end of a scene or mid-scene due to entering
 	SPM mode.
 */
+#if defined(__psp2__)
+typedef struct _SGXMKIF_HWRENDERDETAILS_
+{
+	SGXMKIF_3DREGISTERS		s3DRegs;/*!< 3d registers */
+	IMG_DEV_VIRTADDR		sAccessDevAddr;/*!< access lock device virtual address */
+	IMG_UINT32				ui32RenderFlags;/*!< render flags */
+
+	IMG_DEV_VIRTADDR		sHWRTDataSetDevAddr;/*!< HW RT data set device virtual address */
+	IMG_DEV_VIRTADDR		sHWRTDataDevAddr;/*!< HW RT Data device virtual address */
+
+	IMG_DEV_VIRTADDR		sHWDstSyncListDevAddr;/*!< HW Dst Sync List device virtual address */
+
+	/* KEEP THESE 4 VARIABLES TOGETHER FOR UKERNEL BLOCK LOAD */
+	IMG_UINT32				ui32TQSyncWriteOpsPendingVal;/*!< TQ Sync write Ops Pending */
+	IMG_DEV_VIRTADDR		sTQSyncWriteOpsCompleteDevVAddr;/*!< TQ Sync Write Ops Complete */
+	IMG_UINT32				ui32TQSyncReadOpsPendingVal;/*!< TQ Sync Read Ops Pending */
+	IMG_DEV_VIRTADDR		sTQSyncReadOpsCompleteDevVAddr;/*!< TQ Sync Read Ops Complete */
+	/* TA/3D dependency sync criteria to be updated after render */
+	PVRSRV_DEVICE_SYNC_OBJECT	sTA3DDependency;/*!< TA-3D dependency sync object */
+
+#if defined(SGX_FEATURE_RENDER_TARGET_ARRAYS)
+	/* KEEP THESE 2 VARIABLES TOGETHER FOR UKERNEL BLOCK LOAD */
+	IMG_UINT32				ui32NumRTs;/*!< number of render targets */
+	IMG_UINT32				ui32NextRTIdx;/*!< Next render target index */
+
+	IMG_DEV_VIRTADDR		sPixEventUpdateDevAddr;/*!<  Pixel event update device virtuak address */
+	IMG_DEV_VIRTADDR		sHWPixEventUpdateListDevAddr;/*!< HW Pixel Event update List base device virtual address */
+	IMG_DEV_VIRTADDR		sHWBgObjPrimPDSUpdateListDevAddr;/*!< HW background object Primary PDS update List device virtual address */
+
+	IMG_UINT32				ui32ZBufferStride;/*!< Stride of Depth buffer in bytes */
+	IMG_UINT32				ui32SBufferStride;/*!< Stride of Stencil buffer in bytes */
+#endif
+
+#if defined(SGX_FEATURE_VDM_CONTEXT_SWITCH) && defined(SGX_FEATURE_COMPLEX_GEOMETRY_REV_2)
+	/* VDM context switching variable */
+	IMG_UINT32				ui32MTE1stPhaseComplexPtr;/*!< Complex Geometry MTE 1st Phase Ptr */
+#endif
+
+#if defined(SGX_FEATURE_SW_ISP_CONTEXT_SWITCH)
+	IMG_UINT32				ui3CurrentMTIdx;/*!< Current MT Index */
+#endif
+
+#if defined(SGX_FEATURE_VISTEST_IN_MEMORY)
+	IMG_UINT32				ui32VisTestCount;/*!< Visibility Test Count */
+#else
+	IMG_DEV_VIRTADDR		sVisTestResultsDevAddr;/*!< Visibility Test Results Device Virtual Address */
+#endif
+#if defined(SGX_FEATURE_MP)
+	IMG_UINT32				ui32VDMPIMStatus;/*!< VDM PIM status */
+#endif
+	IMG_UINT32				ui32TEState[SGX_FEATURE_MP_CORE_COUNT_TA];/*!<  */
+
+	IMG_DEV_VIRTADDR		sPrevDevAddr;/*!< ptr to Previous SGXMKIF_HWRENDERDETAILS in the same render context */
+	IMG_DEV_VIRTADDR		sNextDevAddr;/*!< ptr to Next SGXMKIF_HWRENDERDETAILS in the same render context */
+
+	IMG_UINT32				aui32SpecObject[3];/*!< patch values for special object */
+	IMG_UINT32				ui32BGObjDims;/*!< Dimensions for the BGObj */
+
+	IMG_UINT32				ui32NumPixelPartitions;/*!< number of pixel partitions */
+
+	IMG_UINT32				ui32FrameNum;/*!< associated frame number */
+	IMG_UINT32				ui32SceneNum;/*!< associated scene number */
+
+	IMG_UINT32				ui32Num3DStatusVals;/*!< number of 3D status values to write on 3d complete */
+	CTL_STATUS				sCtl3DStatusInfo[SGX_MAX_3D_STATUS_VALS];/*!< 3D status value ctrl obj array */
+
+	/* source dependency details */
+#if defined(SUPPORT_SGX_GENERALISED_SYNCOBJECTS)
+	IMG_UINT32					ui32NumTASrcSyncs;/*!< Number of TA SRC syncs objects */
+	PVRSRV_DEVICE_SYNC_OBJECT	asTASrcSyncs[SGX_MAX_TA_SRC_SYNCS];/*!< TA Source sync object info array */
+	IMG_UINT32					ui32NumTADstSyncs;/*!< Number of TA DST syncs objects */
+	PVRSRV_DEVICE_SYNC_OBJECT	asTADstSyncs[SGX_MAX_TA_DST_SYNCS];/*!< TA DST sync object info array */
+	IMG_UINT32					ui32Num3DSrcSyncs;/*!< Number of 3D DST syncs objects */
+	PVRSRV_DEVICE_SYNC_OBJECT	as3DSrcSyncs[SGX_MAX_3D_SRC_SYNCS];/*!< 3D DST sync object info array */
+#else
+	IMG_UINT32				ui32NumSrcSyncs;/*!< Number of Src syncs */
+	PVRSRV_DEVICE_SYNC_OBJECT	asSrcSyncs[SGX_MAX_SRC_SYNCS];/*!< TA Source sync object info array  */
+#endif
+
+} SGXMKIF_HWRENDERDETAILS, *PSGXMKIF_HWRENDERDETAILS;
+#else
 typedef struct _SGXMKIF_HWRENDERDETAILS_
 {
 	SGXMKIF_3DREGISTERS		s3DRegs;/*!< 3d registers */
@@ -686,6 +868,7 @@ typedef struct _SGXMKIF_HWRENDERDETAILS_
 #endif
 
 } SGXMKIF_HWRENDERDETAILS, *PSGXMKIF_HWRENDERDETAILS;
+#endif
 
 
 /*!

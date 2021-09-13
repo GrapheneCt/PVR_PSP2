@@ -111,7 +111,7 @@ PVRSRV_ERROR PVRSRVMapMemoryToGpu(
 	IMG_SID hDevMemContext,
 	IMG_SID hHeapHandle,
 	IMG_UINT32 ui32Size,
-	IMG_UINT32 ui32GpuDevVaddr,
+	IMG_UINT32 ui32HeapSegmentSize,
 	IMG_PVOID pMemBase,
 	IMG_UINT32 ui32Flags,
 	IMG_DEV_VIRTADDR *psMappedDevVAddr);
