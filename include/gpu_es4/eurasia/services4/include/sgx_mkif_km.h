@@ -244,6 +244,27 @@ typedef struct _SGXMKIF_TRANSFERCMD_SHARED_
 
 
 #if defined(SGX_FEATURE_2D_HARDWARE)
+#if defined(__psp2__)
+
+typedef struct _SGXMKIF_2DCMD_SHARED_ {
+	/* need to be able to check read and write ops on src, and update reads */
+	IMG_UINT32			ui32NumSrcSync;
+	PVRSRV_DEVICE_SYNC_OBJECT	sSrcSyncData[SGX_MAX_2D_SRC_SYNC_OPS];
+
+	/* need to be able to check reads and writes on dest, and update writes */
+	PVRSRV_DEVICE_SYNC_OBJECT	sDstSyncData;
+
+	/* need to be able to check reads and writes on TA ops, and update writes */
+	PVRSRV_DEVICE_SYNC_OBJECT	sTASyncData;
+
+	/* need to be able to check reads and writes on 2D ops, and update writes */
+	PVRSRV_DEVICE_SYNC_OBJECT	s3DSyncData;
+
+	IMG_UINT32					ui32NumStatusVals;
+	CTL_STATUS					sCtlStatus;
+} SGXMKIF_2DCMD_SHARED, *PSGXMKIF_2DCMD_SHARED;
+#else
+
 typedef struct _SGXMKIF_2DCMD_SHARED_ {
 	/* need to be able to check read and write ops on src, and update reads */
 	IMG_UINT32			ui32NumSrcSync;
@@ -258,6 +279,7 @@ typedef struct _SGXMKIF_2DCMD_SHARED_ {
 	/* need to be able to check reads and writes on 2D ops, and update writes */
 	PVRSRV_DEVICE_SYNC_OBJECT	s3DSyncData;
 } SGXMKIF_2DCMD_SHARED, *PSGXMKIF_2DCMD_SHARED;
+#endif
 #endif /* SGX_FEATURE_2D_HARDWARE */
 
 

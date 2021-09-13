@@ -128,6 +128,9 @@
     <ClCompile Include="eurasia\services4\srvclient\env\playstation\common\pvr_apphint.c">
       <Filter>Source Files\eurasia\services4\srvclient\env\playstation\common</Filter>
     </ClCompile>
+    <ClCompile Include="eurasia\services4\srvclient\devices\sgx\sgxrender_targets.c">
+      <Filter>Source Files\eurasia\services4\srvclient\devices\sgx</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\gpu_es4\psp2_pvr_defs.h">

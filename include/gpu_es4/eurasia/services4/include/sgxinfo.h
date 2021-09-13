@@ -438,48 +438,48 @@ typedef struct _PVRSRV_TRANSFER_SGX_KICK_
 typedef struct _PVRSRV_2D_SGX_KICK_
 {
 #if defined (SUPPORT_SID_INTERFACE)
-	IMG_SID			hCCBMemInfo;
+	IMG_SID						hCCBMemInfo;
 #else
-	IMG_HANDLE		hCCBMemInfo;
+	IMG_HANDLE					hCCBMemInfo;
 #endif
-	IMG_UINT32		ui32SharedCmdCCBOffset;
+	IMG_UINT32					ui32SharedCmdCCBOffset;
 
-	IMG_DEV_VIRTADDR 	sHW2DContextDevVAddr;
+	IMG_DEV_VIRTADDR			sHW2DContextDevVAddr;
 
-	IMG_UINT32		ui32NumSrcSync;
+	IMG_UINT32					ui32NumSrcSync;
 #if defined (SUPPORT_SID_INTERFACE)
-	IMG_SID			ahSrcSyncInfo[SGX_MAX_2D_SRC_SYNC_OPS];
-
-	IMG_SID	 		hExtSyncInfo;
-
-	/* need to be able to check reads and writes on TA ops, and update writes */
-	IMG_SID			hTASyncInfo;
-
-	/* need to be able to check reads and writes on 2D ops, and update writes */
-	IMG_SID			h3DSyncInfo;
-#else
-	IMG_HANDLE		ahSrcSyncInfo[SGX_MAX_2D_SRC_SYNC_OPS];
+	IMG_SID						ahSrcSyncInfo[SGX_MAX_2D_SRC_SYNC_OPS];
 
 	/* need to be able to check reads and writes on dest, and update writes */
-	IMG_HANDLE 		hDstSyncInfo;
+	IMG_SID						hDstSyncInfo;
 
 	/* need to be able to check reads and writes on TA ops, and update writes */
-	IMG_HANDLE		hTASyncInfo;
+	IMG_SID						hTASyncInfo;
 
 	/* need to be able to check reads and writes on 2D ops, and update writes */
-	IMG_HANDLE		h3DSyncInfo;
+	IMG_SID						h3DSyncInfo;
+#else
+	IMG_HANDLE					ahSrcSyncInfo[SGX_MAX_2D_SRC_SYNC_OPS];
+
+	/* need to be able to check reads and writes on dest, and update writes */
+	IMG_HANDLE					hDstSyncInfo;
+
+	/* need to be able to check reads and writes on TA ops, and update writes */
+	IMG_HANDLE					hTASyncInfo;
+
+	/* need to be able to check reads and writes on 2D ops, and update writes */
+	IMG_HANDLE					h3DSyncInfo;
 #endif
 
-	IMG_UINT32		ui32NumDstSync;
+	IMG_UINT32					ui32NumStatusVals;
 
-	IMG_UINT32		ui32PDumpFlags;
+	SGX_INTERNEL_STATUS_UPDATE	sStatusUpdate;
+
+	IMG_UINT32					ui32PDumpFlags;
 #if defined(PDUMP)
-	IMG_UINT32		ui32CCBDumpWOff;
+	IMG_UINT32					ui32CCBDumpWOff;
 #endif
-	IMG_HANDLE		hDevMemContext;
-
-	IMG_SID			ahDstSyncInfo[1];
-
+	IMG_HANDLE					hDevMemContext;
 } PVRSRV_2D_SGX_KICK, *PPVRSRV_2D_SGX_KICK;
 
 #else

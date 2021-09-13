@@ -211,6 +211,7 @@ int main(int argc, char ** argv)
 	SceUID rtMemUID;
 	IMG_SID hRtMem = 0;
 	IMG_SID hPbMem = 0;
+	IMG_UINT32 ui32RTMemSize;
 #endif
 
 	/* Display class API */
@@ -590,21 +591,22 @@ start_again:
 	sAddRTInfo.ui16NumRTsInArray = 1;
 
 #ifdef __psp2__
-
-	rtMemUID = sceKernelAllocMemBlock("SGXRenderTarget", SCE_KERNEL_MEMBLOCK_TYPE_USER_NC_RW, 0x100000, NULL);
-
-	PVRSRVRegisterMemBlock(ps3DDevData, rtMemUID, &hRtMem, IMG_TRUE);
-
 	sAddRTInfo.eRotation = PVRSRV_ROTATE_0;
-	sAddRTInfo.ui32RendersPerFrame = 1;
-	sAddRTInfo.ui32RendersPerQueueSwap = 3;
+	sAddRTInfo.ui32NumRTData = 1;
+	sAddRTInfo.ui32MaxQueuedRenders = 3;
 	sAddRTInfo.ui8MacrotileCountX = 0;
 	sAddRTInfo.ui8MacrotileCountY = 0;
 	sAddRTInfo.i32DataMemblockUID = rtMemUID;
 	sAddRTInfo.bUseExternalUID = IMG_FALSE;
-	sAddRTInfo.hMemBlockProcRef = hRtMem;
 	sAddRTInfo.ui32MultisampleLocations = 0;
 
+	SGXGetRenderTargetMemSize(&sAddRTInfo, &ui32RTMemSize);
+
+	rtMemUID = sceKernelAllocMemBlock("SGXRenderTarget", SCE_KERNEL_MEMBLOCK_TYPE_USER_NC_RW, ui32RTMemSize, NULL);
+	PVRSRVRegisterMemBlock(ps3DDevData, rtMemUID, &hRtMem, IMG_TRUE);
+
+	sAddRTInfo.hMemBlockProcRef = hRtMem;
+	sAddRTInfo.i32DataMemblockUID = rtMemUID;
 #endif
 
 	eResult = SGXAddRenderTarget(ps3DDevData,

@@ -1941,7 +1941,9 @@
 			#define FIX_HW_BRN_33657/* workaround in ukernel*/
 		#endif
 		#define FIX_HW_BRN_33668/* workaround in client drivers */
+#if !defined(__psp2__)
 		#define FIX_HW_BRN_33753/* workaround in ukernel */
+#endif
 		#define FIX_HW_BRN_34043 /* workaround in services */
 		#define FIX_HW_BRN_34264 /* workaround in uKernel */
 		#define FIX_HW_BRN_34293 /* workaround in usc */

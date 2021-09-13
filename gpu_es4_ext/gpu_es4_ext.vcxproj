@@ -15,6 +15,7 @@
     <ClCompile Include="eurasia\services4\srvclient\bridged\bridged_pvr_glue.c" />
     <ClCompile Include="eurasia\services4\srvclient\bridged\sgx\bridged_sgx_glue.c" />
     <ClCompile Include="eurasia\services4\srvclient\common\resources.c" />
+    <ClCompile Include="eurasia\services4\srvclient\devices\sgx\sgxrender_targets.c" />
     <ClCompile Include="eurasia\services4\srvclient\devices\sgx\sgxtransfer_2d.c" />
     <ClCompile Include="eurasia\services4\srvclient\devices\sgx\sgxtransfer_queue.c" />
     <ClCompile Include="eurasia\services4\srvclient\env\playstation\common\osfunc_um.c" />
