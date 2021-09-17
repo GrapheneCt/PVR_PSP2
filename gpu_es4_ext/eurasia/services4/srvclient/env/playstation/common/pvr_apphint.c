@@ -557,7 +557,7 @@ IMG_EXPORT IMG_BOOL PVRSRVInitializeAppHint(PVRSRV_PSP2_APPHINT *psAppHint)
 	psAppHint->ui32SwTexOpThreadPriority = 70;
 	psAppHint->ui32SwTexOpThreadAffinity = 0;
 	psAppHint->ui32SwTexOpMaxUltNum = 256;
-	psAppHint->ui32SwTexOpCleanupDelay = 10000000;
+	psAppHint->ui32SwTexOpCleanupDelay = 1000000;
 	psAppHint->bDisableAsyncTextureOp = IMG_FALSE;
 	psAppHint->ui32PrimitiveSplitThreshold = 1000;
 	psAppHint->ui32MaxDrawCallsPerCore = 0;

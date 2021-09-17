@@ -857,7 +857,7 @@ IMG_INTERNAL IMG_BOOL GetApplicationHints(GLESAppHints *psAppHints, EGLcontextMo
 	ui32Default = 256;
 	PVRSRVGetAppHint(pvHintState, "SwTexOpMaxUltNum", IMG_UINT_TYPE, &ui32Default, &psAppHints->ui32SwTexOpMaxUltNum);
 
-	ui32Default = 10000000;
+	ui32Default = 1000000;
 	PVRSRVGetAppHint(pvHintState, "SwTexOpCleanupDelay", IMG_UINT_TYPE, &ui32Default, &psAppHints->ui32SwTexOpCleanupDelay);
 
 	ui32Default = 1;

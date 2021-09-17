@@ -287,6 +287,7 @@ static WSEGLError WSEGL_DeleteDrawable(WSEGLDrawableHandle hDrawable)
 
 static WSEGLError WSEGL_SwapDrawable(WSEGLDrawableHandle hDrawable, unsigned long ui32Data)
 {
+	PVRSRV_ERROR eError;
 	NativeWindowType window = (NativeWindowType)hDrawable;
 
 	if (window->type != PSP2_DRAWABLE_TYPE_WINDOW)
@@ -294,14 +295,21 @@ static WSEGLError WSEGL_SwapDrawable(WSEGLDrawableHandle hDrawable, unsigned lon
 		return WSEGL_BAD_DRAWABLE;
 	}
 
-	PVRSRVSwapToDCBuffer((IMG_HANDLE)window->psConnection,
+	eError = PVRSRVSwapToDCBuffer((IMG_HANDLE)window->psConnection,
 		window->ahSwapChainBuffers[window->currBufIdx],
 		0,
 		IMG_NULL,
 		window->swapInterval,
 		0);
 
+	if (eError != PVRSRV_OK)
+	{
+		return WSEGL_BAD_DRAWABLE;
+	}
+
 	window->currBufIdx = (window->currBufIdx + 1) % window->numFlipBuffers;
+
+	return WSEGL_SUCCESS;
 }
 
 static WSEGLError WSEGL_SwapControlInterval(WSEGLDrawableHandle hDrawable, unsigned long ulInterval)
