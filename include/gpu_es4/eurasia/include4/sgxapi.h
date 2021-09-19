@@ -349,11 +349,19 @@ typedef struct _SGX_KICKTA_COMMON_
 
 #if defined(__psp2__)
 	IMG_UINT32			ui32Scene;
-	IMG_UINT32			ui32SceneFlags;
+	IMG_UINT32			ui32SceneFlags;		/*!< Combination of SGX_KICKTA_SCENEFLAGS_xxxx flags */
 
-	IMG_UINT32			ui32ValidRegionXMax;
-	IMG_UINT32			ui32ValidRegionYMax;
+	/*
+		X and Y Max for MTE/TE Screens in pixels
 
+		See SGXMKIF_TAREGISTERS::ui32MTEScreen/ui32TEScreen
+	*/
+	IMG_UINT32			ui32TAScreenXMax;
+	IMG_UINT32			ui32TAScreenYMax;
+
+	/*
+		See EUR_CR_MASTER_MP_PRIMITIVE
+	*/
 	IMG_UINT16			ui16MaxDrawCallsPerCore;
 	IMG_UINT16			ui16PrimitiveSplitThreshold;
 #endif
@@ -394,6 +402,11 @@ typedef struct _SGX_KICKTA_COMMON_
 #if defined(EUR_CR_PDS_PP_INDEPENDANT_STATE)
 	IMG_UINT32			ui32TriangleSplitPixelThreshold;
 #if defined(__psp2__)
+	/*
+		Controls the value of EUR_CR_PDS_PP_INDEPENDANT_STATE
+
+		This value is ignored if ui32TriangleSplitPixelThreshold > 0
+	*/
 	IMG_BOOL			bPerQuadrantPixelSplit;
 #endif
 #endif
@@ -489,10 +502,12 @@ typedef struct _SGX_KICKTA_COMMON_
 	IMG_UINT32			ui32MTECtrl;
 
 	IMG_UINT32			aui32SpecObject[3];			/*!< 3 words for PDS hardware background object */
-
 #if defined(__psp2__)
-	IMG_UINT32			ui32SceneWidth;
-	IMG_UINT32			ui32SceneHeight;
+	/*
+		Used for the background object vertex positions
+	*/
+	IMG_UINT32			ui32BGObjWidth;
+	IMG_UINT32			ui32BGObjHeight;
 #endif
 
 	IMG_UINT32			ui32NumTAStatusVals;

@@ -3323,10 +3323,10 @@ static IMG_VOID srft_SetupTAKick(SGX_KICKTA				*psKickTA,
     psKickTA->sKickTACommon.ui32Frame = ui32FrameNum;
 
 #if defined(__psp2__)
-    psKickTA->sKickTACommon.ui32SceneWidth = ui32MainRenderWidth;
-    psKickTA->sKickTACommon.ui32SceneHeight = ui32MainRenderHeight;
-    psKickTA->sKickTACommon.ui32ValidRegionXMax = ui32MainRenderWidth - 1;
-    psKickTA->sKickTACommon.ui32ValidRegionYMax = ui32MainRenderHeight - 1;
+    psKickTA->sKickTACommon.ui32BGObjWidth = ui32MainRenderWidth;
+    psKickTA->sKickTACommon.ui32BGObjHeight = ui32MainRenderHeight;
+    psKickTA->sKickTACommon.ui32TAScreenXMax = ui32MainRenderWidth - 1;
+    psKickTA->sKickTACommon.ui32TAScreenYMax = ui32MainRenderHeight - 1;
     psKickTA->sKickTACommon.ui16PrimitiveSplitThreshold = 1000;
 #endif
     
