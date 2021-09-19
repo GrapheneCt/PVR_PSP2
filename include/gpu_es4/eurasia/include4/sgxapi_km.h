@@ -71,11 +71,29 @@ extern "C" {
 #define SGX_CGBUFFER_HEAP_ID					13
 #endif
 #endif
+
+#if !defined(__psp2__)
 #if defined(SUPPORT_MEMORY_TILING)
 #define SGX_VPB_TILED_HEAP_ID			14
 #endif
 
 #define SGX_MAX_HEAP_ID							15
+#else
+#define SGX_USER_CPU_VA_HEAP_ID					14
+#define SGX_USER_CDRAM_VA_HEAP_ID				15
+
+/* CDRAM 3DParameter Heaps */
+#define SGX_PERCONTEXT_CDRAM_3DPB_HEAP_ID		16
+#define SGX_SHARED_CDRAM_3DPB_HEAP_ID			17
+
+#define SGX_CD_PIXELSHADER_HEAP_ID				18
+#define SGX_CD_VERTEXSHADER_HEAP_ID				19
+
+#define SGX_USER_CPU_NC_VA_HEAP_ID				20
+#define SGX_PERFMON_VA_HEAP_ID					21
+
+#define SGX_MAX_HEAP_ID							22
+#endif /* __psp2__ */
 
 /*
  * Keep SGX_3DPARAMETERS_HEAP_ID as TQ full custom

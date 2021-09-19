@@ -545,7 +545,7 @@ start_again:
 
 	PVRSRVRegisterMemBlock(ps3DDevData, pbMemUID, &hPbMem, IMG_TRUE);
 
-	sCreateRenderContext.ui32Flags = 2 | 4;
+	sCreateRenderContext.ui32Flags = SGX_CREATERCTXTFLAGS_CDRAMPB | SGX_CREATERCTXTFLAGS_BYPASS_PRE_TA_SYNCOPS_CHECK;
 	sCreateRenderContext.ui32PBSize = 4 * 1024 * 1024 - 0x80000;
 	sCreateRenderContext.ui32PBSizeLimit = sCreateRenderContext.ui32PBSize;
 	sCreateRenderContext.hMemBlockProcRef = hPbMem;

@@ -58,6 +58,12 @@ extern "C" {
 #if defined(__psp2__)
 #define SGX_PIXSHADER_USE_CODE_BASE_INDEX	4
 #define SGX_VTXSHADER_USE_CODE_BASE_INDEX	0
+
+/* 
+	Mapped to the CD Pixel/VertexShader Heaps 
+*/
+#define SGX_CD_PIXSHADER_USE_CODE_BASE_INDEX	9
+#define SGX_CD_VTXSHADER_USE_CODE_BASE_INDEX	8
 #else	
 #define SGX_PIXSHADER_USE_CODE_BASE_INDEX	0
 #define SGX_VTXSHADER_USE_CODE_BASE_INDEX	10
@@ -158,6 +164,10 @@ typedef struct _SGX_CREATERENDERCONTEXT_
 #endif
 
 #define SGX_CREATERCTXTFLAGS_SHAREDPB	0x00000001
+#if defined(__psp2__)
+#define SGX_CREATERCTXTFLAGS_CDRAMPB						0x00000002
+#define SGX_CREATERCTXTFLAGS_BYPASS_PRE_TA_SYNCOPS_CHECK	0x00000004
+#endif
 
 typedef enum _SGX_SCALING_
 {
@@ -227,6 +237,11 @@ typedef struct _SGX_ADDRENDTARG_
 #define SGX_ADDRTFLAGS_FORCE_MT_MODE_SELECT				0x00000004
 #define SGX_ADDRTFLAGS_MSAA5THPOSNDISABLE				0x00000008
 #define SGX_ADDRTFLAGS_DPMZLS							0x00000010
+#if defined(__psp2__)
+#define SGX_ADDRTFLAGS_CUSTOM_MULTISAMPLELOCATIONS		0x00010000
+#define SGX_ADDRTFLAGS_MACROTILE_SYNC					0x00020000
+#define SGX_ADDRTFLAGS_CUSTOM_MACROTILE_COUNTS			0x00040000
+#endif
 
 #define SGX_KICKTA_FLAGS_RESETTPC						0x00000001
 #define SGX_KICKTA_FLAGS_KICKRENDER						0x00000002
@@ -260,6 +275,14 @@ typedef struct _SGX_ADDRENDTARG_
 #define SGX_KICKTA_FLAGS_VDM_PIM_SPLIT					0x10000000
 #endif
 #define SGX_KICKTA_FLAGS_COMPUTE_TASK_OPENCL			0x20000000
+
+#if defined(__psp2__)
+#define SGX_KICKTA_SCENEFLAGS_VDM_BUFFER_HIGHMARK				0x00000001
+#define SGX_KICKTA_SCENEFLAGS_VERTEX_BUFFER_HIGHMARK			0x00000002
+#define SGX_KICKTA_SCENEFLAGS_FRAGMENT_BUFFER_HIGHMARK			0x00000004
+#define SGX_KICKTA_SCENEFLAGS_FRAGMENT_USSE_BUFFER_HIGHMARK		0x00000008
+#define SGX_KICKTA_SCENEFLAGS_MIDSCENE_KICK						0x00000010
+#endif
 
 
 /*!
@@ -326,11 +349,19 @@ typedef struct _SGX_KICKTA_COMMON_
 
 #if defined(__psp2__)
 	IMG_UINT32			ui32Scene;
-	IMG_UINT32			ui32SceneFlags;
+	IMG_UINT32			ui32SceneFlags;		/*!< Combination of SGX_KICKTA_SCENEFLAGS_xxxx flags */
 
-	IMG_UINT32			ui32ValidRegionXMax;
-	IMG_UINT32			ui32ValidRegionYMax;
+	/*
+		X and Y Max for MTE/TE Screens in pixels
 
+		See SGXMKIF_TAREGISTERS::ui32MTEScreen/ui32TEScreen
+	*/
+	IMG_UINT32			ui32TAScreenXMax;
+	IMG_UINT32			ui32TAScreenYMax;
+
+	/*
+		See EUR_CR_MASTER_MP_PRIMITIVE
+	*/
 	IMG_UINT16			ui16MaxDrawCallsPerCore;
 	IMG_UINT16			ui16PrimitiveSplitThreshold;
 #endif
@@ -371,6 +402,11 @@ typedef struct _SGX_KICKTA_COMMON_
 #if defined(EUR_CR_PDS_PP_INDEPENDANT_STATE)
 	IMG_UINT32			ui32TriangleSplitPixelThreshold;
 #if defined(__psp2__)
+	/*
+		Controls the value of EUR_CR_PDS_PP_INDEPENDANT_STATE
+
+		This value is ignored if ui32TriangleSplitPixelThreshold > 0
+	*/
 	IMG_BOOL			bPerQuadrantPixelSplit;
 #endif
 #endif
@@ -466,10 +502,12 @@ typedef struct _SGX_KICKTA_COMMON_
 	IMG_UINT32			ui32MTECtrl;
 
 	IMG_UINT32			aui32SpecObject[3];			/*!< 3 words for PDS hardware background object */
-
 #if defined(__psp2__)
-	IMG_UINT32			ui32SceneWidth;
-	IMG_UINT32			ui32SceneHeight;
+	/*
+		Used for the background object vertex positions
+	*/
+	IMG_UINT32			ui32BGObjWidth;
+	IMG_UINT32			ui32BGObjHeight;
 #endif
 
 	IMG_UINT32			ui32NumTAStatusVals;

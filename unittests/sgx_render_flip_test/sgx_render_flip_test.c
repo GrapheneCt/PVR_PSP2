@@ -3323,10 +3323,10 @@ static IMG_VOID srft_SetupTAKick(SGX_KICKTA				*psKickTA,
     psKickTA->sKickTACommon.ui32Frame = ui32FrameNum;
 
 #if defined(__psp2__)
-    psKickTA->sKickTACommon.ui32SceneWidth = ui32MainRenderWidth;
-    psKickTA->sKickTACommon.ui32SceneHeight = ui32MainRenderHeight;
-    psKickTA->sKickTACommon.ui32ValidRegionXMax = ui32MainRenderWidth - 1;
-    psKickTA->sKickTACommon.ui32ValidRegionYMax = ui32MainRenderHeight - 1;
+    psKickTA->sKickTACommon.ui32BGObjWidth = ui32MainRenderWidth;
+    psKickTA->sKickTACommon.ui32BGObjHeight = ui32MainRenderHeight;
+    psKickTA->sKickTACommon.ui32TAScreenXMax = ui32MainRenderWidth - 1;
+    psKickTA->sKickTACommon.ui32TAScreenYMax = ui32MainRenderHeight - 1;
     psKickTA->sKickTACommon.ui16PrimitiveSplitThreshold = 1000;
 #endif
     
@@ -6587,7 +6587,7 @@ main(IMG_INT argc, IMG_CHAR **argv)
 
 #ifdef __psp2__
 
-    sCreateRenderContext.ui32Flags = 2 | 4;
+    sCreateRenderContext.ui32Flags = SGX_CREATERCTXTFLAGS_CDRAMPB | SGX_CREATERCTXTFLAGS_BYPASS_PRE_TA_SYNCOPS_CHECK;
     sCreateRenderContext.hDevCookie = sSGXDevData.hDevCookie;
     sCreateRenderContext.hDevMemContext = sShared.hDevMemContext;
     sCreateRenderContext.ui32PBSize = sConfig.ui32PBSize - 0x80000;

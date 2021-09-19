@@ -63,11 +63,16 @@ $Log: sgx_mkif_client.h $
 #define SGXMKIF_RENDERFLAGS_BBOX_RENDER			0x00001000UL	/*!< This is a bounding box render */
 #define SGXMKIF_RENDERFLAGS_NO_MT_SPLIT			0x00002000UL	/*!< Full render, don't split MTs */
 
+#if !defined(__psp2__)
 /*
 	Bit above bit 12 are reserved for frame number
 */
 #define SGXMKIF_RENDERFLAGS_FRAMENUM			0xFFFFC000UL
 #define SGXMKIF_RENDERFLAGS_FRAMENUM_SHIFT		(14)
+#else
+#define SGXMKIF_RENDERFLAGS_SCENE_FRAGMENT_BUFFER_HIGHMARK			0x00004000UL /*!< High-water mark reached on fragment ring buffer */
+#define SGXMKIF_RENDERFLAGS_SCENE_FRAGMENT_USSE_BUFFER_HIGHMARK		0x00008000UL /*!< High-water mark reached on fragment USSE ring buffer */
+#endif
 
 /*****************************************************************************
  RTData and control stream status flags.
@@ -181,6 +186,21 @@ $Log: sgx_mkif_client.h $
 #if defined(SGX_FEATURE_MP) && defined(FIX_HW_BRN_31079)
 #define	SGXMKIF_TAFLAGS_VDM_PIM_WRAP_BIT		(16)
 #define SGXMKIF_TAFLAGS_VDM_PIM_WRAP			(1 << SGXMKIF_TAFLAGS_VDM_PIM_WRAP_BIT)
+#endif
+
+#if defined(__psp2__)
+/*
+	Indicates that the ring buffer reached its high-water mark
+ */
+#define SGXMKIF_TAFLAGS_SCENE_VDM_BUFFER_HIGHMARK			0x00400000UL
+#define SGXMKIF_TAFLAGS_SCENE_VERTEX_BUFFER_HIGHMARK		0x00800000UL
+#define SGXMKIF_TAFLAGS_SCENE_FRAGMENT_BUFFER_HIGHMARK		0x01000000UL
+#define SGXMKIF_TAFLAGS_SCENE_FRAGMENT_USSE_BUFFER_HIGHMARK	0x02000000UL
+
+/*
+	Indicates that the kick was initiated as a mid-scene kick
+ */
+#define SGXMKIF_TAFLAGS_SCENE_MIDSCENE_KICK					0x04000000UL
 #endif
 
 /*****************************************************************************
@@ -1200,6 +1220,9 @@ typedef struct _SGXMKIF_HWRENDERCONTEXT_
 #define 	SGXMKIF_HWCFLAGS_DUMMY2D			0x00000004
 #define		SGXMKIF_HWCFLAGS_SUSPEND			0x00000010
 #define		SGXMKIF_HWCFLAGS_PERCONTEXTPB			0x00000020
+#if defined(__psp2__)
+#define		SGXMKIF_HWCFLAGS_BYPASS_PRE_TA_SYNCOP_CHECK			0x00000040
+#endif
 /* Defines relating to the per-context CCBs */
 #define SGX_CCB_SIZE		64*1024
 #define SGX_CCB_ALLOCGRAN	64
