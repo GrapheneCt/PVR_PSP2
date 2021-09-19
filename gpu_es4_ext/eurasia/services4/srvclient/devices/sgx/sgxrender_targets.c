@@ -57,7 +57,7 @@ SGXGetRenderTargetMemSize(SGX_ADDRENDTARG *psAddRTInfo, IMG_UINT32 *pui32MemSize
 	ui32TilesInX = (psAddRTInfo->ui32NumPixelsX + (EURASIA_ISPREGION_SIZEX - 1)) / EURASIA_ISPREGION_SIZEX;
 	ui32TilesInY = (psAddRTInfo->ui32NumPixelsY + (EURASIA_ISPREGION_SIZEY - 1)) / EURASIA_ISPREGION_SIZEY;
 
-	if (psAddRTInfo->ui32Flags & 0x00040000) // SGX_ADDRTFLAGS_CUSTOM_MACROTILE_COUNTS
+	if (psAddRTInfo->ui32Flags & SGX_ADDRTFLAGS_CUSTOM_MACROTILE_COUNTS)
 	{
 		ui32MTilesInX = psAddRTInfo->ui8MacrotileCountX;
 		ui32MTilesInY = psAddRTInfo->ui8MacrotileCountY;

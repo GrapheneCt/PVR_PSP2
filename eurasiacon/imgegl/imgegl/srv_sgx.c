@@ -191,7 +191,7 @@ IMG_INTERNAL IMG_BOOL SRV_SGXServicesInit(SrvSysContext *psSysContext, IMGEGLApp
 		goto ServInit_fail;
 	}
 
-	psSysContext->sRenderContext.ui32Flags = SGX_PBDESCFLAGS_TA_OVERRIDE | SGX_PBDESCFLAGS_ZLS_OVERRIDE;
+	psSysContext->sRenderContext.ui32Flags = SGX_CREATERCTXTFLAGS_CDRAMPB | SGX_CREATERCTXTFLAGS_BYPASS_PRE_TA_SYNCOPS_CHECK;
 	psSysContext->sRenderContext.hDevCookie = psSysContext->s3D.hDevCookie;
 	psSysContext->sRenderContext.hDevMemContext = psSysContext->hDevMemContext;
 	psSysContext->sRenderContext.ui32PBSize = psAppHints->ui32ParamBufferSize - 0x80000;
