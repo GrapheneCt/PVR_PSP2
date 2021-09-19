@@ -47,6 +47,7 @@ SGXGetRenderTargetMemSize(SGX_ADDRENDTARG *psAddRTInfo, IMG_UINT32 *pui32MemSize
 	IMG_UINT32 ui32TailPtrsSize;
 	IMG_UINT32 ui32RgnSize;
 	IMG_UINT32 ui32MacroTileRgnLUTSize;
+	IMG_INT i, j;
 
 	if (psAddRTInfo == IMG_NULL || pui32MemSize == IMG_NULL)
 	{
@@ -136,7 +137,7 @@ SGXGetRenderTargetMemSize(SGX_ADDRENDTARG *psAddRTInfo, IMG_UINT32 *pui32MemSize
 	ui32TilesPerMTileX *= psAddRTInfo->ui16MSAASamplesInX;
 	ui32TilesPerMTileY *= psAddRTInfo->ui16MSAASamplesInY;
 
-	for (int i = 0; i < psAddRTInfo->ui32MaxQueuedRenders; i++)
+	for (i = 0; i < psAddRTInfo->ui32MaxQueuedRenders; i++)
 	{
 		INCR_MEMSIZE(sizeof(SGXMKIF_HWRENDERDETAILS), 32);
 		INCR_MEMSIZE(sizeof(PVRSRV_RESOURCE), 4);
@@ -146,12 +147,12 @@ SGXGetRenderTargetMemSize(SGX_ADDRENDTARG *psAddRTInfo, IMG_UINT32 *pui32MemSize
 	}
 
 	INCR_MEMSIZE(sizeof(IMG_UINT32), 32);
-	INCR_MEMSIZE(sizeof(SGXMKIF_HWRTDATASET) + sizeof(SGXMKIF_HWRTDATA) * psAddRTInfo->ui32NumRTData, 32);
+	INCR_MEMSIZE(sizeof(SGXMKIF_HWRTDATASET) + sizeof(SGXMKIF_HWRTDATA) * (psAddRTInfo->ui32NumRTData - 1), 32);
 
 	ui32TailPtrsSize = MAX(NextPowerOfTwo(ui32MTilesInX * ui32TilesPerMTileX), NextPowerOfTwo(ui32MTilesInY * ui32TilesPerMTileY));
 	ui32TailPtrsSize = ui32TailPtrsSize * ui32TailPtrsSize * EURASIA_TAILPOINTER_SIZE;
 
-	for (int i = 0; i < SGX_FEATURE_MP_CORE_COUNT_TA; i++)
+	for (i = 0; i < SGX_FEATURE_MP_CORE_COUNT_TA; i++)
 	{
 		INCR_MEMSIZE(ui32TailPtrsSize, EURASIA_PARAM_MANAGE_TPC_GRAN);
 		INCR_MEMSIZE(EURASIA_PARAM_MANAGE_CONTROL_SIZE, EURASIA_PARAM_MANAGE_CONTROL_GRAN);
@@ -166,9 +167,9 @@ SGXGetRenderTargetMemSize(SGX_ADDRENDTARG *psAddRTInfo, IMG_UINT32 *pui32MemSize
 
 	ui32MacroTileRgnLUTSize = ((ui32MTilesInX * ui32MTilesInY) * sizeof(IMG_UINT32)) * SGX_FEATURE_MP_CORE_COUNT_TA;
 
-	for (int i = 0; i < psAddRTInfo->ui32NumRTData; i++)
+	for (i = 0; i < psAddRTInfo->ui32NumRTData; i++)
 	{
-		for (int j = 0; j < SGX_FEATURE_MP_CORE_COUNT_TA; j++)
+		for (j = 0; j < SGX_FEATURE_MP_CORE_COUNT_TA; j++)
 		{
 			INCR_MEMSIZE(ui32RgnSize, EURASIA_PARAM_MANAGE_REGION_GRAN);
 		}
