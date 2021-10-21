@@ -292,7 +292,9 @@ typedef struct _SGX_ADDRENDTARG_
 typedef struct _PVRSRV_SGX_CLIENT_INFO_
 {
 	IMG_UINT32					ui32ProcessID;			/*!< ID of process controlling SGX device */
+#if !defined(__psp2__)
 	IMG_VOID					*pvProcess;				/*!< pointer to OS specific 'process' structure */
+#endif
 	PVRSRV_MISC_INFO			sMiscInfo;				/*!< Misc. Information, inc. SOC specifics */
 
 	IMG_UINT32					ui32EVMConfig;			/*!< used by pdumping kicks */
