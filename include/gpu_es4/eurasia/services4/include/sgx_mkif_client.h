@@ -168,6 +168,33 @@ $Log: sgx_mkif_client.h $
 
 #define SGXMKIF_TAFLAGS_VDM_CTX_SWITCH			0x00000800UL
 
+#if defined(__psp2__)
+/* Flag to determine an OpenCL task */
+#define SGXMKIF_TAFLAGS_TA_TASK_OPENCL			0x00004000UL
+
+
+/* Flags to indicate this cmd has an update to the PB */
+#define SGXMKIF_TAFLAGS_PB_THRESHOLD_UPDATE		0x00010000UL
+#define SGXMKIF_TAFLAGS_PB_UPDATE_MASK			(SGXMKIF_TAFLAGS_PB_THRESHOLD_UPDATE)
+
+/*
+	Indicates that the ring buffer reached its high-water mark
+ */
+#define SGXMKIF_TAFLAGS_SCENE_VDM_BUFFER_HIGHMARK			0x00400000UL
+#define SGXMKIF_TAFLAGS_SCENE_VERTEX_BUFFER_HIGHMARK		0x00800000UL
+#define SGXMKIF_TAFLAGS_SCENE_FRAGMENT_BUFFER_HIGHMARK		0x01000000UL
+#define SGXMKIF_TAFLAGS_SCENE_FRAGMENT_USSE_BUFFER_HIGHMARK	0x02000000UL
+
+ /*
+	 Indicates that the kick was initiated as a mid-scene kick
+  */
+#define SGXMKIF_TAFLAGS_SCENE_MIDSCENE_KICK					0x04000000UL
+
+  /*
+	  Flush the SLC after completing this TA job.
+  */
+#define SGXMKIF_TAFLAGS_FLUSH_SLC					0x10000000UL
+#else
 /* Flag to determine an OpenCL task */
 #define SGXMKIF_TAFLAGS_TA_TASK_OPENCL			0x00001000UL
 
@@ -187,20 +214,6 @@ $Log: sgx_mkif_client.h $
 #define	SGXMKIF_TAFLAGS_VDM_PIM_WRAP_BIT		(16)
 #define SGXMKIF_TAFLAGS_VDM_PIM_WRAP			(1 << SGXMKIF_TAFLAGS_VDM_PIM_WRAP_BIT)
 #endif
-
-#if defined(__psp2__)
-/*
-	Indicates that the ring buffer reached its high-water mark
- */
-#define SGXMKIF_TAFLAGS_SCENE_VDM_BUFFER_HIGHMARK			0x00400000UL
-#define SGXMKIF_TAFLAGS_SCENE_VERTEX_BUFFER_HIGHMARK		0x00800000UL
-#define SGXMKIF_TAFLAGS_SCENE_FRAGMENT_BUFFER_HIGHMARK		0x01000000UL
-#define SGXMKIF_TAFLAGS_SCENE_FRAGMENT_USSE_BUFFER_HIGHMARK	0x02000000UL
-
-/*
-	Indicates that the kick was initiated as a mid-scene kick
- */
-#define SGXMKIF_TAFLAGS_SCENE_MIDSCENE_KICK					0x04000000UL
 #endif
 
 /*****************************************************************************
