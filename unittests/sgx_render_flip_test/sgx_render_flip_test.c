@@ -6587,7 +6587,7 @@ main(IMG_INT argc, IMG_CHAR **argv)
 
 #ifdef __psp2__
 
-    sCreateRenderContext.ui32Flags = SGX_CREATERCTXTFLAGS_CDRAMPB | SGX_CREATERCTXTFLAGS_BYPASS_PRE_TA_SYNCOPS_CHECK;
+    sCreateRenderContext.ui32Flags = SGX_CREATERCTXTFLAGS_CDRAMPB | SGX_CREATERCTXTFLAGS_PERCONTEXT_SYNC_INFO;
     sCreateRenderContext.hDevCookie = sSGXDevData.hDevCookie;
     sCreateRenderContext.hDevMemContext = sShared.hDevMemContext;
     sCreateRenderContext.ui32PBSize = sConfig.ui32PBSize - 0x80000;

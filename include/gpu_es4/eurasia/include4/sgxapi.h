@@ -163,10 +163,10 @@ typedef struct _SGX_CREATERENDERCONTEXT_
 } SGX_CREATERENDERCONTEXT, *PSGX_CREATERENDERCONTEXT;
 #endif
 
-#define SGX_CREATERCTXTFLAGS_SHAREDPB	0x00000001
+#define SGX_CREATERCTXTFLAGS_SHAREDPB	0x00000001 /* On PSP2 a shared PB is created only if this flag is used */
 #if defined(__psp2__)
-#define SGX_CREATERCTXTFLAGS_CDRAMPB						0x00000002
-#define SGX_CREATERCTXTFLAGS_BYPASS_PRE_TA_SYNCOPS_CHECK	0x00000004
+#define SGX_CREATERCTXTFLAGS_CDRAMPB				0x00000002
+#define SGX_CREATERCTXTFLAGS_PERCONTEXT_SYNC_INFO	0x00000004 /* Sync info is not shared with other render contexts */
 #endif
 
 typedef enum _SGX_SCALING_
@@ -182,12 +182,8 @@ typedef enum _SGX_SCALING_
 typedef struct _SGX_ADDRENDTARG_
 {
 	IMG_UINT32				ui32Flags;
-#if defined(__psp2__)
 	IMG_UINT32				ui32NumRTData;    /* Renders per frame * 2 */
 	IMG_UINT32				ui32MaxQueuedRenders;    /* Renders per frame * Max frames in progress */
-#else
-	IMG_UINT32				ui32RendersPerFrame;	/* Maximum renders per frame before blocking behaviour, must not be 0 */
-#endif
 	IMG_HANDLE				hRenderContext;
 	IMG_SID					hDevCookie;
 	IMG_UINT32				ui32NumPixelsX;
