@@ -187,7 +187,6 @@ static IMG_BOOL WaitUntilBufObjNotUsed(GLES2Context *gc, GLES2BufferObject *psBu
 		return IMG_TRUE;
 	}
 
-	
 	/*
 	** Case 3
 	*/

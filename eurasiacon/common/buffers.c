@@ -663,7 +663,6 @@ IMG_INTERNAL IMG_VOID CBUF_UpdateBufferCommittedPrimOffsets(CircularBuffer **aps
 {
 	IMG_UINT32 i, ui32KickSizeInBytes;
 	IMG_BOOL bKickTA, bLastInScene;
-
 	CircularBuffer *psBuffer;
 
 	bKickTA = IMG_FALSE;

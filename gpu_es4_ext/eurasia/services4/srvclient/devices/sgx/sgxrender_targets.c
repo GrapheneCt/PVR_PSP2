@@ -11,6 +11,12 @@
 #include <sgx_mkif_client.h>
 #include <servicesint.h>
 
+#define USE_GXM_RT_SIZE_CALC
+
+#ifdef USE_GXM_RT_SIZE_CALC
+#include <gxm.h>
+#endif
+
 #define SGX_MT_DEFAULT_THRESHOLD (640 * 480) // Threshold for 4x4 MT configuration
 
 #define ALIGN(x, a)	(((x) + ((a) - 1)) & ~((a) - 1))
@@ -40,6 +46,29 @@ RETURNS	: PVRSRV_ERROR
 IMG_EXPORT PVRSRV_ERROR IMG_CALLCONV
 SGXGetRenderTargetMemSize(SGX_ADDRENDTARG *psAddRTInfo, IMG_UINT32 *pui32MemSize)
 {
+#ifdef USE_GXM_RT_SIZE_CALC
+	SceGxmRenderTargetParams sRtTmpParam;
+
+	if (psAddRTInfo->ui16MSAASamplesInX == 2)
+	{
+		sRtTmpParam.multisampleMode = SCE_GXM_MULTISAMPLE_4X;
+	}
+	else
+	{
+		sRtTmpParam.multisampleMode = SCE_GXM_MULTISAMPLE_NONE;
+	}
+
+	sRtTmpParam.driverMemBlock = SCE_UID_INVALID_UID;
+	sRtTmpParam.flags = 0;
+	sRtTmpParam.scenesPerFrame = 1;
+	sRtTmpParam.width = psAddRTInfo->ui32NumPixelsX;
+	sRtTmpParam.height = psAddRTInfo->ui32NumPixelsY;
+	sRtTmpParam.multisampleLocations = 0;
+	sceGxmGetRenderTargetMemSize(&sRtTmpParam, pui32MemSize);
+
+	return PVRSRV_OK;
+
+#else
 	IMG_UINT32 ui32TilesInX, ui32TilesInY;
 	IMG_UINT32 ui32MTilesInX, ui32MTilesInY;
 	IMG_UINT32 ui32TilesPerMTileX, ui32TilesPerMTileY;
@@ -180,4 +209,5 @@ SGXGetRenderTargetMemSize(SGX_ADDRENDTARG *psAddRTInfo, IMG_UINT32 *pui32MemSize
 	*pui32MemSize = ALIGN(ui32MemSize, PVRSRV_4K_PAGE_SIZE);
 
 	return PVRSRV_OK;
+#endif
 }

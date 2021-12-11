@@ -153,7 +153,7 @@ static IMG_BOOL HardwareMipGen(GLES2Context *gc,
     mipgenQueueTransfer.asDests[0].eFormat = ePixelFormat;
 
     eResult = SGXQueueTransfer(&gc->psSysContext->s3D, gc->psSysContext->hTransferContext, &mipgenQueueTransfer);
-    
+
     if(eResult != PVRSRV_OK)
     {
 		PVRSRV_CLIENT_SYNC_INFO	  *psSrcSyncInfo; /* Src and Dst use the same SyncInfo */

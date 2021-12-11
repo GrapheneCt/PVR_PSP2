@@ -116,7 +116,7 @@
       <AdditionalIncludeDirectories>$(SCE_PSP2_SDK_DIR)\target\include\vdsuite\user;$(SCE_PSP2_SDK_DIR)\target\include\vdsuite\common;$(SolutionDir)include\gpu_es4;$(SolutionDir)include\gpu_es4\eurasia\include4;$(SolutionDir)include\gpu_es4\eurasia\hwdefs;$(SolutionDir)include\gpu_es4\eurasia\services4\include;$(SolutionDir)include\gpu_es4\eurasia\services4\system\psp2;$(SolutionDir)codegen\pds;$(SolutionDir)codegen\pixevent;$(SolutionDir)codegen\usegen;$(SolutionDir)codegen\pixfmts;$(SolutionDir)include\gpu_es4\eurasia\services4\srvclient\devices\sgx;$(SolutionDir)codegen\ffgen;$(SolutionDir)tools\intern\useasm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>-lSceDisplayUser_stub;-lSceDisplay_stub;-lSceGpuEs4ForUser_stub;-lSceAppMgrUser_stub;-lScePower_stub;$(ProjectDir)libSceGpuEs4User_stub.a;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>-lSceGxm_stub;-lSceDisplayUser_stub;-lSceDisplay_stub;-lSceGpuEs4ForUser_stub;-lSceAppMgrUser_stub;-lScePower_stub;$(ProjectDir)libSceGpuEs4User_stub.a;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SCE_PSP2_SDK_DIR)\target\lib\vdsuite;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>--no-required-files</AdditionalOptions>
       <GenerateSnMapFile>FullMapFile</GenerateSnMapFile>
@@ -134,7 +134,7 @@
       <AdditionalIncludeDirectories>$(SCE_PSP2_SDK_DIR)\target\include\vdsuite\user;$(SCE_PSP2_SDK_DIR)\target\include\vdsuite\common;$(SolutionDir)include\gpu_es4;$(SolutionDir)include\gpu_es4\eurasia\include4;$(SolutionDir)include\gpu_es4\eurasia\hwdefs;$(SolutionDir)include\gpu_es4\eurasia\services4\include;$(SolutionDir)include\gpu_es4\eurasia\services4\system\psp2;$(SolutionDir)codegen\pds;$(SolutionDir)codegen\pixevent;$(SolutionDir)codegen\usegen;$(SolutionDir)codegen\pixfmts;$(SolutionDir)include\gpu_es4\eurasia\services4\srvclient\devices\sgx;$(SolutionDir)codegen\ffgen;$(SolutionDir)tools\intern\useasm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>-lSceDisplayUser_stub;-lSceDisplay_stub;-lSceGpuEs4ForUser_stub;-lSceAppMgrUser_stub;-lScePower_stub;$(ProjectDir)libSceGpuEs4User_stub.a;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>-lSceGxm_stub;-lSceDisplayUser_stub;-lSceDisplay_stub;-lSceGpuEs4ForUser_stub;-lSceAppMgrUser_stub;-lScePower_stub;$(ProjectDir)libSceGpuEs4User_stub.a;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SCE_PSP2_SDK_DIR)\target\lib\vdsuite;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>--no-required-files</AdditionalOptions>
       <InfoStripping>StripSymsAndDebug</InfoStripping>

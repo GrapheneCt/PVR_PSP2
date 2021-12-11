@@ -3546,7 +3546,6 @@ GL_APICALL void GL_APIENTRY glTexSubImage2D(GLenum target, GLint level, GLint xo
 
 	IMG_BOOL bHWSubTextureUploaded = IMG_FALSE;
 
-
 	__GLES2_GET_CONTEXT();
 
 	PVR_DPF((PVR_DBG_CALLTRACE,"glTexSubImage2D"));
@@ -4032,6 +4031,32 @@ bad_op:
 		return;
 	}
 
+	SceKernelMemBlockInfo sMemInfo;
+	PVRSRV_ERROR eCheckRes;
+	sMemInfo.size = sizeof(SceKernelMemBlockInfo);
+	sceKernelGetMemBlockInfoByAddr(pixels, &sMemInfo);
+
+	eCheckRes = PVRSRVCheckMappedMemory(
+		gc->ps3DDevData,
+		gc->psSysContext->hDevMemContext,
+		sMemInfo.mappedBase,
+		sMemInfo.mappedSize,
+		PVRSRV_MEM_READ | PVRSRV_MEM_WRITE
+	);
+
+	if (eCheckRes != PVRSRV_OK)
+	{
+		eCheckRes = PVRSRVMapMemoryToGpu(
+			gc->ps3DDevData,
+			gc->psSysContext->hDevMemContext,
+			0,
+			sMemInfo.mappedSize,
+			0,
+			sMemInfo.mappedBase,
+			PVRSRV_MEM_READ | PVRSRV_MEM_WRITE | PVRSRV_MEM_USER_SUPPLIED_DEVVADDR,
+			IMG_NULL);
+	}
+
 #if defined(GLES2_EXTENSION_EGL_IMAGE)
 	if(psTex->psEGLImageTarget)
 	{
@@ -4364,7 +4389,6 @@ bad_op:
 						}
 					}
 
-				  
 					if (PrepareHWTQTextureUpload(gc, psTex, 
 												 ui32OffsetInBytes, psMipLevel,
 												 &sSubTexInfo, pfnCopyTextureData,
@@ -6484,7 +6508,7 @@ bad_op:
 			    GLES_ASSERT(ui32Face == 0 && ui32Lod == 0);
 
 				ui32OffsetInBytes = 0;
-				
+
 				if (PrepareHWTQTextureUpload(gc, psTex, 
 											 ui32OffsetInBytes, psMipLevel,
 											 &sSubTexInfo, IMG_NULL,
@@ -6573,7 +6597,7 @@ bad_op:
 						ui32OffsetInBytes += (ui32FaceOffset * ui32Face);
 					}
 				}
-				
+
 				if (PrepareHWTQTextureUpload(gc, psTex, 
 											 ui32OffsetInBytes, psMipLevel,
 											 &sSubTexInfo, IMG_NULL,

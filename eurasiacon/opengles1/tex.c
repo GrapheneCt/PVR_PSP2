@@ -3530,6 +3530,32 @@ bad_op:
 		return;
 	}
 
+	SceKernelMemBlockInfo sMemInfo;
+	PVRSRV_ERROR eCheckRes;
+	sMemInfo.size = sizeof(SceKernelMemBlockInfo);
+	sceKernelGetMemBlockInfoByAddr(pixels, &sMemInfo);
+
+	eCheckRes = PVRSRVCheckMappedMemory(
+		gc->ps3DDevData,
+		gc->psSysContext->hDevMemContext,
+		sMemInfo.mappedBase,
+		sMemInfo.mappedSize,
+		PVRSRV_MEM_READ | PVRSRV_MEM_WRITE
+	);
+
+	if (eCheckRes != PVRSRV_OK)
+	{
+		eCheckRes = PVRSRVMapMemoryToGpu(
+			gc->ps3DDevData,
+			gc->psSysContext->hDevMemContext,
+			0,
+			sMemInfo.mappedSize,
+			0,
+			sMemInfo.mappedBase,
+			PVRSRV_MEM_READ | PVRSRV_MEM_WRITE | PVRSRV_MEM_USER_SUPPLIED_DEVVADDR,
+			IMG_NULL);
+	}
+
 #if defined(GLES1_EXTENSION_EGL_IMAGE)
 	if(psTex->psEGLImageTarget)
 	{
