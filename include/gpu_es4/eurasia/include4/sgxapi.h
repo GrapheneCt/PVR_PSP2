@@ -275,8 +275,9 @@ typedef struct _SGX_ADDRENDTARG_
 #define SGX_KICKTA_FLAGS_VDM_PIM_SPLIT					0x10000000
 #endif
 #define SGX_KICKTA_FLAGS_COMPUTE_TASK_OPENCL			0x20000000
-
 #if defined(__psp2__)
+#define SGX_KICKTA_FLAGS_POST_TA_SLC_FLUSH				0x40000000
+
 #define SGX_KICKTA_SCENEFLAGS_VDM_BUFFER_HIGHMARK				0x00000001
 #define SGX_KICKTA_SCENEFLAGS_VERTEX_BUFFER_HIGHMARK			0x00000002
 #define SGX_KICKTA_SCENEFLAGS_FRAGMENT_BUFFER_HIGHMARK			0x00000004
@@ -292,7 +293,9 @@ typedef struct _SGX_ADDRENDTARG_
 typedef struct _PVRSRV_SGX_CLIENT_INFO_
 {
 	IMG_UINT32					ui32ProcessID;			/*!< ID of process controlling SGX device */
+#if !defined(__psp2__)
 	IMG_VOID					*pvProcess;				/*!< pointer to OS specific 'process' structure */
+#endif
 	PVRSRV_MISC_INFO			sMiscInfo;				/*!< Misc. Information, inc. SOC specifics */
 
 	IMG_UINT32					ui32EVMConfig;			/*!< used by pdumping kicks */
