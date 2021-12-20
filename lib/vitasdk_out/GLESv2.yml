@@ -15,6 +15,7 @@ modules:
           glBindFramebuffer: 0xEB77AF9F
           glBindRenderbuffer: 0xCCE43CA8
           glBindTexture: 0xCB5B4998
+          glBindVertexArrayOES: 0xAAA86BA0
           glBlendColor: 0x666D119A
           glBlendEquation: 0xABBDA7B3
           glBlendEquationSeparate: 0xF0EDDF80
@@ -42,25 +43,31 @@ modules:
           glDeleteRenderbuffers: 0xF40183F5
           glDeleteShader: 0x8C508262
           glDeleteTextures: 0x2D3B8D28
+          glDeleteVertexArraysOES: 0xCA778EFB
           glDepthFunc: 0xD4026C17
           glDepthMask: 0xDB12CAB1
           glDepthRangef: 0xE0F36296
           glDetachShader: 0xE12CB853
           glDisable: 0x062DC4A1
           glDisableVertexAttribArray: 0x04A45F42
+          glDiscardFramebufferEXT: 0x7A291FC1
           glDrawArrays: 0xCCDE88D5
           glDrawElements: 0xDEB4664C
+          glEGLImageTargetRenderbufferStorageOES: 0x03C19A8E
+          glEGLImageTargetTexture2DOES: 0xF305F58D
           glEnable: 0xE49E018E
           glEnableVertexAttribArray: 0xBE2D4A9A
           glFinish: 0x77190A10
           glFlush: 0x1F6B9106
           glFramebufferRenderbuffer: 0x13F7D86B
           glFramebufferTexture2D: 0x8C9865DF
+          glFramebufferTexture2DMultisampleIMG: 0x0B847926
           glFrontFace: 0x896B5409
           glGenBuffers: 0x411E5F05
           glGenFramebuffers: 0x99E98BA1
           glGenRenderbuffers: 0x2B371E22
           glGenTextures: 0xF904C8A9
+          glGenVertexArraysOES: 0x9980D6AE
           glGenerateMipmap: 0x09711861
           glGetActiveAttrib: 0xA6CB93AF
           glGetActiveUniform: 0x50D3D6A9
@@ -68,10 +75,12 @@ modules:
           glGetAttribLocation: 0x2303225D
           glGetBooleanv: 0x919FBCB7
           glGetBufferParameteriv: 0x9556172D
+          glGetBufferPointervOES: 0xEA66744F
           glGetError: 0xC8C03673
           glGetFloatv: 0xDA2636B7
           glGetFramebufferAttachmentParameteriv: 0x3016648A
           glGetIntegerv: 0xD9448BAD
+          glGetProgramBinaryOES: 0x9AAD9BDC
           glGetProgramInfoLog: 0x8045DA32
           glGetProgramiv: 0xCA4AC77B
           glGetRenderbufferParameteriv: 0x5FC9CFAB
@@ -96,13 +105,19 @@ modules:
           glIsRenderbuffer: 0x1DCFE0A8
           glIsShader: 0xB8BB6E18
           glIsTexture: 0xB19483E6
+          glIsVertexArrayOES: 0x4D962148
           glLineWidth: 0x7D9E059E
           glLinkProgram: 0xA1BB2C9D
+          glMapBufferOES: 0x3A7D99FF
+          glMultiDrawArraysEXT: 0x262683C3
+          glMultiDrawElementsEXT: 0xB8F7D74A
           glPixelStorei: 0x5F83AB8A
           glPolygonOffset: 0x8EC1C847
+          glProgramBinaryOES: 0x82C9B0D8
           glReadPixels: 0x7210A817
           glReleaseShaderCompiler: 0xECAC91AF
           glRenderbufferStorage: 0x768C7D2C
+          glRenderbufferStorageMultisampleIMG: 0xECA44FE8
           glSampleCoverage: 0x25147503
           glScissor: 0xA7ED2287
           glShaderBinary: 0xAF66D3C3
@@ -138,6 +153,7 @@ modules:
           glUniformMatrix2fv: 0x882A4817
           glUniformMatrix3fv: 0x24FFEEB3
           glUniformMatrix4fv: 0x29D3F355
+          glUnmapBufferOES: 0x822AE051
           glUseProgram: 0xD972A7BC
           glValidateProgram: 0x71DB1798
           glVertexAttrib1f: 0xC3A7D41D
