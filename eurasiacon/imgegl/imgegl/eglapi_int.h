@@ -345,6 +345,11 @@ typedef struct EGLRenderSurfaceTAG
 	IMG_UINT32					ui32NumSrcSyncs;
 	PVRSRV_CLIENT_SYNC_INFO		*apsSrcSurfSyncInfo[EGL_MAX_SRC_SYNCS];
 
+#if defined(__psp2__)
+	IMG_UINT32 					ui32initWidth;
+	IMG_UINT32 					ui32initHeight;
+#endif
+
 #if defined(EGL_EXTENSION_IMG_EGL_HIBERNATION)
 	/* Information that needs to be stored here during hibernation */
 	IMG_BOOL					bHadZSBuffer;

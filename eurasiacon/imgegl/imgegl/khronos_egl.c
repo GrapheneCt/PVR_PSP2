@@ -3230,7 +3230,7 @@ IMG_EXPORT EGLSurface IMGeglCreateWindowSurface(EGLDisplay eglDpy,
 	PVRSRV_COLOURSPACE_FORMAT	eColourSpaceFormat = PVRSRV_COLOURSPACE_FORMAT_NONLINEAR;
 	KEGL_CONFIG_INDEX configIndex= (KEGL_CONFIG_INDEX)eglCfg;
 	Psp2NativeWindow *psIntWindows;
-#if defined(EGL_EXTENSION_IMG_EGL_HIBERNATION)
+#if defined(EGL_EXTENSION_IMG_EGL_HIBERNATION) || defined(__psp2__)
 	SrvSysContext *psSysContext;
 #endif
 
@@ -3254,8 +3254,10 @@ IMG_EXPORT EGLSurface IMGeglCreateWindowSurface(EGLDisplay eglDpy,
 
 	psTls->lastError = EGL_SUCCESS;
 
-#if defined(EGL_EXTENSION_IMG_EGL_HIBERNATION)
+#if defined(EGL_EXTENSION_IMG_EGL_HIBERNATION) || defined(__psp2__)
 	psSysContext = &psTls->psGlobalData->sSysContext;
+#endif
+#if defined(EGL_EXTENSION_IMG_EGL_HIBERNATION)
 	if(psSysContext->bHibernated == IMG_TRUE)
 	{
 		psTls->lastError = EGL_HIBERNATED_IMG;

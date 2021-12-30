@@ -83,12 +83,12 @@
 #define EGL_EXTENSION_KHR_GL_RENDERBUFFER_IMAGE		
 #define EGL_EXTENSION_KHR_VG_PARENT_IMAGE	
 #define EGL_EXTENSION_KHR_FENCE_SYNC
+//#define EGL_EXTENSION_IMG_EGL_HIBERNATION
 #if defined(__psp2__)
 #undef EGL_EXTENSION_KHR_FENCE_SYNC
 #define EGL_EXTENSION_KHR_REUSABLE_SYNC
 #define EGL_CORE_PROC
 #endif
-#define EGL_EXTENSION_IMG_EGL_HIBERNATION
 
 /* EGL image extensions */
 #if !defined(__psp2__) //TODO: Can be implemented on Vita, but not a priority right now
