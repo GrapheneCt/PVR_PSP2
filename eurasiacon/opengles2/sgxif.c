@@ -555,7 +555,7 @@ static IMG_BOOL StartFrame(GLES2Context *gc, IMG_UINT32 *pui32ClearFlags, PVRSRV
 	{
 		return IMG_FALSE;
 	}
-			
+
 	/*
 		Snap Terminate clip rect to nearest 16 pixel units outside drawable rectangle.
 	*/

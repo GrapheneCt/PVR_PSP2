@@ -5,11 +5,8 @@ Library: SceGpuEs4User version: 1
 Library: SceGpuEs4User stubfile: "libSceGpuEs4User_stub"
 Library: SceGpuEs4User nidsuffix: ""
 Library: SceGpuEs4User libnamenid: 0xFAFCA413
-
-// Replaced in ext lib
-//Library: SceGpuEs4User function: PVRSRVAllocUserModeMem nidvalue: 0x7AF40138
-//Library: SceGpuEs4User function: PVRSRVFreeUserModeMem nidvalue: 0x1BE5985A
-
+Library: SceGpuEs4User function: PVRSRVAllocUserModeMem nidvalue: 0x7AF40138
+Library: SceGpuEs4User function: PVRSRVFreeUserModeMem nidvalue: 0x1BE5985A
 Library: SceGpuEs4User function: PVRSRVAcquireDeviceData nidvalue: 0x70800B46
 Library: SceGpuEs4User function: PVRSRVAllocDeviceMem nidvalue: 0x071E62F0
 Library: SceGpuEs4User function: PVRSRVAllocSyncInfo nidvalue: 0x94286660

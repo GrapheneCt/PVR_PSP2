@@ -9,34 +9,14 @@
 #include "eurasia/services4/include/servicesint.h"
 #include "eurasia/services4/include/pvr_bridge.h"
 
-static ScePVoid s_userModeHeap = SCE_NULL;
+static SceClibMspace s_userModeMspace = SCE_NULL;
 
-int _PVRSRVCreateUserModeHeap()
+int _PVRSRVCreateUserModeHeap(SceClibMspace mspace)
 {
-	s_userModeHeap = sceHeapCreateHeap("PVRSRVUserModeHeap", 1 * 1024 * 1024, 0, SCE_NULL);
-
-	if (!s_userModeHeap)
-	{
-		PVR_DPF((PVR_DBG_ERROR, "_PVRSRVCreateUserModeHeap, failed to create user mode heap"));
-		return SCE_ERROR_ERRNO_ENOMEM;
-	}
+	s_userModeMspace = mspace;
 
 	return SCE_OK;
 }
-
-/******************************************************************************
- Function Name      : PVRSRVAllocUserModeMem
- Inputs             :
- Outputs            :
- Returns            :
- Description        :
-
-******************************************************************************/
-IMG_EXPORT IMG_PVOID IMG_CALLCONV PVRSRVAllocUserModeMem(IMG_UINT32 ui32Size)
-{
-	return (IMG_PVOID)sceHeapAllocHeapMemory(s_userModeHeap, ui32Size);
-}
-
 
 /******************************************************************************
  Function Name      : PVRSRVCallocUserModeMem
@@ -48,7 +28,7 @@ IMG_EXPORT IMG_PVOID IMG_CALLCONV PVRSRVAllocUserModeMem(IMG_UINT32 ui32Size)
 ******************************************************************************/
 IMG_EXPORT IMG_PVOID IMG_CALLCONV PVRSRVCallocUserModeMem(IMG_UINT32 ui32Size)
 {
-	IMG_PVOID ret = (IMG_PVOID)sceHeapAllocHeapMemory(s_userModeHeap, ui32Size);
+	IMG_PVOID ret = PVRSRVAllocUserModeMem(ui32Size);
 
 	if (!ret)
 	{
@@ -71,21 +51,7 @@ IMG_EXPORT IMG_PVOID IMG_CALLCONV PVRSRVCallocUserModeMem(IMG_UINT32 ui32Size)
 ******************************************************************************/
 IMG_EXPORT IMG_PVOID IMG_CALLCONV PVRSRVReallocUserModeMem(IMG_PVOID pvBase, IMG_SIZE_T uNewSize)
 {
-	return (IMG_PVOID)sceHeapReallocHeapMemory(s_userModeHeap, pvBase, uNewSize);
-}
-
-
-/******************************************************************************
- Function Name      : PVRSRVFreeUserModeMem
- Inputs             :
- Outputs            :
- Returns            :
- Description        :
-
-******************************************************************************/
-IMG_EXPORT IMG_VOID IMG_CALLCONV PVRSRVFreeUserModeMem(IMG_PVOID pvMem)
-{
-	sceHeapFreeHeapMemory(s_userModeHeap, pvMem);
+	return (IMG_PVOID)sceClibMspaceRealloc(s_userModeMspace, pvBase, uNewSize);
 }
 
 /******************************************************************************
@@ -371,7 +337,7 @@ IMG_EXPORT PVRSRV_ERROR IMG_CALLCONV PVRSRVCreateMutex(PVRSRV_MUTEX_HANDLE *phMu
 	SceKernelLwMutexWork *psPVRMutex;
 	IMG_INT iError;
 
-	psPVRMutex = PVRSRVAllocUserModeMem(sizeof(SceKernelLwMutexWork));
+	psPVRMutex = PVRSRVCallocUserModeMem(sizeof(SceKernelLwMutexWork));
 
 	if (psPVRMutex == NULL)
 	{
@@ -439,7 +405,7 @@ IMG_EXPORT IMG_VOID IMG_CALLCONV PVRSRVLockMutex(PVRSRV_MUTEX_HANDLE hMutex)
 	SceKernelLwMutexWork *psPVRMutex = (SceKernelLwMutexWork *)hMutex;
 	IMG_INT iError;
 
-	if (psPVRMutex == NULL)
+	if (psPVRMutex == NULL || psPVRMutex == 1)
 		return;
 
 	sceKernelLockLwMutex(psPVRMutex, 1, NULL);
@@ -460,8 +426,9 @@ IMG_EXPORT IMG_VOID IMG_CALLCONV PVRSRVUnlockMutex(PVRSRV_MUTEX_HANDLE hMutex)
 	SceKernelLwMutexWork *psPVRMutex = (SceKernelLwMutexWork *)hMutex;
 	IMG_INT iError;
 
-	if (psPVRMutex == NULL)
+	if (psPVRMutex == NULL || psPVRMutex == 1)
 		return;
+
 	sceKernelUnlockLwMutex(psPVRMutex, 1);
 #endif
 }

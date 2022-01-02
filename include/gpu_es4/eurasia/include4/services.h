@@ -970,10 +970,14 @@ PVRSRV_ERROR IMG_CALLCONV PVRSRVClientEvent(IMG_CONST PVRSRV_CLIENT_EVENT eEvent
 /******************************************************************************
  * PVR Services API prototypes.
  *****************************************************************************/
+#ifndef __psp2__
 IMG_IMPORT
+#endif
 PVRSRV_ERROR IMG_CALLCONV PVRSRVConnect(PVRSRV_CONNECTION **ppsConnection, IMG_UINT32 ui32SrvFlags);
 
+#ifndef __psp2__
 IMG_IMPORT
+#endif
 PVRSRV_ERROR IMG_CALLCONV PVRSRVDisconnect(IMG_CONST PVRSRV_CONNECTION *psConnection);
 
 IMG_IMPORT
@@ -1694,8 +1698,13 @@ IMG_IMPORT IMG_BOOL IMG_CALLCONV PVRSRVCreateVirtualAppHint(PVRSRV_PSP2_APPHINT 
  *****************************************************************************/
 
 /* Exported APIs */
+#ifdef __psp2__
+IMG_PVOID IMG_CALLCONV PVRSRVAllocUserModeMem(IMG_SIZE_T ui32Size);
+IMG_VOID  IMG_CALLCONV PVRSRVFreeUserModeMem(IMG_PVOID pvMem);
+#else
 IMG_IMPORT IMG_PVOID IMG_CALLCONV PVRSRVAllocUserModeMem(IMG_SIZE_T ui32Size);
 IMG_IMPORT IMG_VOID  IMG_CALLCONV PVRSRVFreeUserModeMem(IMG_PVOID pvMem);
+#endif
 IMG_IMPORT IMG_PVOID IMG_CALLCONV PVRSRVCallocUserModeMem (IMG_SIZE_T ui32Size);
 IMG_IMPORT IMG_PVOID IMG_CALLCONV PVRSRVReallocUserModeMem (IMG_PVOID pvBase, IMG_SIZE_T uNewSize);
 IMG_IMPORT IMG_VOID PVRSRVMemCopy(IMG_VOID *pvDst, const IMG_VOID *pvSrc, IMG_SIZE_T ui32Size);

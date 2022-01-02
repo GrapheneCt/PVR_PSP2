@@ -200,7 +200,7 @@ IMG_INTERNAL IMG_BOOL FlushAllUnflushedFBO(GLES2Context *gc,
 	{
 		ui32Flags |= GLES2_SCHEDULE_HW_WAIT_FOR_3D;
 	}
-	
+
 	PVRSRVLockMutex(gc->psSharedState->hFlushListLock);
 
 	ppsFlushList = &gc->psSharedState->psFlushList;
@@ -3242,6 +3242,7 @@ GL_APICALL GLboolean GL_APIENTRY glIsFramebuffer(GLuint framebuffer)
 	return GL_TRUE;
 }
 
+
 /***********************************************************************************
  Function Name      : glBindFramebuffer
  Inputs             : target, framebuffer
@@ -3326,7 +3327,7 @@ GL_APICALL void GL_APIENTRY glBindFramebuffer(GLenum target, GLuint framebuffer)
 	}
 	else
 	{
-		psFrameBuffer = &gc->sFrameBuffer.sDefaultFrameBuffer;
+		psFrameBuffer = &gc->sFrameBuffer.sDefaultFrameBuffer;	
 	}
 
 	psBoundFrameBuffer = gc->sFrameBuffer.psActiveFrameBuffer;
@@ -3496,12 +3497,12 @@ GL_APICALL void GL_APIENTRY glDeleteFramebuffers(GLsizei n, const GLuint *frameb
 
 			/* Setup various draw/read params state now the framebuffer has changed */
 			gc->sFrameBuffer.psActiveFrameBuffer = psDefaultFrameBuffer;
+
 			ChangeDrawableParams(gc, psDefaultFrameBuffer, &psDefaultFrameBuffer->sReadParams, &psDefaultFrameBuffer->sDrawParams);
 		}
 	}
 
 	NamedItemDelRefByName(gc, psNamesArray, (IMG_UINT32)n, (const IMG_UINT32*)framebuffers);
-
 
 	GLES2_TIME_STOP(GLES2_TIMES_glDeleteFramebuffers);
 }

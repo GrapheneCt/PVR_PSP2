@@ -527,8 +527,10 @@ IMG_INTERNAL IMG_BOOL KEGL_SGXCreateRenderSurface(SrvSysContext *psSysContext,
 	psSurface->bInFrame					= IMG_FALSE;
 	psSurface->bInExternalFrame			= IMG_FALSE;
 	psSurface->bPrimitivesSinceLastTA	= IMG_FALSE;
+#if defined(__psp2__)
 	psSurface->ui32initWidth			= psParams->ui32Width;
 	psSurface->ui32initHeight			= psParams->ui32Height;
+#endif
 	
 	psSurface->bNeedZSLoadAfterOverflowRender = IMG_FALSE;
 
@@ -1142,8 +1144,10 @@ IMG_INTERNAL IMG_BOOL KEGL_SGXResizeRenderSurface(SrvSysContext		*psSysContext,
 	sAddRenderTarget.hRenderContext		= psSysContext->hRenderContext;
 	sAddRenderTarget.ui32NumPixelsX		= psParams->ui32Width;
 	sAddRenderTarget.ui32NumPixelsY		= psParams->ui32Height;
+#if defined(__psp2__)
 	psSurface->ui32initWidth = psParams->ui32Width;
 	psSurface->ui32initHeight = psParams->ui32Height;
+#endif
 
 	if (ui32MultiSample == 2)
 	{
