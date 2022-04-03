@@ -47,7 +47,7 @@ typedef enum GLES1NameTypeTAG
 
 
 /* It must be a prime number. Some alternatives are: 71, 83, 101, 127, 163, 199, 251, 307, 359, 439 */
-#define GLES1_DEFAULT_NAMES_ARRAY_SIZE	127
+#define GLES1_DEFAULT_NAMES_ARRAY_SIZE	439
 
 
 /* This structure must be the first variable of all objects we put in a names array */
