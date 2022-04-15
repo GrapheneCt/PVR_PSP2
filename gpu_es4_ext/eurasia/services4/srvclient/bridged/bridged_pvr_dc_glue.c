@@ -432,6 +432,7 @@ PVRSRV_ERROR IMG_CALLCONV PVRSRVCreateDCSwapChain(IMG_HANDLE	hDevice,
 
 	psSwapChain->psConnection = psConnection;
 	psSwapChain->hSwapChainReadyEvf = readyEvfId;
+	psSwapChain->hSwapChainPendingEvf = pendingEvfId;
 	psSwapChain->hSwapChainThread = thrdId;
 	psSwapChain->sDims.ui32Width = psSrcSurfAttrib->sDims.ui32Width;
 	psSwapChain->sDims.ui32Height = psSrcSurfAttrib->sDims.ui32Height;
@@ -512,10 +513,6 @@ IMG_HANDLE hSwapChain)
 
 	psSwapChain = (PSP2_SWAPCHAIN *)hSwapChain;
 
-	for (i = 0; i < psSwapChain->ui32BufferCount; i++) {
-		sceKernelFreeMemBlock(psSwapChain->hDispMemUID[i]);
-	}
-
 	s_psOldBufSyncInfo = IMG_NULL;
 
 	s_flipChainExists = IMG_FALSE;
@@ -528,6 +525,10 @@ IMG_HANDLE hSwapChain)
 
 	for (i = 0; i < PSP2_SWAPCHAIN_MAX_PENDING_COUNT; i++) {
 		PVRSRVDestroySyncInfoModObj((PVRSRV_CONNECTION *)hDevice, s_hKernelSwapChainSync[i]);
+	}
+
+	for (i = 0; i < psSwapChain->ui32BufferCount; i++) {
+		sceKernelFreeMemBlock(psSwapChain->hDispMemUID[i]);
 	}
 
 	PVRSRVFreeUserModeMem(psSwapChain);
