@@ -62,3 +62,5 @@ param.sfo
 param2.sfo
 PSVita_Debug
 PSVita_Release
+gpu_es4_ext/libSceGpuEs4UserForVsh_stub.a
+gpu_es4_ext/libSceGpuEs4User_stub.a
