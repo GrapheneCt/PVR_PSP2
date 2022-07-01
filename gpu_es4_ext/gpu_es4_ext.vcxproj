@@ -106,7 +106,9 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|PSVita'">
+    <IgnoreImportLibrary>false</IgnoreImportLibrary>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|PSVita'">
     <ClCompile>
       <PreprocessorDefinitions>_DEBUG;DEBUG;SUPPORT_SGX543;PVRSRV_NEED_PVR_DPF;IMG_PSP2_PRX_EXPORT_INTERNAL;THREAD_SAFE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
