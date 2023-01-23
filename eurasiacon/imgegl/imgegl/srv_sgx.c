@@ -574,6 +574,7 @@ IMG_INTERNAL IMG_BOOL KEGL_SGXCreateRenderSurface(SrvSysContext *psSysContext,
 	SGXGetRenderTargetMemSize(&sAddRenderTarget, &ui32DriverMemSize);
 
 	sAddRenderTarget.i32DataMemblockUID = sceKernelAllocMemBlock("SGXRenderTarget", SCE_KERNEL_MEMBLOCK_TYPE_USER_NC_RW, ui32DriverMemSize, SCE_NULL);
+
 	PVRSRVRegisterMemBlock(&psSysContext->s3D, sAddRenderTarget.i32DataMemblockUID, &hRtMemRef, IMG_TRUE);
 
 	sAddRenderTarget.hMemBlockProcRef = hRtMemRef;
@@ -598,6 +599,7 @@ IMG_INTERNAL IMG_BOOL KEGL_SGXCreateRenderSurface(SrvSysContext *psSysContext,
 		SGXGetRenderTargetMemSize(&sAddRenderTarget, &ui32DriverMemSize);
 
 		sAddRenderTarget.i32DataMemblockUID = sceKernelAllocMemBlock("SGXRenderTargetPairRt", SCE_KERNEL_MEMBLOCK_TYPE_USER_NC_RW, ui32DriverMemSize, SCE_NULL);
+
 		PVRSRVRegisterMemBlock(&psSysContext->s3D, sAddRenderTarget.i32DataMemblockUID, &hRtMemRef, IMG_TRUE);
 
 		sAddRenderTarget.hMemBlockProcRef = hRtMemRef;
@@ -1177,6 +1179,7 @@ IMG_INTERNAL IMG_BOOL KEGL_SGXResizeRenderSurface(SrvSysContext		*psSysContext,
 	SGXGetRenderTargetMemSize(&sAddRenderTarget, &ui32DriverMemSize);
 
 	sAddRenderTarget.i32DataMemblockUID = sceKernelAllocMemBlock("SGXRenderTarget", SCE_KERNEL_MEMBLOCK_TYPE_USER_NC_RW, ui32DriverMemSize, SCE_NULL);
+
 	PVRSRVRegisterMemBlock(&psSysContext->s3D, sAddRenderTarget.i32DataMemblockUID, &hRtMemRef, IMG_TRUE);
 
 	sAddRenderTarget.hMemBlockProcRef = hRtMemRef;
@@ -1215,6 +1218,7 @@ IMG_INTERNAL IMG_BOOL KEGL_SGXResizeRenderSurface(SrvSysContext		*psSysContext,
 		SGXGetRenderTargetMemSize(&sAddRenderTarget, &ui32DriverMemSize);
 
 		sAddRenderTarget.i32DataMemblockUID = sceKernelAllocMemBlock("SGXRenderTargetPairRt", SCE_KERNEL_MEMBLOCK_TYPE_USER_NC_RW, ui32DriverMemSize, SCE_NULL);
+
 		PVRSRVRegisterMemBlock(&psSysContext->s3D, sAddRenderTarget.i32DataMemblockUID, &hRtMemRef, IMG_TRUE);
 
 		sAddRenderTarget.hMemBlockProcRef = hRtMemRef;

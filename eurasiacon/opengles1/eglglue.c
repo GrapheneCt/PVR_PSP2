@@ -570,7 +570,7 @@ static IMG_BOOL InitContext(GLES1Context *gc, GLES1Context *psShareContext, EGLc
 		gc->pvCDRAMHeap = sceHeapCreateHeap(gc->ps3DDevData,
 			gc->psSysContext->hDevMemContext,
 			"OGLES1CDRAMHeap",
-			gc->sAppHints.ui32UNCTexHeapSize,
+			gc->sAppHints.ui32CDRAMTexHeapSize,
 			gc->sAppHints.bEnableCDRAMAutoExtend ? SCE_HEAP_AUTO_EXTEND : 0,
 			&heapOpt);
 
