@@ -24,6 +24,7 @@
 #endif
 
 #ifndef APIENTRY
+#include <gpu_es4/eurasia/include4/img_defs.h>
 #define APIENTRY IMG_CALLCONV
 #endif
 
