@@ -20,11 +20,11 @@
 
 /* May need to export on some platforms */
 #if !defined(GLAPI_EXT)
-	#define GLAPI_EXT IMG_EXPORT
+	#define GLAPI_EXT
 #endif
 
 #ifndef APIENTRY
-#define APIENTRY IMG_CALLCONV
+#define APIENTRY
 #endif
 
 #include "egl1_4.h"
