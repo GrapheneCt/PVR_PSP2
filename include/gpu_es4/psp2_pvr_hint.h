@@ -1,6 +1,10 @@
 #ifndef PSP2_PVR_HINT_H
 #define PSP2_PVR_HINT_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // Universal header for PVRSRV apphint. Use this instead of services.h
 
 typedef unsigned int IMG_UINT32;
@@ -85,5 +89,9 @@ typedef struct _PVRSRV_PSP2_APPHINT_
 
 unsigned int PVRSRVInitializeAppHint(PVRSRV_PSP2_APPHINT *psAppHint);
 unsigned int PVRSRVCreateVirtualAppHint(PVRSRV_PSP2_APPHINT *psAppHint);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
