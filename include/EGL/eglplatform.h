@@ -57,7 +57,7 @@ typedef int int32_t;
 /* On Windows, EGLAPIENTRY can be defined like APIENTRY.
  * On most other platforms, it should be empty.
  */
-#if defined(APIENTRY) && !defined(__psp2__)
+#if defined(APIENTRY) && (!defined(__psp2__) && !defined(__vita__))
 #define EGLAPIENTRY APIENTRY
 #else
 #define EGLAPIENTRY
@@ -89,7 +89,7 @@ typedef HBITMAP NativePixmapType;
 
 #else
 
-#if defined(__psp2__)
+#if (defined(__psp2__) || defined(__vita__))
 
 typedef enum Psp2DrawableType
 {
