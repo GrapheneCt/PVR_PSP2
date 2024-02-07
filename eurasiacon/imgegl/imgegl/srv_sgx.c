@@ -1582,6 +1582,7 @@ IMG_INTERNAL IMG_RESULT SGXAllocatePBufferDeviceMem(SrvSysContext		*psSysContext
 													IMG_UINT32			*pui32Stride)
 {
 	IMG_UINT32 ui32Size;
+	IMG_UINT32 ui32Alignment = 256 * 1024;
 	SceKernelAllocMemBlockOpt opt;
 
 	PVR_UNREFERENCED_PARAMETER(pixel_format);
@@ -1598,13 +1599,16 @@ IMG_INTERNAL IMG_RESULT SGXAllocatePBufferDeviceMem(SrvSysContext		*psSysContext
 	*pui32Stride *= pixel_width;
 
 	ui32Size = MAX(1, *pui32Stride * pbuffer_height);
+	
+	/* CDRAM memory must be 256KiB aligned */
+	ui32Size = ALIGNCOUNT(ui32Size, ui32Alignment);
 
 	psSurface->u.pbuffer.psMemInfo = PVRSRVAllocUserModeMem(sizeof(PVRSRV_CLIENT_MEM_INFO));
 
 	sceClibMemset(&opt, 0, sizeof(SceKernelAllocMemBlockOpt));
 	opt.size = sizeof(SceKernelAllocMemBlockOpt);
 	opt.attr = SCE_KERNEL_ALLOC_MEMBLOCK_ATTR_HAS_ALIGNMENT;
-	opt.alignment = EURASIA_CACHE_LINE_SIZE;
+	opt.alignment = ui32Alignment;
 
 	psSurface->hPBufferMemBlockUID = sceKernelAllocMemBlock(
 		"SGXPBufferMem",
